@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitudes{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem; color: #1e4d7b;">📋 Gestión de Solicitudes</h2>
+
+<div style="margin-bottom: 1.5rem;">
+    <button class="btn btn-primary" onclick="location.href='#'">➕ Agregar Nueva Solicitud</button>
+</div>
+
+<div style="overflow-x: auto;">
+    <table id="solicitudesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Email</th>
+                <th>Quien Completa</th>
+                <th>Área</th>
+                <th>Solicitante</th>
+                <th>Urgencia</th>
+                <th>Logística</th>
+                <th>Equipo</th>
+                <th>Motivo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sol in solicitudes %}
+            <tr data-id="{{ sol.id }}">
+                <td>{{ sol.id }}</td>
+                <td>{{ sol.fecha_solicitud.strftime('%d/%m/%Y') if sol.fecha_solicitud else 'N/A' }}</td>
+                <td contenteditable="true" class="editable" data-field="email_solicitante">{{ sol.email_solicitante or '' }}</td>
+                <td contenteditable="true" class="editable" data-field="quien_completa">{{ sol.quien_completa or '' }}</td>
+                <td contenteditable="true" class="editable" data-field="area_solicitante">{{ sol.area_solicitante or '' }}</td>
+                <td contenteditable="true" class="editable" data-field="solicitante">{{ sol.solicitante or '' }}</td>
+                <td contenteditable="true" class="editable" data-field="nivel_urgencia">{{ sol.nivel_urgencia or '' }}</td>
+                <td contenteditable="true" class="editable" data-field="logistica_cargo">{{ sol.logistica_cargo or '' }}</td>
+                <td contenteditable="true" class="editable" data-field="equipo_corresponde_a">{{ sol.equipo_corresponde_a or '' }}</td>
+                <td contenteditable="true" class="editable" data-field="motivo_solicitud">{{ sol.motivo_solicitud or '' }}</td>
+                <td contenteditable="true" class="editable" data-field="estado">{{ sol.estado or '' }}</td>
+                <td>
+                    <button class="btn btn-primary" onclick="guardarFila({{ sol.id }})">💾 Guardar</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div style="margin-top: 1.5rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+    <strong>💡 Tip:</strong> Haz clic en cualquier celda para editarla. Los cambios se guardan con el botón 💾 Guardar.
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function guardarFila(solicitudId) {
+    const row = document.querySelector('tr[data-id="' + solicitudId + '"]');
+    const editableCells = row.querySelectorAll('.editable');
+    
+    const data = {};
+    editableCells.forEach(cell => {
+        const field = cell.getAttribute('data-field');
+        data[field] = cell.textContent.trim();
+    });
+    
+    fetch('/api/solicitud/' + solicitudId, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✅ Solicitud actualizada correctamente');
+            row.style.backgroundColor = '#d4edda';
+            setTimeout(() => {
+                row.style.backgroundColor = '';
+            }, 2000);
+        } else {
+            alert('❌ Error al actualizar: ' + (result.error || 'Error desconocido'));
+        }
+    })
+    .catch(error => {
+        alert('❌ Error de red: ' + error);
+    });
+}
+
+// Resaltar celdas editables
+document.querySelectorAll('.editable').forEach(cell => {
+    cell.addEventListener('focus', function() {
+        this.style.backgroundColor = '#fff3cd';
+    });
+    
+    cell.addEventListener('blur', function() {
+        this.style.backgroundColor = '';
+    });
+});
+</script>
+{% endblock %}

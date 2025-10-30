@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+
+{% block title %}Equipos{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Contenedor principal que agrupa ambas partes */
+.equipos-container {
+    display: flex;
+    width: 100%;
+    border: 1px solid #ddd;
+    background: white;
+    position: relative;
+}
+
+/* Columnas fijas a la izquierda */
+.fixed-columns {
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: 3px 0 8px -2px rgba(0,0,0,0.4);
+    z-index: 10;
+}
+
+/* Columnas con scroll a la derecha */
+.scrollable-columns {
+    flex-grow: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Tablas sincronizadas */
+.fixed-columns table,
+.scrollable-columns table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+/* Headers */
+.fixed-columns th,
+.scrollable-columns th {
+    background-color: #1e4d7b !important;
+    color: white !important;
+    font-weight: 600;
+    padding: 12px 15px;
+    border: 1px solid #0d2240;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* Celdas - forzar altura única */
+.fixed-columns td,
+.scrollable-columns td {
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+/* Sincronizar alturas de filas con JavaScript */
+.fixed-columns tbody tr,
+.scrollable-columns tbody tr {
+    height: auto;
+}
+
+/* Filas pares */
+.fixed-columns tbody tr:nth-child(even) td,
+.scrollable-columns tbody tr:nth-child(even) td {
+    background-color: #e8f4f8 !important;
+}
+
+/* Filas impares */
+.fixed-columns tbody tr:nth-child(odd) td,
+.scrollable-columns tbody tr:nth-child(odd) td {
+    background-color: #ffffff !important;
+}
+
+/* Hover sincronizado */
+.fixed-columns tbody tr:hover td,
+.scrollable-columns tbody tr:hover td {
+    background-color: #d4e9f7 !important;
+    cursor: pointer;
+}
+
+/* Anchos específicos para columnas fijas */
+.col-cliente { width: 180px; min-width: 180px; }
+.col-ost { width: 80px; min-width: 80px; }
+.col-estado { width: 120px; min-width: 120px; }
+
+/* Scroll vertical sincronizado */
+.fixed-columns {
+    overflow-y: auto;
+}
+
+.scrollable-columns {
+    overflow-y: auto;
+}
+
+/* Ocultar scrollbar de columnas fijas */
+.fixed-columns::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+}
+
+/* Celdas editables */
+.editable:focus {
+    outline: 2px solid #667eea;
+    background-color: #fff3cd !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem; color: #1e4d7b;">🖥️ Gestión de Equipos</h2>
+
+<div style="margin-bottom: 1.5rem;">
+    <button class="btn btn-primary" onclick="mostrarModal()">➕ Agregar Nuevo Equipo</button>
+</div>
+
+<!-- Modal (sin cambios) -->
+<div id="modalEquipo" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <h3 style="margin-bottom: 1.5rem; color: #1e4d7b;">🖥️ Nuevo Equipo</h3>
+        <form id="formEquipo">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">ID Solicitud *</label>
+                    <input type="number" name="solicitud_id" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Número Equipo *</label>
+                    <input type="number" name="numero_equipo" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Tipo Equipo *</label>
+                    <input type="text" name="tipo_equipo" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Marca</label>
+                    <input type="text" name="marca" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Modelo</label>
+                    <input type="text" name="modelo" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Número de Serie</label>
+                    <input type="text" name="numero_serie" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Cliente</label>
+                    <input type="text" name="cliente" value="Syemed" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Prioridad</label>
+                    <select name="prioridad" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="Baja">Baja</option>
+                        <option value="Media" selected>Media</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Crítica">Crítica</option>
+                    </select>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Accesorios</label>
+                    <textarea name="accesorios" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Observación de Ingreso</label>
+                    <textarea name="observacion_ingreso" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+                <button type="button" class="btn" onclick="cerrarModal()" style="background: #6c757d; color: white;">❌ Cancelar</button>
+                <button type="submit" class="btn btn-primary">💾 Guardar Equipo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="equipos-container">
+    <!-- COLUMNAS FIJAS -->
+    <div class="fixed-columns" id="fixedTable">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-cliente">Cliente</th>
+                    <th class="col-ost">OST</th>
+                    <th class="col-estado">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for equipo in equipos %}
+                <tr data-row="{{ loop.index0 }}">
+                    <td class="col-cliente" title="{{ equipo.cliente }}">{{ equipo.cliente }}</td>
+                    <td class="col-ost">{{ equipo.ost }}</td>
+                    <td class="col-estado" title="{{ equipo.estado_solicitud or 'N/A' }}">{{ equipo.estado_solicitud or 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- COLUMNAS CON SCROLL -->
+    <div class="scrollable-columns" id="scrollableTable">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha Ingreso</th>
+                    <th>Tipo</th>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Serie</th>
+                    <th>📸 Fotos</th>
+                    <th>📄 Facturas</th>
+                    <th>Accesorios</th>
+                    <th>Prioridad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for equipo in equipos %}
+                <tr data-id="{{ equipo.id }}" data-row="{{ loop.index0 }}">
+                    <td>{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</td>
+                    <td contenteditable="true" class="editable" data-field="tipo_equipo">{{ equipo.tipo_equipo or '' }}</td>
+                    <td contenteditable="true" class="editable" data-field="marca">{{ equipo.marca or '' }}</td>
+                    <td contenteditable="true" class="editable" data-field="modelo">{{ equipo.modelo or '' }}</td>
+                    <td contenteditable="true" class="editable" data-field="numero_serie">{{ equipo.numero_serie or '' }}</td>
+                    <td>
+                        {% if equipo.urls_fotos_fallas %}
+                            {% set urls = equipo.urls_fotos_fallas.split('||') %}
+                            {% for url in urls %}
+                                {% if url %}
+                                    <a href="{{ url }}" target="_blank">🖼️ {{ loop.index }}</a>
+                                    {% if not loop.last %} | {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Sin archivos
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if equipo.urls_facturas %}
+                            {% set urls = equipo.urls_facturas.split('||') %}
+                            {% for url in urls %}
+                                {% if url %}
+                                    <a href="{{ url }}" target="_blank">📄 {{ loop.index }}</a>
+                                    {% if not loop.last %} | {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Sin archivos
+                        {% endif %}
+                    </td>
+                    <td contenteditable="true" class="editable" data-field="accesorios">{{ equipo.accesorios or '' }}</td>
+                    <td contenteditable="true" class="editable" data-field="prioridad">{{ equipo.prioridad or '' }}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="guardarFila({{ equipo.id }})" style="white-space: nowrap; padding: 0.5rem 1rem; font-size: 0.85rem;">💾</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sincronizar alturas de filas con JavaScript
+function sincronizarAlturas() {
+    const fixedRows = document.querySelectorAll('#fixedTable tbody tr');
+    const scrollableRows = document.querySelectorAll('#scrollableTable tbody tr');
+    
+    fixedRows.forEach(function(fixedRow, index) {
+        const scrollableRow = scrollableRows[index];
+        if (scrollableRow) {
+            // Resetear alturas
+            fixedRow.style.height = 'auto';
+            scrollableRow.style.height = 'auto';
+            
+            // Obtener la altura máxima
+            const fixedHeight = fixedRow.offsetHeight;
+            const scrollableHeight = scrollableRow.offsetHeight;
+            const maxHeight = Math.max(fixedHeight, scrollableHeight);
+            
+            // Aplicar la altura máxima a ambas filas
+            fixedRow.style.height = maxHeight + 'px';
+            scrollableRow.style.height = maxHeight + 'px';
+        }
+    });
+}
+
+// Ejecutar al cargar
+window.addEventListener('load', sincronizarAlturas);
+
+// Ejecutar después de cambios
+setTimeout(sincronizarAlturas, 100);
+
+// Sincronizar scroll vertical entre ambas tablas
+const fixedTable = document.getElementById('fixedTable');
+const scrollableTable = document.getElementById('scrollableTable');
+
+fixedTable.addEventListener('scroll', function() {
+    scrollableTable.scrollTop = this.scrollTop;
+});
+
+scrollableTable.addEventListener('scroll', function() {
+    fixedTable.scrollTop = this.scrollTop;
+});
+
+// Sincronizar hover entre filas
+document.querySelectorAll('[data-row]').forEach(function(row) {
+    row.addEventListener('mouseenter', function() {
+        const rowIndex = this.getAttribute('data-row');
+        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(r) {
+            r.style.backgroundColor = '#d4e9f7';
+        });
+    });
+    
+    row.addEventListener('mouseleave', function() {
+        const rowIndex = this.getAttribute('data-row');
+        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(r) {
+            r.style.backgroundColor = '';
+        });
+    });
+});
+
+// Modal functions
+function mostrarModal() {
+    document.getElementById('modalEquipo').style.display = 'flex';
+}
+
+function cerrarModal() {
+    document.getElementById('modalEquipo').style.display = 'none';
+    document.getElementById('formEquipo').reset();
+}
+
+document.getElementById('modalEquipo').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModal();
+    }
+});
+
+document.getElementById('formEquipo').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        solicitud_id: parseInt(formData.get('solicitud_id')),
+        numero_equipo: parseInt(formData.get('numero_equipo')),
+        tipo_equipo: formData.get('tipo_equipo'),
+        marca: formData.get('marca'),
+        modelo: formData.get('modelo'),
+        numero_serie: formData.get('numero_serie'),
+        cliente: formData.get('cliente'),
+        prioridad: formData.get('prioridad'),
+        accesorios: formData.get('accesorios'),
+        observacion_ingreso: formData.get('observacion_ingreso')
+    };
+    
+    fetch('/api/equipo/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(result) {
+        if (result.success) {
+            alert('✅ Equipo agregado correctamente. OST: ' + result.ost);
+            cerrarModal();
+            location.reload();
+        } else {
+            alert('❌ Error al agregar: ' + (result.error || 'Error desconocido'));
+        }
+    })
+    .catch(function(error) {
+        alert('❌ Error de red: ' + error);
+    });
+});
+
+function guardarFila(equipoId) {
+    const row = document.querySelector('[data-id="' + equipoId + '"]');
+    const editableCells = row.querySelectorAll('.editable');
+    
+    const data = {};
+    editableCells.forEach(function(cell) {
+        const field = cell.getAttribute('data-field');
+        data[field] = cell.textContent.trim();
+    });
+    
+    fetch('/api/equipo/' + equipoId, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(result) {
+        if (result.success) {
+            alert('✅ Equipo actualizado correctamente');
+            row.style.backgroundColor = '#d4edda';
+            setTimeout(function() {
+                row.style.backgroundColor = '';
+                sincronizarAlturas(); // Resincronizar después de cambios
+            }, 2000);
+        } else {
+            alert('❌ Error al actualizar: ' + (result.error || 'Error desconocido'));
+        }
+    })
+    .catch(function(error) {
+        alert('❌ Error de red: ' + error);
+    });
+}
+
+document.querySelectorAll('.editable').forEach(function(cell) {
+    cell.addEventListener('focus', function() {
+        this.style.backgroundColor = '#fff3cd';
+    });
+    
+    cell.addEventListener('blur', function() {
+        this.style.backgroundColor = '';
+        sincronizarAlturas(); // Resincronizar si cambia el contenido
+    });
+});
+</script>
+{% endblock %}
