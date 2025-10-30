@@ -60,13 +60,17 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 300px;
+    box-sizing: border-box;
+    vertical-align: middle;
 }
 
 /* Sincronizar alturas de filas con JavaScript */
 .fixed-columns tbody tr,
 .scrollable-columns tbody tr {
     height: auto;
+    box-sizing: border-box;
 }
+
 
 /* Filas pares */
 .fixed-columns tbody tr:nth-child(even) td,
@@ -280,27 +284,62 @@ function sincronizarAlturas() {
     fixedRows.forEach(function(fixedRow, index) {
         const scrollableRow = scrollableRows[index];
         if (scrollableRow) {
-            // Resetear alturas
-            fixedRow.style.height = 'auto';
-            scrollableRow.style.height = 'auto';
+            // Resetear alturas para obtener altura natural
+            fixedRow.style.height = '';
+            scrollableRow.style.height = '';
             
-            // Obtener la altura máxima
-            const fixedHeight = fixedRow.offsetHeight;
-            const scrollableHeight = scrollableRow.offsetHeight;
-            const maxHeight = Math.max(fixedHeight, scrollableHeight);
+            // Forzar reflow para obtener alturas correctas
+            void fixedRow.offsetHeight;
+            void scrollableRow.offsetHeight;
             
-            // Aplicar la altura máxima a ambas filas
+            // Obtener alturas de todas las celdas
+            const fixedCells = Array.from(fixedRow.querySelectorAll('td'));
+            const scrollableCells = Array.from(scrollableRow.querySelectorAll('td'));
+            
+            const fixedMaxHeight = Math.max(...fixedCells.map(function(cell) { return cell.offsetHeight; }));
+            const scrollableMaxHeight = Math.max(...scrollableCells.map(function(cell) { return cell.offsetHeight; }));
+            const maxHeight = Math.max(fixedMaxHeight, scrollableMaxHeight);
+            
+            // Aplicar la altura máxima a ambas filas usando min-height para evitar colapsos
+            fixedRow.style.minHeight = maxHeight + 'px';
             fixedRow.style.height = maxHeight + 'px';
+            scrollableRow.style.minHeight = maxHeight + 'px';
             scrollableRow.style.height = maxHeight + 'px';
+            
+            // Asegurar que todas las celdas tengan la misma altura
+            fixedCells.concat(scrollableCells).forEach(function(cell) {
+                cell.style.height = maxHeight + 'px';
+            });
         }
     });
 }
 
-// Ejecutar al cargar
-window.addEventListener('load', sincronizarAlturas);
+// Ejecutar múltiples veces para asegurar sincronización
+function sincronizarMultiple() {
+    sincronizarAlturas();
+    setTimeout(sincronizarAlturas, 50);
+    setTimeout(sincronizarAlturas, 150);
+    setTimeout(sincronizarAlturas, 300);
+}
 
-// Ejecutar después de cambios
-setTimeout(sincronizarAlturas, 100);
+// Ejecutar al cargar
+window.addEventListener('load', sincronizarMultiple);
+
+// Observer para detectar cambios en el contenido
+const observer = new MutationObserver(function() {
+    sincronizarAlturas();
+});
+
+// Observar cambios en ambas tablas
+document.addEventListener('DOMContentLoaded', function() {
+    const fixedTable = document.getElementById('fixedTable');
+    const scrollableTable = document.getElementById('scrollableTable');
+    
+    if (fixedTable && scrollableTable) {
+        observer.observe(fixedTable, { childList: true, subtree: true, characterData: true });
+        observer.observe(scrollableTable, { childList: true, subtree: true, characterData: true });
+    }
+});
 
 // Sincronizar scroll vertical entre ambas tablas
 const fixedTable = document.getElementById('fixedTable');
@@ -432,7 +471,12 @@ document.querySelectorAll('.editable').forEach(function(cell) {
     
     cell.addEventListener('blur', function() {
         this.style.backgroundColor = '';
-        sincronizarAlturas(); // Resincronizar si cambia el contenido
+        sincronizarMultiple(); // Resincronizar si cambia el contenido
+    });
+    
+    // Sincronizar al escribir
+    cell.addEventListener('input', function() {
+        sincronizarAlturas();
     });
 });
 </script>
