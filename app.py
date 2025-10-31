@@ -108,7 +108,7 @@ def equipos():
                e.observacion_ingreso, e.fecha_envio, e.proveedor,
                e.detalles_reparacion, e.horas_trabajo, e.reingreso,
                e.informe, e.costo, e.precio, e.ov, e.estado_ov,
-               e.fecha_entrega, e.remito_entrega,
+               e.fecha_entrega, e.remito_entrega, e.estado,
                STRING_AGG(
                    CASE WHEN a.categoria = 'falla' 
                    THEN a.url_cloudinary 
@@ -252,7 +252,7 @@ def update_equipo(id):
                 numero_serie = %s, accesorios = %s, prioridad = %s,
                 observacion_ingreso = %s, detalles_reparacion = %s,
                 horas_trabajo = %s, costo = %s, precio = %s,
-                ov = %s, estado_ov = %s
+                ov = %s, estado_ov = %s, estado = %s
             WHERE id = %s
         """, (
             data.get('tipo_equipo'),
@@ -268,6 +268,7 @@ def update_equipo(id):
             data.get('precio'),
             data.get('ov'),
             data.get('estado_ov'),
+            data.get('estado'),  
             id
         ))
         conn.commit()
@@ -279,6 +280,9 @@ def update_equipo(id):
         cursor.close()
         conn.close()
         return jsonify({'error': str(e)}), 500
+    
+
+    
 
 if __name__ == '__main__':
     app.run(debug=True)

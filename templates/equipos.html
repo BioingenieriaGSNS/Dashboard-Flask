@@ -4,41 +4,69 @@
 
 {% block extra_css %}
 <style>
-/* Contenedor principal que agrupa ambas partes */
-.equipos-container {
-    display: flex;
+/* Contenedor principal */
+.equipos-wrapper {
     width: 100%;
-    border: 1px solid #ddd;
     background: white;
+    border: 1px solid #ddd;
     position: relative;
 }
 
-/* Columnas fijas a la izquierda */
-.fixed-columns {
-    flex-shrink: 0;
+/* Contenedor de headers - separado del cuerpo */
+.equipos-header-container {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
     overflow: hidden;
-    box-shadow: 3px 0 8px -2px rgba(0,0,0,0.4);
-    z-index: 10;
 }
 
-/* Columnas con scroll a la derecha */
-.scrollable-columns {
-    flex-grow: 1;
-    overflow-x: auto;
-    overflow-y: hidden;
+/* Grid de headers */
+.equipos-header-grid {
+    display: grid;
+    grid-template-columns: 
+        180px    /* Cliente */
+        80px     /* OST */
+        120px    /* Estado */
+        120px    /* Fecha Ingreso */
+        150px    /* Tipo */
+        120px    /* Marca */
+        150px    /* Modelo */
+        180px    /* Serie */
+        150px    /* Fotos */
+        150px    /* Facturas */
+        200px    /* Accesorios */
+        100px    /* Prioridad */
+        100px;   /* Acciones */
 }
 
-/* Tablas sincronizadas */
-.fixed-columns table,
-.scrollable-columns table {
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
+/* Contenedor del cuerpo con scroll */
+.equipos-body-container {
+    max-height: 65vh;
+    overflow: auto;
+}
+
+/* Grid del cuerpo - mismas columnas */
+.equipos-body-grid {
+    display: grid;
+    grid-template-columns: 
+        180px    /* Cliente */
+        80px     /* OST */
+        120px    /* Estado */
+        120px    /* Fecha Ingreso */
+        150px    /* Tipo */
+        120px    /* Marca */
+        150px    /* Modelo */
+        180px    /* Serie */
+        150px    /* Fotos */
+        150px    /* Facturas */
+        200px    /* Accesorios */
+        100px    /* Prioridad */
+        100px;   /* Acciones */
 }
 
 /* Headers */
-.fixed-columns th,
-.scrollable-columns th {
+.grid-header {
     background-color: #1e4d7b !important;
     color: white !important;
     font-weight: 600;
@@ -48,73 +76,180 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
 }
 
-/* Celdas - forzar altura única */
-.fixed-columns td,
-.scrollable-columns td {
+/* Primeros 3 headers sticky horizontalmente */
+.grid-header:nth-child(1),
+.grid-header:nth-child(2),
+.grid-header:nth-child(3) {
+    position: sticky;
+    z-index: 50;
+    background-color: #1e4d7b !important;
+}
+
+.grid-header:nth-child(1) { left: 0; }
+.grid-header:nth-child(2) { left: 180px; }
+.grid-header:nth-child(3) { 
+    left: 260px; 
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+/* Celdas del cuerpo */
+.grid-cell {
     padding: 12px 15px;
     border: 1px solid #e0e0e0;
+    border-top: none;
     font-size: 0.9rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 300px;
-    box-sizing: border-box;
-    vertical-align: middle;
-}
-
-/* Sincronizar alturas de filas con JavaScript */
-.fixed-columns tbody tr,
-.scrollable-columns tbody tr {
-    height: auto;
+    display: flex;
+    align-items: center;
+    min-height: 48px;
     box-sizing: border-box;
 }
 
-
-/* Filas pares */
-.fixed-columns tbody tr:nth-child(even) td,
-.scrollable-columns tbody tr:nth-child(even) td {
-    background-color: #e8f4f8 !important;
+/* Primeras 3 columnas del cuerpo sticky horizontalmente */
+.equipos-body-grid > div:nth-child(13n + 1),
+.equipos-body-grid > div:nth-child(13n + 2),
+.equipos-body-grid > div:nth-child(13n + 3) {
+    position: sticky;
+    z-index: 10;
 }
 
-/* Filas impares */
-.fixed-columns tbody tr:nth-child(odd) td,
-.scrollable-columns tbody tr:nth-child(odd) td {
-    background-color: #ffffff !important;
+.equipos-body-grid > div:nth-child(13n + 1) { left: 0; }
+.equipos-body-grid > div:nth-child(13n + 2) { left: 180px; }
+.equipos-body-grid > div:nth-child(13n + 3) { 
+    left: 260px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
 
-/* Hover sincronizado */
-.fixed-columns tbody tr:hover td,
-.scrollable-columns tbody tr:hover td {
+/* Colores alternados */
+.grid-cell[data-row-color="even"] {
+    background-color: #e8f4f8;
+}
+
+.grid-cell[data-row-color="odd"] {
+    background-color: #ffffff;
+}
+
+/* Mantener colores en columnas sticky */
+.equipos-body-grid > div:nth-child(13n + 1)[data-row-color="even"],
+.equipos-body-grid > div:nth-child(13n + 2)[data-row-color="even"],
+.equipos-body-grid > div:nth-child(13n + 3)[data-row-color="even"] {
+    background-color: #e8f4f8;
+}
+
+.equipos-body-grid > div:nth-child(13n + 1)[data-row-color="odd"],
+.equipos-body-grid > div:nth-child(13n + 2)[data-row-color="odd"],
+.equipos-body-grid > div:nth-child(13n + 3)[data-row-color="odd"] {
+    background-color: #ffffff;
+}
+
+/* Hover en filas */
+.grid-cell.hover-active {
     background-color: #d4e9f7 !important;
     cursor: pointer;
 }
 
-/* Anchos específicos para columnas fijas */
-.col-cliente { width: 180px; min-width: 180px; }
-.col-ost { width: 80px; min-width: 80px; }
-.col-estado { width: 120px; min-width: 120px; }
-
-/* Scroll vertical sincronizado */
-.fixed-columns {
-    overflow-y: auto;
-}
-
-.scrollable-columns {
-    overflow-y: auto;
-}
-
-/* Ocultar scrollbar de columnas fijas */
-.fixed-columns::-webkit-scrollbar {
-    width: 0;
-    background: transparent;
-}
-
 /* Celdas editables */
-.editable:focus {
+.grid-cell.editable {
+    cursor: text;
+}
+
+.grid-cell.editable:focus {
     outline: 2px solid #667eea;
     background-color: #fff3cd !important;
+}
+
+/* Celda de estado con dropdown */
+.estado-cell {
+    cursor: pointer;
+    position: relative;
+}
+
+.estado-cell:hover {
+    background-color: #fff3cd !important;
+}
+
+.estado-value {
+    display: block;
+    width: 100%;
+}
+
+.estado-select {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Links */
+.grid-cell a {
+    color: #1e4d7b;
+    text-decoration: none;
+    margin-right: 8px;
+}
+
+.grid-cell a:hover {
+    text-decoration: underline;
+}
+
+/* Botones */
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Scrollbar */
+.equipos-body-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.equipos-body-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.equipos-body-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+.equipos-body-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Sincronizar scroll horizontal entre header y body */
+.equipos-header-scroll-sync {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
+}
+
+.equipos-header-scroll-sync::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
 }
 </style>
 {% endblock %}
@@ -126,7 +261,7 @@
     <button class="btn btn-primary" onclick="mostrarModal()">➕ Agregar Nuevo Equipo</button>
 </div>
 
-<!-- Modal (sin cambios) -->
+<!-- Modal -->
 <div id="modalEquipo" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
     <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
         <h3 style="margin-bottom: 1.5rem; color: #1e4d7b;">🖥️ Nuevo Equipo</h3>
@@ -186,89 +321,88 @@
     </div>
 </div>
 
-<div class="equipos-container">
-    <!-- COLUMNAS FIJAS -->
-    <div class="fixed-columns" id="fixedTable">
-        <table>
-            <thead>
-                <tr>
-                    <th class="col-cliente">Cliente</th>
-                    <th class="col-ost">OST</th>
-                    <th class="col-estado">Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for equipo in equipos %}
-                <tr data-row="{{ loop.index0 }}">
-                    <td class="col-cliente" title="{{ equipo.cliente }}">{{ equipo.cliente }}</td>
-                    <td class="col-ost">{{ equipo.ost }}</td>
-                    <td class="col-estado" title="{{ equipo.estado_solicitud or 'N/A' }}">{{ equipo.estado_solicitud or 'N/A' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="equipos-wrapper">
+    <!-- HEADERS -->
+    <div class="equipos-header-container">
+        <div class="equipos-header-scroll-sync" id="headerScroll">
+            <div class="equipos-header-grid">
+                <div class="grid-header">Cliente</div>
+                <div class="grid-header">OST</div>
+                <div class="grid-header">Estado</div>
+                <div class="grid-header">Fecha Ingreso</div>
+                <div class="grid-header">Tipo</div>
+                <div class="grid-header">Marca</div>
+                <div class="grid-header">Modelo</div>
+                <div class="grid-header">Serie</div>
+                <div class="grid-header">📸 Fotos</div>
+                <div class="grid-header">📄 Facturas</div>
+                <div class="grid-header">Accesorios</div>
+                <div class="grid-header">Prioridad</div>
+                <div class="grid-header">Acciones</div>
+            </div>
+        </div>
     </div>
 
-    <!-- COLUMNAS CON SCROLL -->
-    <div class="scrollable-columns" id="scrollableTable">
-        <table>
-            <thead>
-                <tr>
-                    <th>Fecha Ingreso</th>
-                    <th>Tipo</th>
-                    <th>Marca</th>
-                    <th>Modelo</th>
-                    <th>Serie</th>
-                    <th>📸 Fotos</th>
-                    <th>📄 Facturas</th>
-                    <th>Accesorios</th>
-                    <th>Prioridad</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for equipo in equipos %}
-                <tr data-id="{{ equipo.id }}" data-row="{{ loop.index0 }}">
-                    <td>{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</td>
-                    <td contenteditable="true" class="editable" data-field="tipo_equipo">{{ equipo.tipo_equipo or '' }}</td>
-                    <td contenteditable="true" class="editable" data-field="marca">{{ equipo.marca or '' }}</td>
-                    <td contenteditable="true" class="editable" data-field="modelo">{{ equipo.modelo or '' }}</td>
-                    <td contenteditable="true" class="editable" data-field="numero_serie">{{ equipo.numero_serie or '' }}</td>
-                    <td>
-                        {% if equipo.urls_fotos_fallas %}
-                            {% set urls = equipo.urls_fotos_fallas.split('||') %}
-                            {% for url in urls %}
-                                {% if url %}
-                                    <a href="{{ url }}" target="_blank">🖼️ {{ loop.index }}</a>
-                                    {% if not loop.last %} | {% endif %}
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            Sin archivos
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if equipo.urls_facturas %}
-                            {% set urls = equipo.urls_facturas.split('||') %}
-                            {% for url in urls %}
-                                {% if url %}
-                                    <a href="{{ url }}" target="_blank">📄 {{ loop.index }}</a>
-                                    {% if not loop.last %} | {% endif %}
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            Sin archivos
-                        {% endif %}
-                    </td>
-                    <td contenteditable="true" class="editable" data-field="accesorios">{{ equipo.accesorios or '' }}</td>
-                    <td contenteditable="true" class="editable" data-field="prioridad">{{ equipo.prioridad or '' }}</td>
-                    <td>
-                        <button class="btn btn-primary" onclick="guardarFila({{ equipo.id }})" style="white-space: nowrap; padding: 0.5rem 1rem; font-size: 0.85rem;">💾</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- CUERPO -->
+    <div class="equipos-body-container" id="bodyScroll">
+        <div class="equipos-body-grid">
+            {% for equipo in equipos %}
+                {% set row_color = "even" if loop.index0 % 2 == 0 else "odd" %}
+                
+                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" title="{{ equipo.cliente }}">{{ equipo.cliente }}</div>
+                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">{{ equipo.ost }}</div>
+                <div class="grid-cell estado-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="estado" title="{{ equipo.estado or 'Pendiente' }}">
+                    <span class="estado-value">{{ equipo.estado or 'Pendiente' }}</span>
+                    <select class="estado-select" style="display: none; width: 100%; padding: 4px; border: 2px solid #667eea; border-radius: 4px; font-size: 0.9rem;">
+                        <option value="Pendiente" {% if equipo.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="Aprobación pendiente" {% if equipo.estado == 'Aprobación pendiente' %}selected{% endif %}>Aprobación pendiente</option>
+                        <option value="A presupuestar" {% if equipo.estado == 'A presupuestar' %}selected{% endif %}>A presupuestar</option>
+                        <option value="Baja técnica" {% if equipo.estado == 'Baja técnica' %}selected{% endif %}>Baja técnica</option>
+                        <option value="En curso" {% if equipo.estado == 'En curso' %}selected{% endif %}>En curso</option>
+                        <option value="Finalizado" {% if equipo.estado == 'Finalizado' %}selected{% endif %}>Finalizado</option>
+                        <option value="Listo para entregar" {% if equipo.estado == 'Listo para entregar' %}selected{% endif %}>Listo para entregar</option>
+                        <option value="Repuestos" {% if equipo.estado == 'Repuestos' %}selected{% endif %}>Repuestos</option>
+                        <option value="Tercerizado" {% if equipo.estado == 'Tercerizado' %}selected{% endif %}>Tercerizado</option>
+                        <option value="L/E - Faltantes" {% if equipo.estado == 'L/E - Faltantes' %}selected{% endif %}>L/E - Faltantes</option>
+                        <option value="Enviado/Falta Remito" {% if equipo.estado == 'Enviado/Falta Remito' %}selected{% endif %}>Enviado/Falta Remito</option>
+                    </select>
+                </div>
+                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
+                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="tipo_equipo" contenteditable="true">{{ equipo.tipo_equipo or '' }}</div>
+                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="marca" contenteditable="true">{{ equipo.marca or '' }}</div>
+                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="modelo" contenteditable="true">{{ equipo.modelo or '' }}</div>
+                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="numero_serie" contenteditable="true">{{ equipo.numero_serie or '' }}</div>
+                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">
+                    {% if equipo.urls_fotos_fallas %}
+                        {% set urls = equipo.urls_fotos_fallas.split('||') %}
+                        {% for url in urls %}
+                            {% if url %}
+                                <a href="{{ url }}" target="_blank">🖼️ {{ loop.index }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        Sin archivos
+                    {% endif %}
+                </div>
+                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">
+                    {% if equipo.urls_facturas %}
+                        {% set urls = equipo.urls_facturas.split('||') %}
+                        {% for url in urls %}
+                            {% if url %}
+                                <a href="{{ url }}" target="_blank">📄 {{ loop.index }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        Sin archivos
+                    {% endif %}
+                </div>
+                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="accesorios" contenteditable="true">{{ equipo.accesorios or '' }}</div>
+                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="prioridad" contenteditable="true">{{ equipo.prioridad or '' }}</div>
+                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">
+                    <button class="btn btn-primary" onclick="guardarFila({{ equipo.id }})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">💾</button>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 
@@ -276,97 +410,47 @@
 
 {% block extra_js %}
 <script>
-// Sincronizar alturas de filas con JavaScript
-function sincronizarAlturas() {
-    const fixedRows = document.querySelectorAll('#fixedTable tbody tr');
-    const scrollableRows = document.querySelectorAll('#scrollableTable tbody tr');
-    
-    fixedRows.forEach(function(fixedRow, index) {
-        const scrollableRow = scrollableRows[index];
-        if (scrollableRow) {
-            // Resetear alturas para obtener altura natural
-            fixedRow.style.height = '';
-            scrollableRow.style.height = '';
-            
-            // Forzar reflow para obtener alturas correctas
-            void fixedRow.offsetHeight;
-            void scrollableRow.offsetHeight;
-            
-            // Obtener alturas de todas las celdas
-            const fixedCells = Array.from(fixedRow.querySelectorAll('td'));
-            const scrollableCells = Array.from(scrollableRow.querySelectorAll('td'));
-            
-            const fixedMaxHeight = Math.max(...fixedCells.map(function(cell) { return cell.offsetHeight; }));
-            const scrollableMaxHeight = Math.max(...scrollableCells.map(function(cell) { return cell.offsetHeight; }));
-            const maxHeight = Math.max(fixedMaxHeight, scrollableMaxHeight);
-            
-            // Aplicar la altura máxima a ambas filas usando min-height para evitar colapsos
-            fixedRow.style.minHeight = maxHeight + 'px';
-            fixedRow.style.height = maxHeight + 'px';
-            scrollableRow.style.minHeight = maxHeight + 'px';
-            scrollableRow.style.height = maxHeight + 'px';
-            
-            // Asegurar que todas las celdas tengan la misma altura
-            fixedCells.concat(scrollableCells).forEach(function(cell) {
-                cell.style.height = maxHeight + 'px';
-            });
-        }
-    });
-}
+// Sincronizar scroll horizontal entre header y body
+const headerScroll = document.getElementById('headerScroll');
+const bodyScroll = document.getElementById('bodyScroll');
 
-// Ejecutar múltiples veces para asegurar sincronización
-function sincronizarMultiple() {
-    sincronizarAlturas();
-    setTimeout(sincronizarAlturas, 50);
-    setTimeout(sincronizarAlturas, 150);
-    setTimeout(sincronizarAlturas, 300);
-}
+let isHeaderScrolling = false;
+let isBodyScrolling = false;
 
-// Ejecutar al cargar
-window.addEventListener('load', sincronizarMultiple);
-
-// Observer para detectar cambios en el contenido
-const observer = new MutationObserver(function() {
-    sincronizarAlturas();
-});
-
-// Observar cambios en ambas tablas
-document.addEventListener('DOMContentLoaded', function() {
-    const fixedTable = document.getElementById('fixedTable');
-    const scrollableTable = document.getElementById('scrollableTable');
-    
-    if (fixedTable && scrollableTable) {
-        observer.observe(fixedTable, { childList: true, subtree: true, characterData: true });
-        observer.observe(scrollableTable, { childList: true, subtree: true, characterData: true });
+bodyScroll.addEventListener('scroll', function() {
+    if (!isHeaderScrolling) {
+        isBodyScrolling = true;
+        headerScroll.scrollLeft = this.scrollLeft;
+        setTimeout(function() { isBodyScrolling = false; }, 10);
     }
 });
 
-// Sincronizar scroll vertical entre ambas tablas
-const fixedTable = document.getElementById('fixedTable');
-const scrollableTable = document.getElementById('scrollableTable');
-
-fixedTable.addEventListener('scroll', function() {
-    scrollableTable.scrollTop = this.scrollTop;
+headerScroll.addEventListener('scroll', function() {
+    if (!isBodyScrolling) {
+        isHeaderScrolling = true;
+        bodyScroll.scrollLeft = this.scrollLeft;
+        setTimeout(function() { isHeaderScrolling = false; }, 10);
+    }
 });
 
-scrollableTable.addEventListener('scroll', function() {
-    fixedTable.scrollTop = this.scrollTop;
-});
-
-// Sincronizar hover entre filas
-document.querySelectorAll('[data-row]').forEach(function(row) {
-    row.addEventListener('mouseenter', function() {
+// Hover sincronizado en filas
+document.querySelectorAll('.grid-cell').forEach(function(cell) {
+    cell.addEventListener('mouseenter', function() {
         const rowIndex = this.getAttribute('data-row');
-        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(r) {
-            r.style.backgroundColor = '#d4e9f7';
-        });
+        if (rowIndex !== null) {
+            document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                c.classList.add('hover-active');
+            });
+        }
     });
     
-    row.addEventListener('mouseleave', function() {
+    cell.addEventListener('mouseleave', function() {
         const rowIndex = this.getAttribute('data-row');
-        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(r) {
-            r.style.backgroundColor = '';
-        });
+        if (rowIndex !== null) {
+            document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                c.classList.remove('hover-active');
+            });
+        }
     });
 });
 
@@ -428,8 +512,7 @@ document.getElementById('formEquipo').addEventListener('submit', function(e) {
 });
 
 function guardarFila(equipoId) {
-    const row = document.querySelector('[data-id="' + equipoId + '"]');
-    const editableCells = row.querySelectorAll('.editable');
+    const editableCells = document.querySelectorAll('.editable[data-id="' + equipoId + '"]');
     
     const data = {};
     editableCells.forEach(function(cell) {
@@ -450,10 +533,15 @@ function guardarFila(equipoId) {
     .then(function(result) {
         if (result.success) {
             alert('✅ Equipo actualizado correctamente');
-            row.style.backgroundColor = '#d4edda';
+            const rowCells = document.querySelectorAll('[data-id="' + equipoId + '"]');
+            const rowIndex = rowCells[0].getAttribute('data-row');
+            document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(cell) {
+                cell.style.backgroundColor = '#d4edda';
+            });
             setTimeout(function() {
-                row.style.backgroundColor = '';
-                sincronizarAlturas(); // Resincronizar después de cambios
+                document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(cell) {
+                    cell.style.backgroundColor = '';
+                });
             }, 2000);
         } else {
             alert('❌ Error al actualizar: ' + (result.error || 'Error desconocido'));
@@ -464,6 +552,7 @@ function guardarFila(equipoId) {
     });
 }
 
+// Estilos en celdas editables
 document.querySelectorAll('.editable').forEach(function(cell) {
     cell.addEventListener('focus', function() {
         this.style.backgroundColor = '#fff3cd';
@@ -471,12 +560,71 @@ document.querySelectorAll('.editable').forEach(function(cell) {
     
     cell.addEventListener('blur', function() {
         this.style.backgroundColor = '';
-        sincronizarMultiple(); // Resincronizar si cambia el contenido
+    });
+});
+
+// Manejo de dropdown de estado
+document.querySelectorAll('.estado-cell').forEach(function(cell) {
+    const equipoId = cell.getAttribute('data-id');
+    const estadoValue = cell.querySelector('.estado-value');
+    const estadoSelect = cell.querySelector('.estado-select');
+    
+    // Al hacer clic en la celda, mostrar el dropdown
+    cell.addEventListener('click', function() {
+        estadoValue.style.display = 'none';
+        estadoSelect.style.display = 'block';
+        estadoSelect.focus();
     });
     
-    // Sincronizar al escribir
-    cell.addEventListener('input', function() {
-        sincronizarAlturas();
+    // Al cambiar el estado, actualizar y guardar
+    estadoSelect.addEventListener('change', function() {
+        const nuevoEstado = this.value;
+        estadoValue.textContent = nuevoEstado;
+        
+        // Guardar cambio en el servidor
+        const data = {
+            estado: nuevoEstado
+        };
+        
+        fetch('/api/equipo/' + equipoId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(result) {
+            if (result.success) {
+                // Feedback visual
+                const rowIndex = cell.getAttribute('data-row');
+                document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                    c.style.backgroundColor = '#d4edda';
+                });
+                setTimeout(function() {
+                    document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                        c.style.backgroundColor = '';
+                    });
+                }, 1500);
+            } else {
+                alert('❌ Error al actualizar estado: ' + (result.error || 'Error desconocido'));
+            }
+        })
+        .catch(function(error) {
+            alert('❌ Error de red: ' + error);
+        });
+        
+        // Ocultar dropdown y mostrar texto
+        estadoSelect.style.display = 'none';
+        estadoValue.style.display = 'block';
+    });
+    
+    // Si pierde el foco sin cambiar, volver a mostrar el texto
+    estadoSelect.addEventListener('blur', function() {
+        estadoSelect.style.display = 'none';
+        estadoValue.style.display = 'block';
     });
 });
 </script>
