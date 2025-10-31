@@ -177,16 +177,39 @@
 }
 
 .estado-value {
-    display: block;
     width: 100%;
 }
 
 .estado-select {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
+    padding: 4px;
+    border: 2px solid #667eea;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* Celda de tipo con dropdown */
+.tipo-cell {
+    cursor: pointer;
+    position: relative;
+}
+
+.tipo-cell:hover {
+    background-color: #fff3cd !important;
+}
+
+.tipo-value {
+    width: 100%;
+}
+
+.tipo-select {
+    width: 100%;
+    padding: 4px;
+    border: 2px solid #667eea;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    max-height: 300px;
     cursor: pointer;
 }
 
@@ -321,6 +344,24 @@
     </div>
 </div>
 
+<!-- Modal Agregar Nuevo Tipo -->
+<div id="modalNuevoTipo" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
+        <h3 style="margin-bottom: 1.5rem; color: #1e4d7b;">➕ Agregar Nuevo Tipo de Equipo</h3>
+        <form id="formNuevoTipo">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre del Tipo *</label>
+                <input type="text" id="inputNuevoTipo" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem;">
+                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Este tipo se agregará a la lista de opciones disponibles.</p>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+                <button type="button" class="btn" onclick="cerrarModalNuevoTipo()" style="background: #6c757d; color: white;">❌ Cancelar</button>
+                <button type="submit" class="btn btn-primary">✅ Agregar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="equipos-wrapper">
     <!-- HEADERS -->
     <div class="equipos-header-container">
@@ -368,7 +409,94 @@
                     </select>
                 </div>
                 <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
-                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="tipo_equipo" contenteditable="true">{{ equipo.tipo_equipo or '' }}</div>
+                <div class="grid-cell tipo-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="tipo_equipo" title="{{ equipo.tipo_equipo or '' }}">
+                    <span class="tipo-value">{{ equipo.tipo_equipo or 'Seleccionar tipo...' }}</span>
+                    <select class="tipo-select" style="display: none; width: 100%; padding: 4px; border: 2px solid #667eea; border-radius: 4px; font-size: 0.9rem; max-height: 300px;">
+                        <option value="">Seleccionar tipo...</option>
+                        <option value="Agitador Orbital" {% if equipo.tipo_equipo == 'Agitador Orbital' %}selected{% endif %}>Agitador Orbital</option>
+                        <option value="Analizador de gases" {% if equipo.tipo_equipo == 'Analizador de gases' %}selected{% endif %}>Analizador de gases</option>
+                        <option value="Asistente de Tos" {% if equipo.tipo_equipo == 'Asistente de Tos' %}selected{% endif %}>Asistente de Tos</option>
+                        <option value="Aspirador de secreciones" {% if equipo.tipo_equipo == 'Aspirador de secreciones' %}selected{% endif %}>Aspirador de secreciones</option>
+                        <option value="Aspirador Manual" {% if equipo.tipo_equipo == 'Aspirador Manual' %}selected{% endif %}>Aspirador Manual</option>
+                        <option value="Audiómetro" {% if equipo.tipo_equipo == 'Audiómetro' %}selected{% endif %}>Audiómetro</option>
+                        <option value="Autoanalizador" {% if equipo.tipo_equipo == 'Autoanalizador' %}selected{% endif %}>Autoanalizador</option>
+                        <option value="APAP" {% if equipo.tipo_equipo == 'APAP' %}selected{% endif %}>APAP</option>
+                        <option value="Balanza de Pie" {% if equipo.tipo_equipo == 'Balanza de Pie' %}selected{% endif %}>Balanza de Pie</option>
+                        <option value="Balanza de Pie Electrónica" {% if equipo.tipo_equipo == 'Balanza de Pie Electrónica' %}selected{% endif %}>Balanza de Pie Electrónica</option>
+                        <option value="Balanza Electrónica" {% if equipo.tipo_equipo == 'Balanza Electrónica' %}selected{% endif %}>Balanza Electrónica</option>
+                        <option value="Balanza Mecánica" {% if equipo.tipo_equipo == 'Balanza Mecánica' %}selected{% endif %}>Balanza Mecánica</option>
+                        <option value="Balanza Pediátrica" {% if equipo.tipo_equipo == 'Balanza Pediátrica' %}selected{% endif %}>Balanza Pediátrica</option>
+                        <option value="Balón de Contrapulsación" {% if equipo.tipo_equipo == 'Balón de Contrapulsación' %}selected{% endif %}>Balón de Contrapulsación</option>
+                        <option value="Batería" {% if equipo.tipo_equipo == 'Batería' %}selected{% endif %}>Batería</option>
+                        <option value="Bomba a jeringa" {% if equipo.tipo_equipo == 'Bomba a jeringa' %}selected{% endif %}>Bomba a jeringa</option>
+                        <option value="BPAP" {% if equipo.tipo_equipo == 'BPAP' %}selected{% endif %}>BPAP</option>
+                        <option value="Cable paciente ECG 5D Vet" {% if equipo.tipo_equipo == 'Cable paciente ECG 5D Vet' %}selected{% endif %}>Cable paciente ECG 5D Vet</option>
+                        <option value="Cable paciente ECG 3D" {% if equipo.tipo_equipo == 'Cable paciente ECG 3D' %}selected{% endif %}>Cable paciente ECG 3D</option>
+                        <option value="Cable paciente ECG 5D" {% if equipo.tipo_equipo == 'Cable paciente ECG 5D' %}selected{% endif %}>Cable paciente ECG 5D</option>
+                        <option value="Cable paciente ECG 10D" {% if equipo.tipo_equipo == 'Cable paciente ECG 10D' %}selected{% endif %}>Cable paciente ECG 10D</option>
+                        <option value="Bomba de Infusión" {% if equipo.tipo_equipo == 'Bomba de Infusión' %}selected{% endif %}>Bomba de Infusión</option>
+                        <option value="Bomba de Presión Negativa" {% if equipo.tipo_equipo == 'Bomba de Presión Negativa' %}selected{% endif %}>Bomba de Presión Negativa</option>
+                        <option value="Cables Varios" {% if equipo.tipo_equipo == 'Cables Varios' %}selected{% endif %}>Cables Varios</option>
+                        <option value="Calentador Humidificador" {% if equipo.tipo_equipo == 'Calentador Humidificador' %}selected{% endif %}>Calentador Humidificador</option>
+                        <option value="Capnógrafo" {% if equipo.tipo_equipo == 'Capnógrafo' %}selected{% endif %}>Capnógrafo</option>
+                        <option value="Cardiodesfibrilador" {% if equipo.tipo_equipo == 'Cardiodesfibrilador' %}selected{% endif %}>Cardiodesfibrilador</option>
+                        <option value="Central de Monitoreo" {% if equipo.tipo_equipo == 'Central de Monitoreo' %}selected{% endif %}>Central de Monitoreo</option>
+                        <option value="Centrífuga" {% if equipo.tipo_equipo == 'Centrífuga' %}selected{% endif %}>Centrífuga</option>
+                        <option value="Colposcopio" {% if equipo.tipo_equipo == 'Colposcopio' %}selected{% endif %}>Colposcopio</option>
+                        <option value="Colposcopio Digital" {% if equipo.tipo_equipo == 'Colposcopio Digital' %}selected{% endif %}>Colposcopio Digital</option>
+                        <option value="Concentrador de Oxígeno" {% if equipo.tipo_equipo == 'Concentrador de Oxígeno' %}selected{% endif %}>Concentrador de Oxígeno</option>
+                        <option value="Concentrador de Oxígeno Portátil" {% if equipo.tipo_equipo == 'Concentrador de Oxígeno Portátil' %}selected{% endif %}>Concentrador de Oxígeno Portátil</option>
+                        <option value="CPAP" {% if equipo.tipo_equipo == 'CPAP' %}selected{% endif %}>CPAP</option>
+                        <option value="CPU" {% if equipo.tipo_equipo == 'CPU' %}selected{% endif %}>CPU</option>
+                        <option value="DEA" {% if equipo.tipo_equipo == 'DEA' %}selected{% endif %}>DEA</option>
+                        <option value="Desfibrilador" {% if equipo.tipo_equipo == 'Desfibrilador' %}selected{% endif %}>Desfibrilador</option>
+                        <option value="Detector Fetal" {% if equipo.tipo_equipo == 'Detector Fetal' %}selected{% endif %}>Detector Fetal</option>
+                        <option value="Ecógrafo" {% if equipo.tipo_equipo == 'Ecógrafo' %}selected{% endif %}>Ecógrafo</option>
+                        <option value="Electrobisturí" {% if equipo.tipo_equipo == 'Electrobisturí' %}selected{% endif %}>Electrobisturí</option>
+                        <option value="Electrocardiógrafo" {% if equipo.tipo_equipo == 'Electrocardiógrafo' %}selected{% endif %}>Electrocardiógrafo</option>
+                        <option value="Electrocoagulador" {% if equipo.tipo_equipo == 'Electrocoagulador' %}selected{% endif %}>Electrocoagulador</option>
+                        <option value="Electroencefalógrafo" {% if equipo.tipo_equipo == 'Electroencefalógrafo' %}selected{% endif %}>Electroencefalógrafo</option>
+                        <option value="Equipo Presión Negativa" {% if equipo.tipo_equipo == 'Equipo Presión Negativa' %}selected{% endif %}>Equipo Presión Negativa</option>
+                        <option value="Estufa de Esterilización" {% if equipo.tipo_equipo == 'Estufa de Esterilización' %}selected{% endif %}>Estufa de Esterilización</option>
+                        <option value="Extensión SpO2" {% if equipo.tipo_equipo == 'Extensión SpO2' %}selected{% endif %}>Extensión SpO2</option>
+                        <option value="Fotoestimulador" {% if equipo.tipo_equipo == 'Fotoestimulador' %}selected{% endif %}>Fotoestimulador</option>
+                        <option value="Fuente de alimentación de Balanza" {% if equipo.tipo_equipo == 'Fuente de alimentación de Balanza' %}selected{% endif %}>Fuente de alimentación de Balanza</option>
+                        <option value="Fuente de alimentación de Monitor Fetal" {% if equipo.tipo_equipo == 'Fuente de alimentación de Monitor Fetal' %}selected{% endif %}>Fuente de alimentación de Monitor Fetal</option>
+                        <option value="Holter" {% if equipo.tipo_equipo == 'Holter' %}selected{% endif %}>Holter</option>
+                        <option value="Incubadora" {% if equipo.tipo_equipo == 'Incubadora' %}selected{% endif %}>Incubadora</option>
+                        <option value="Luminoterapia" {% if equipo.tipo_equipo == 'Luminoterapia' %}selected{% endif %}>Luminoterapia</option>
+                        <option value="Marcapasos" {% if equipo.tipo_equipo == 'Marcapasos' %}selected{% endif %}>Marcapasos</option>
+                        <option value="Manguera PNI" {% if equipo.tipo_equipo == 'Manguera PNI' %}selected{% endif %}>Manguera PNI</option>
+                        <option value="Manguito Cuff PNI" {% if equipo.tipo_equipo == 'Manguito Cuff PNI' %}selected{% endif %}>Manguito Cuff PNI</option>
+                        <option value="Mesa de Anestesia" {% if equipo.tipo_equipo == 'Mesa de Anestesia' %}selected{% endif %}>Mesa de Anestesia</option>
+                        <option value="Microscopio de banco" {% if equipo.tipo_equipo == 'Microscopio de banco' %}selected{% endif %}>Microscopio de banco</option>
+                        <option value="Microscopio de pared" {% if equipo.tipo_equipo == 'Microscopio de pared' %}selected{% endif %}>Microscopio de pared</option>
+                        <option value="Mochila de Oxígeno" {% if equipo.tipo_equipo == 'Mochila de Oxígeno' %}selected{% endif %}>Mochila de Oxígeno</option>
+                        <option value="Módulo de Capnografía" {% if equipo.tipo_equipo == 'Módulo de Capnografía' %}selected{% endif %}>Módulo de Capnografía</option>
+                        <option value="Módulo de Incubadora" {% if equipo.tipo_equipo == 'Módulo de Incubadora' %}selected{% endif %}>Módulo de Incubadora</option>
+                        <option value="Módulo PI" {% if equipo.tipo_equipo == 'Módulo PI' %}selected{% endif %}>Módulo PI</option>
+                        <option value="Monitor Fetal" {% if equipo.tipo_equipo == 'Monitor Fetal' %}selected{% endif %}>Monitor Fetal</option>
+                        <option value="Monitor Multiparamétrico" {% if equipo.tipo_equipo == 'Monitor Multiparamétrico' %}selected{% endif %}>Monitor Multiparamétrico</option>
+                        <option value="Oxicapnógrafo" {% if equipo.tipo_equipo == 'Oxicapnógrafo' %}selected{% endif %}>Oxicapnógrafo</option>
+                        <option value="Oxímetro de Pulso" {% if equipo.tipo_equipo == 'Oxímetro de Pulso' %}selected{% endif %}>Oxímetro de Pulso</option>
+                        <option value="Pedal monopolar Electrobisturí" {% if equipo.tipo_equipo == 'Pedal monopolar Electrobisturí' %}selected{% endif %}>Pedal monopolar Electrobisturí</option>
+                        <option value="Potenciales Evocados" {% if equipo.tipo_equipo == 'Potenciales Evocados' %}selected{% endif %}>Potenciales Evocados</option>
+                        <option value="Respirador" {% if equipo.tipo_equipo == 'Respirador' %}selected{% endif %}>Respirador</option>
+                        <option value="Respirador Portátil" {% if equipo.tipo_equipo == 'Respirador Portátil' %}selected{% endif %}>Respirador Portátil</option>
+                        <option value="Sensor de Temperatura" {% if equipo.tipo_equipo == 'Sensor de Temperatura' %}selected{% endif %}>Sensor de Temperatura</option>
+                        <option value="Sensor SpO2 B.Ad." {% if equipo.tipo_equipo == 'Sensor SpO2 B.Ad.' %}selected{% endif %}>Sensor SpO2 B.Ad.</option>
+                        <option value="Sensor SpO2 Neo" {% if equipo.tipo_equipo == 'Sensor SpO2 Neo' %}selected{% endif %}>Sensor SpO2 Neo</option>
+                        <option value="Sensor SpO2 Vet" {% if equipo.tipo_equipo == 'Sensor SpO2 Vet' %}selected{% endif %}>Sensor SpO2 Vet</option>
+                        <option value="Sensor SpO2 + Extensión" {% if equipo.tipo_equipo == 'Sensor SpO2 + Extensión' %}selected{% endif %}>Sensor SpO2 + Extensión</option>
+                        <option value="Transductor Fetal Ultrasonido" {% if equipo.tipo_equipo == 'Transductor Fetal Ultrasonido' %}selected{% endif %}>Transductor Fetal Ultrasonido</option>
+                        <option value="Transductor Fetal Tocogineco" {% if equipo.tipo_equipo == 'Transductor Fetal Tocogineco' %}selected{% endif %}>Transductor Fetal Tocogineco</option>
+                        <option value="Tubo de Oxígeno" {% if equipo.tipo_equipo == 'Tubo de Oxígeno' %}selected{% endif %}>Tubo de Oxígeno</option>
+                        <option value="Vaporizador de anestesia" {% if equipo.tipo_equipo == 'Vaporizador de anestesia' %}selected{% endif %}>Vaporizador de anestesia</option>
+                        <option value="Video Colposcopio" {% if equipo.tipo_equipo == 'Video Colposcopio' %}selected{% endif %}>Video Colposcopio</option>
+                        <option value="Pie de Suero" {% if equipo.tipo_equipo == 'Pie de Suero' %}selected{% endif %}>Pie de Suero</option>
+                        <option value="__AGREGAR_NUEVO__" style="background: #e8f4f8; font-weight: bold;">➕ Agregar nuevo tipo...</option>
+                    </select>
+                </div>
                 <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="marca" contenteditable="true">{{ equipo.marca or '' }}</div>
                 <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="modelo" contenteditable="true">{{ equipo.modelo or '' }}</div>
                 <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="numero_serie" contenteditable="true">{{ equipo.numero_serie or '' }}</div>
@@ -586,6 +714,92 @@ document.querySelectorAll('.estado-cell').forEach(function(cell) {
             estado: nuevoEstado
         };
         
+        console.log('Enviando datos:', data);
+        console.log('Equipo ID:', equipoId);
+        console.log('URL:', '/api/equipo/' + equipoId);
+        
+        fetch('/api/equipo/' + equipoId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(function(result) {
+            console.log('Resultado del servidor:', result);
+            if (result.success) {
+                // Feedback visual
+                const rowIndex = cell.getAttribute('data-row');
+                document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                    c.style.backgroundColor = '#d4edda';
+                });
+                setTimeout(function() {
+                    document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                        c.style.backgroundColor = '';
+                    });
+                }, 1500);
+            } else {
+                console.error('Error del servidor:', result.error);
+                alert('❌ Error al actualizar estado: ' + (result.error || 'Error desconocido'));
+            }
+        })
+        .catch(function(error) {
+            console.error('Error de red:', error);
+            alert('❌ Error de red: ' + error);
+        });
+        
+        // Ocultar dropdown y mostrar texto
+        estadoSelect.style.display = 'none';
+        estadoValue.style.display = 'block';
+    });
+    
+    // Si pierde el foco sin cambiar, volver a mostrar el texto
+    estadoSelect.addEventListener('blur', function() {
+        estadoSelect.style.display = 'none';
+        estadoValue.style.display = 'block';
+    });
+});
+
+// Variable global para almacenar el ID del equipo al agregar tipo
+let equipoIdParaNuevoTipo = null;
+
+// Manejo de dropdown de tipo
+document.querySelectorAll('.tipo-cell').forEach(function(cell) {
+    const equipoId = cell.getAttribute('data-id');
+    const tipoValue = cell.querySelector('.tipo-value');
+    const tipoSelect = cell.querySelector('.tipo-select');
+    
+    // Al hacer clic en la celda, mostrar el dropdown
+    cell.addEventListener('click', function() {
+        tipoValue.style.display = 'none';
+        tipoSelect.style.display = 'block';
+        tipoSelect.focus();
+    });
+    
+    // Al cambiar el tipo, actualizar y guardar
+    tipoSelect.addEventListener('change', function() {
+        const nuevoTipo = this.value;
+        
+        // Si seleccionó "Agregar nuevo tipo"
+        if (nuevoTipo === '__AGREGAR_NUEVO__') {
+            equipoIdParaNuevoTipo = equipoId;
+            document.getElementById('modalNuevoTipo').style.display = 'flex';
+            tipoSelect.style.display = 'none';
+            tipoValue.style.display = 'block';
+            return;
+        }
+        
+        tipoValue.textContent = nuevoTipo || 'Seleccionar tipo...';
+        
+        // Guardar cambio en el servidor
+        const data = {
+            tipo_equipo: nuevoTipo
+        };
+        
         fetch('/api/equipo/' + equipoId, {
             method: 'PUT',
             headers: {
@@ -609,7 +823,7 @@ document.querySelectorAll('.estado-cell').forEach(function(cell) {
                     });
                 }, 1500);
             } else {
-                alert('❌ Error al actualizar estado: ' + (result.error || 'Error desconocido'));
+                alert('❌ Error al actualizar tipo: ' + (result.error || 'Error desconocido'));
             }
         })
         .catch(function(error) {
@@ -617,15 +831,94 @@ document.querySelectorAll('.estado-cell').forEach(function(cell) {
         });
         
         // Ocultar dropdown y mostrar texto
-        estadoSelect.style.display = 'none';
-        estadoValue.style.display = 'block';
+        tipoSelect.style.display = 'none';
+        tipoValue.style.display = 'block';
     });
     
     // Si pierde el foco sin cambiar, volver a mostrar el texto
-    estadoSelect.addEventListener('blur', function() {
-        estadoSelect.style.display = 'none';
-        estadoValue.style.display = 'block';
+    tipoSelect.addEventListener('blur', function() {
+        setTimeout(function() {
+            tipoSelect.style.display = 'none';
+            tipoValue.style.display = 'block';
+        }, 200);
     });
+});
+
+// Modal Nuevo Tipo
+function cerrarModalNuevoTipo() {
+    document.getElementById('modalNuevoTipo').style.display = 'none';
+    document.getElementById('formNuevoTipo').reset();
+    equipoIdParaNuevoTipo = null;
+}
+
+document.getElementById('modalNuevoTipo').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModalNuevoTipo();
+    }
+});
+
+document.getElementById('formNuevoTipo').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const nuevoTipo = document.getElementById('inputNuevoTipo').value.trim();
+    
+    if (!nuevoTipo) {
+        alert('Por favor ingresa un nombre para el tipo');
+        return;
+    }
+    
+    // Agregar el nuevo tipo a todos los selects
+    document.querySelectorAll('.tipo-select').forEach(function(select) {
+        const optionAgregar = select.querySelector('option[value="__AGREGAR_NUEVO__"]');
+        const newOption = document.createElement('option');
+        newOption.value = nuevoTipo;
+        newOption.textContent = nuevoTipo;
+        select.insertBefore(newOption, optionAgregar);
+    });
+    
+    // Si se llamó desde una celda específica, actualizar ese equipo
+    if (equipoIdParaNuevoTipo) {
+        const data = {
+            tipo_equipo: nuevoTipo
+        };
+        
+        fetch('/api/equipo/' + equipoIdParaNuevoTipo, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(result) {
+            if (result.success) {
+                // Actualizar el valor mostrado
+                const cell = document.querySelector('.tipo-cell[data-id="' + equipoIdParaNuevoTipo + '"]');
+                if (cell) {
+                    cell.querySelector('.tipo-value').textContent = nuevoTipo;
+                    const rowIndex = cell.getAttribute('data-row');
+                    document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                        c.style.backgroundColor = '#d4edda';
+                    });
+                    setTimeout(function() {
+                        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                            c.style.backgroundColor = '';
+                        });
+                    }, 1500);
+                }
+                alert('✅ Nuevo tipo "' + nuevoTipo + '" agregado correctamente');
+            } else {
+                alert('❌ Error al guardar: ' + (result.error || 'Error desconocido'));
+            }
+        })
+        .catch(function(error) {
+            alert('❌ Error de red: ' + error);
+        });
+    }
+    
+    cerrarModalNuevoTipo();
 });
 </script>
 {% endblock %}

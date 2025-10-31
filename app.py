@@ -246,43 +246,75 @@ def update_equipo(id):
     cursor = conn.cursor()
     
     try:
-        cursor.execute("""
-            UPDATE equipos SET 
-                tipo_equipo = %s, marca = %s, modelo = %s,
-                numero_serie = %s, accesorios = %s, prioridad = %s,
-                observacion_ingreso = %s, detalles_reparacion = %s,
-                horas_trabajo = %s, costo = %s, precio = %s,
-                ov = %s, estado_ov = %s, estado = %s
-            WHERE id = %s
-        """, (
-            data.get('tipo_equipo'),
-            data.get('marca'),
-            data.get('modelo'),
-            data.get('numero_serie'),
-            data.get('accesorios'),
-            data.get('prioridad'),
-            data.get('observacion_ingreso'),
-            data.get('detalles_reparacion'),
-            data.get('horas_trabajo'),
-            data.get('costo'),
-            data.get('precio'),
-            data.get('ov'),
-            data.get('estado_ov'),
-            data.get('estado'),  
-            id
-        ))
+        # Construir la consulta dinámicamente solo con los campos que vienen
+        campos = []
+        valores = []
+        
+        if 'tipo_equipo' in data:
+            campos.append('tipo_equipo = %s')
+            valores.append(data.get('tipo_equipo'))
+        if 'marca' in data:
+            campos.append('marca = %s')
+            valores.append(data.get('marca'))
+        if 'modelo' in data:
+            campos.append('modelo = %s')
+            valores.append(data.get('modelo'))
+        if 'numero_serie' in data:
+            campos.append('numero_serie = %s')
+            valores.append(data.get('numero_serie'))
+        if 'accesorios' in data:
+            campos.append('accesorios = %s')
+            valores.append(data.get('accesorios'))
+        if 'prioridad' in data:
+            campos.append('prioridad = %s')
+            valores.append(data.get('prioridad'))
+        if 'observacion_ingreso' in data:
+            campos.append('observacion_ingreso = %s')
+            valores.append(data.get('observacion_ingreso'))
+        if 'detalles_reparacion' in data:
+            campos.append('detalles_reparacion = %s')
+            valores.append(data.get('detalles_reparacion'))
+        if 'horas_trabajo' in data:
+            campos.append('horas_trabajo = %s')
+            valores.append(data.get('horas_trabajo'))
+        if 'costo' in data:
+            campos.append('costo = %s')
+            valores.append(data.get('costo'))
+        if 'precio' in data:
+            campos.append('precio = %s')
+            valores.append(data.get('precio'))
+        if 'ov' in data:
+            campos.append('ov = %s')
+            valores.append(data.get('ov'))
+        if 'estado_ov' in data:
+            campos.append('estado_ov = %s')
+            valores.append(data.get('estado_ov'))
+        if 'estado' in data:
+            campos.append('estado = %s')
+            valores.append(data.get('estado'))
+        
+        if not campos:
+            return jsonify({'error': 'No hay campos para actualizar'}), 400
+        
+        # Agregar el ID al final
+        valores.append(id)
+        
+        query = f"UPDATE equipos SET {', '.join(campos)} WHERE id = %s"
+        
+        print(f"Query: {query}")
+        print(f"Valores: {valores}")
+        
+        cursor.execute(query, valores)
         conn.commit()
         cursor.close()
         conn.close()
         return jsonify({'success': True})
     except Exception as e:
+        print(f"Error al actualizar: {e}")
         conn.rollback()
         cursor.close()
         conn.close()
         return jsonify({'error': str(e)}), 500
-    
-
-    
 
 if __name__ == '__main__':
     app.run(debug=True)
