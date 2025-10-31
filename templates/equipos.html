@@ -378,6 +378,24 @@
     </div>
 </div>
 
+<!-- Modal Agregar Nuevo Modelo -->
+<div id="modalNuevoModelo" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
+        <h3 style="margin-bottom: 1.5rem; color: #1e4d7b;">➕ Agregar Nuevo Modelo</h3>
+        <form id="formNuevoModelo">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre del Modelo *</label>
+                <input type="text" id="inputNuevoModelo" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem;">
+                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Este modelo se agregará a la lista de opciones disponibles.</p>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+                <button type="button" class="btn" onclick="cerrarModalNuevoModelo()" style="background: #6c757d; color: white;">❌ Cancelar</button>
+                <button type="submit" class="btn btn-primary">✅ Agregar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="equipos-wrapper">
     <!-- HEADERS -->
     <div class="equipos-header-container">
@@ -427,7 +445,7 @@
                 <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
                 <div class="grid-cell editable-select" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="tipo_equipo" data-type="tipo" title="{{ equipo.tipo_equipo or 'Click para seleccionar' }}">{{ equipo.tipo_equipo or 'Seleccionar...' }}</div>
                 <div class="grid-cell editable-select" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="marca" data-type="marca" title="{{ equipo.marca or 'Click para seleccionar' }}">{{ equipo.marca or 'Seleccionar...' }}</div>
-                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="modelo" contenteditable="true">{{ equipo.modelo or '' }}</div>
+                <div class="grid-cell editable-select" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="modelo" data-type="modelo" title="{{ equipo.modelo or 'Click para seleccionar' }}">{{ equipo.modelo or 'Seleccionar...' }}</div>
                 <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="numero_serie" contenteditable="true">{{ equipo.numero_serie or '' }}</div>
                 <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">
                     {% if equipo.urls_fotos_fallas %}
@@ -674,6 +692,8 @@ const TIPOS_EQUIPO = ["Agitador Orbital","Analizador de gases","Asistente de Tos
 
 const MARCAS = ["Abbot","Adox","Agilent","Air Sep","Aitecs","Akonic","Alison","Apema","Arcomed","Argas","Argimed","Argus","Arrow","ATI Audiscan II","Bamec","BCI","Bioamerican Science","Biocare","Biolight","Bistos","BLT","BMC","Braun","CAM","Cardiomax","Cardioprint","Cardiotécnica","Cavour","CEC","Cegens","Choice","Codemaster","Colden","Comen","Confort Cough","Contec","Covidien","Daiwha","Dasa","Datascope","Datex Ohmeda","Denver Instruments","Desconocido","Dixtal","Dong Jiang","Dräger","Dyne","Eccosur","Edan","Edan/Leex","Ekhoson","Electromedik","Enmind","Enray","Esaote","Everflo","EyM","Faeta","Feas","Fisher&Paykel","For You","Fukuda","General Electric","General Medictech","Genérico","Goldway","Healthdyne","HP","Humidias","Infant Star","Innomed","Innovo","LADIE","Leex","Lifotronic","Long Fian","Lovego","Lowentein","Maquet","Massimo","Maverick","Maxtec","MDV","Med Captain","Med joy","Medifusion","Meditech","Medix","Medrena","Medtronic","Microelectrónica","Micromedical","Mindray","Minicomp","MUX","N/E","Natal Care","Nellcor","Neumovent","Newton","Nihon Kohden","Nikon","Ohmeda","Philips","Pmed","Prestige","Presvac","Radian QBio","Respironics","Roma","San-Jor","Sechrist","Silfab","SK","SLE","Suncare","Sunmed","Super Star","Systel","Takaoka","Unimed","UTAH","Valleylab","Vicking","View Sonic","WechAllyn","WEM","Yuwell"];
 
+const MODELOS_EQUIPO = ["60H","600 S","7B-1","7E-C","7E-G","7F-10","7F-5 Mini","9F-5","Autocat II","Autocat II Wave","Beneheart R3","Biomax 500","BT-350","BT-400","BT-500","C-12R","Capnomac","Capnomac Ultima","Cardiolife","Cardiosuny","Caris Plus","CC20","Cloud","CMS8000","CO2-M01","Covidien","D3","DB9","Desconocido","EN-S7","EN-V7","Evergo","Fabius","Fabius Plus","Fabius Plus XL","Force","Graph","Graphnet TS","HC100","Heart Start","HT-109","iE-101","iE-300","IM8B","iMEC10","Infinity Vista","Jay-5","Jay-5Q","LG103","Libra","M3A","MR810","NP-100","NP-600","OXI-3 Plus","Prisma Vent 40","Prisma Vent 50","Puritan Bennett 560","RG-401","RG-401 Plus","RG-501","RG-501 Plus","S3","Scio Four","SP-50","SP-50 Pro","Spirit 3","Star 8000","System 97","System 97e","Trilogy","Vapor 2000","Vista 120","VP-50","VP-50 Pro","YH-350","YH-360","YH-550","YH-560","YH-725","YH-730","5342","5346"];
+
 let selectorCurrentCell = null;
 let selectorCurrentType = null;
 let selectorCurrentList = [];
@@ -683,7 +703,13 @@ function abrirModalSelector(cell, type, items) {
     selectorCurrentType = type;
     selectorCurrentList = items;
     
-    document.getElementById('selectorTitle').textContent = type === 'tipo' ? 'Seleccionar Tipo de Equipo' : 'Seleccionar Marca';
+    const titles = {
+        'tipo': 'Seleccionar Tipo de Equipo',
+        'marca': 'Seleccionar Marca',
+        'modelo': 'Seleccionar Modelo'
+    };
+    
+    document.getElementById('selectorTitle').textContent = titles[type];
     document.getElementById('selectorSearch').value = '';
     
     renderSelectorList(items);
@@ -718,11 +744,12 @@ function renderSelectorList(items) {
     divAgregar.addEventListener('mouseleave', function() { this.style.backgroundColor = '#e8f4f8'; });
     divAgregar.addEventListener('click', function() {
         cerrarModalSelector();
-        if (selectorCurrentType === 'tipo') {
-            document.getElementById('modalNuevoTipo').style.display = 'flex';
-        } else {
-            document.getElementById('modalNuevaMarca').style.display = 'flex';
-        }
+        const modals = {
+            'tipo': 'modalNuevoTipo',
+            'marca': 'modalNuevaMarca',
+            'modelo': 'modalNuevoModelo'
+        };
+        document.getElementById(modals[selectorCurrentType]).style.display = 'flex';
     });
     listContainer.appendChild(divAgregar);
 }
@@ -772,8 +799,12 @@ document.getElementById('selectorSearch').addEventListener('input', function() {
 document.querySelectorAll('.editable-select').forEach(function(cell) {
     cell.addEventListener('click', function() {
         const type = this.getAttribute('data-type');
-        const items = type === 'tipo' ? TIPOS_EQUIPO : MARCAS;
-        abrirModalSelector(this, type, items);
+        const lists = {
+            'tipo': TIPOS_EQUIPO,
+            'marca': MARCAS,
+            'modelo': MODELOS_EQUIPO
+        };
+        abrirModalSelector(this, type, lists[type]);
     });
 });
 
@@ -851,6 +882,42 @@ document.getElementById('formNuevaMarca').addEventListener('submit', function(e)
         });
     }
     cerrarModalNuevaMarca();
+});
+
+// Modal Nuevo Modelo
+function cerrarModalNuevoModelo() {
+    document.getElementById('modalNuevoModelo').style.display = 'none';
+    document.getElementById('formNuevoModelo').reset();
+}
+
+document.getElementById('modalNuevoModelo').addEventListener('click', function(e) {
+    if (e.target === this) { cerrarModalNuevoModelo(); }
+});
+
+document.getElementById('formNuevoModelo').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const nuevoModelo = document.getElementById('inputNuevoModelo').value.trim();
+    if (!nuevoModelo) return;
+    
+    MODELOS_EQUIPO.push(nuevoModelo);
+    MODELOS_EQUIPO.sort();
+    
+    if (selectorCurrentCell) {
+        const equipoId = selectorCurrentCell.getAttribute('data-id');
+        fetch('/api/equipo/' + equipoId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ modelo: nuevoModelo })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+            if (result.success) {
+                selectorCurrentCell.textContent = nuevoModelo;
+                alert('✅ Nuevo modelo agregado');
+            }
+        });
+    }
+    cerrarModalNuevoModelo();
 });
 </script>
 {% endblock %}
