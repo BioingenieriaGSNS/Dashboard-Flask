@@ -4,384 +4,243 @@
 
 {% block extra_css %}
 <style>
-/* Contenedor principal */
-.equipos-wrapper {
-    width: 100%;
-    background: white;
-    border: 1px solid #ddd;
-    position: relative;
-}
-
-/* Contenedor de headers - separado del cuerpo */
-.equipos-header-container {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: white;
-    overflow-x: auto;
-    overflow-y: hidden;
-    /* Ocultar scrollbar del header */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-}
-
-.equipos-header-container::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-}
-
-/* Fila de grupos de headers */
-.equipos-header-groups {
-    display: grid;
-    grid-template-columns: 
-        380px    /* Datos de Dominio (Cliente + OST + Estado) */
-        1580px   /* Detalle de Ingreso (10 columnas + Fotos) */
-        300px    /* Detalle de Observación (2 columnas) */
-        650px    /* Detalles Técnicos (5 columnas) */
-        690px    /* Detalles Comerciales (5 columnas) */
-        100px;   /* Acciones */
-}
-
-.header-group {
-    color: white;
-    font-weight: 700;
-    padding: 1px 15px;
-    border: 1px solid #0d2240;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Colores personalizados para cada grupo */
-.header-group:nth-child(1) { 
-    background: #fff9c4; /* Amarillo clarito - Datos de Dominio */
-    color: #333;
-    position: sticky;
-    left: 0;
-    z-index: 60;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-}
-
-.header-group:nth-child(2) { 
-    background: #b3e5fc; /* Celeste - Detalle de Ingreso */
-    color: #333;
-}
-
-.header-group:nth-child(3) { 
-    background: #fff9c4; /* Amarillo clarito - Detalle de Observación */
-    color: #333;
-}
-
-.header-group:nth-child(4) { 
-    background: #ffffff; /* Blanco - Detalles Técnicos */
-    color: #333;
-    border: 1px solid #ddd;
-}
-
-.header-group:nth-child(5) { 
-    background: #80deea; /* Turquesa - Detalles Comerciales */
-    color: #333;
-}
-
-.header-group:nth-child(6) { 
-    background: linear-gradient(135deg, #2c5f8d 0%, #1e4d7b 100%); /* Azul - Acciones */
-    color: white;
-}
-
-/* Grid de headers individuales */
-.equipos-header-grid {
-    display: grid;
-    grid-template-columns: 
-        /* Datos de Dominio */
-        180px    /* Cliente */
-        80px     /* OST */
-        120px    /* Estado */
-        
-        /* Detalle de Ingreso */
-        120px    /* Fecha Ingreso */
-        120px    /* Remito */
-        210px    /* Tipo */
-        150px    /* Marca */
-        150px    /* Modelo */
-        180px    /* Serie */
-        200px    /* Accesorios */
-        200px    /* Obs. Ingreso */
-        150px    /* Fotos */
-        100px    /* Prioridad */
-        
-        /* Detalle de Observación */
-        150px    /* Fecha Envío */
-        150px    /* Proveedor */
-        
-        /* Detalles Técnicos y de seguimiento */
-        200px    /* Detalles Reparación */
-        100px    /* Hrs */
-        100px    /* Reingreso */
-        100px    /* Informe */
-        150px    /* Costo */
-        
-        /* Detalles Comerciales */
-        150px    /* Precio */
-        120px    /* OV */
-        120px    /* Estado OV */
-        150px    /* Fecha Entrega */
-        150px    /* Remito Entrega */
-        
-        /* Acciones */
-        100px;   /* Acciones */
-}
-
-/* Contenedor del cuerpo con scroll */
-.equipos-body-container {
-    max-height: 65vh;
-    overflow-x: auto;
-    overflow-y: auto;
-}
-
-/* Grid del cuerpo - mismas columnas */
-.equipos-body-grid {
-    display: grid;
-    grid-template-columns: 
-        /* Datos de Dominio */
-        180px    /* Cliente */
-        80px     /* OST */
-        120px    /* Estado */
-        
-        /* Detalle de Ingreso */
-        120px    /* Fecha Ingreso */
-        120px    /* Remito */
-        210px    /* Tipo */
-        150px    /* Marca */
-        150px    /* Modelo */
-        180px    /* Serie */
-        200px    /* Accesorios */
-        200px    /* Obs. Ingreso */
-        150px    /* Fotos */
-        100px    /* Prioridad */
-        
-        /* Detalle de Observación */
-        150px    /* Fecha Envío */
-        150px    /* Proveedor */
-        
-        /* Detalles Técnicos y de seguimiento */
-        200px    /* Detalles Reparación */
-        100px    /* Hrs */
-        100px    /* Reingreso */
-        100px    /* Informe */
-        150px    /* Costo */
-        
-        /* Detalles Comerciales */
-        150px    /* Precio */
-        120px    /* OV */
-        120px    /* Estado OV */
-        150px    /* Fecha Entrega */
-        150px    /* Remito Entrega */
-        
-        /* Acciones */
-        100px;   /* Acciones */
-}
-
-/* Headers con colores por defecto (azul) */
-.grid-header {
-    background-color: #1e4d7b !important;
-    color: white !important;
-    font-weight: 600;
-    padding: 12px 15px;
-    border: 1px solid #0d2240;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-}
-
-/* Colores específicos para headers individuales */
-/* Cliente, OST, Estado - Amarillo clarito */
-.grid-header:nth-child(1),
-.grid-header:nth-child(2),
-.grid-header:nth-child(3) {
-    background-color: #fff9c4 !important;
-    color: #333 !important;
-    border: 1px solid #ddd;
-    position: sticky;
-    z-index: 50;
-}
-
-.grid-header:nth-child(1) { left: 0; }
-.grid-header:nth-child(2) { left: 180px; }
-.grid-header:nth-child(3) { 
-    left: 260px; 
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-}
-
-/* Fecha Envío y Proveedor - Amarillo clarito */
-.grid-header:nth-child(14),
-.grid-header:nth-child(15) {
-    background-color: #fff9c4 !important;
-    color: #333 !important;
-    border: 1px solid #ddd;
-}
-
-/* Reingreso - Amarillo clarito */
-.grid-header:nth-child(18) {
-    background-color: #fff9c4 !important;
-    color: #333 !important;
-    border: 1px solid #ddd;
-}
-
-/* Precio, OV, Estado OV, Fecha Entrega, Remito Entrega - Turquesa */
-.grid-header:nth-child(21),
-.grid-header:nth-child(22),
-.grid-header:nth-child(23),
-.grid-header:nth-child(24),
-.grid-header:nth-child(25) {
-    background-color: #80deea !important;
-    color: #333 !important;
-    border: 1px solid #4dd0e1;
-}
-
-/* Celdas del cuerpo - ALTURA FIJA */
-.grid-cell {
-    padding: 12px 15px;
-    border: 1px solid #e0e0e0;
-    border-top: none;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-    height: 48px; /* Altura fija */
+* {
     box-sizing: border-box;
 }
 
-/* Celda de Obs. Ingreso con indicador de que hay modal */
-.obs-ingreso-cell {
-    cursor: pointer;
-    background-color: #f0f0f0;
+/* Contenedor principal */
+.table-container {
+    width: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    max-height: 75vh;
+    overflow: hidden; /* Sin scroll horizontal aquí */
     position: relative;
 }
 
-.obs-ingreso-cell:hover {
-    background-color: #e0e0e0 !important;
+/* Wrapper para las dos secciones */
+.table-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100%;
 }
 
-.obs-ingreso-cell::after {
-    content: "🔍";
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.8rem;
-}
-
-/* Primeras 3 columnas del cuerpo sticky horizontalmente */
-/* Total de columnas ahora: 26 */
-.equipos-body-grid > div:nth-child(26n + 1),
-.equipos-body-grid > div:nth-child(26n + 2),
-.equipos-body-grid > div:nth-child(26n + 3) {
-    position: sticky;
-    z-index: 20;
-}
-
-.equipos-body-grid > div:nth-child(26n + 1) { 
-    left: 0;
-}
-
-.equipos-body-grid > div:nth-child(26n + 2) { 
-    left: 180px;
-}
-
-.equipos-body-grid > div:nth-child(26n + 3) { 
-    left: 260px;
+/* Sección fija (izquierda) */
+.fixed-section {
+    width: 380px;
+    flex-shrink: 0;
+    background: white;
+    overflow: hidden;
+    position: relative;
+    z-index: 50;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
 
-/* Colores alternados */
-.grid-cell[data-row-color="even"] {
-    background-color: #e8f4f8;
+/* Sección scrollable (derecha) */
+.scrollable-section {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+    -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+    min-width: 0; /* Permitir que se encoja si es necesario */
 }
 
-.grid-cell[data-row-color="odd"] {
-    background-color: #ffffff;
+/* Indicador de scroll horizontal */
+.scrollable-section::after {
+    content: '→';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(to left, rgba(102, 126, 234, 0.8), transparent);
+    color: white;
+    padding: 20px 10px;
+    font-size: 1.5rem;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
-/* Mantener colores en columnas sticky */
-.equipos-body-grid > div:nth-child(26n + 1)[data-row-color="even"],
-.equipos-body-grid > div:nth-child(26n + 2)[data-row-color="even"],
-.equipos-body-grid > div:nth-child(26n + 3)[data-row-color="even"] {
-    background-color: #e8f4f8 !important;
+@media (max-width: 768px) {
+    .scrollable-section::after {
+        opacity: 1;
+    }
+    
+    .scrollable-section.scrolled::after {
+        opacity: 0;
+    }
 }
 
-.equipos-body-grid > div:nth-child(26n + 1)[data-row-color="odd"],
-.equipos-body-grid > div:nth-child(26n + 2)[data-row-color="odd"],
-.equipos-body-grid > div:nth-child(26n + 3)[data-row-color="odd"] {
-    background-color: #ffffff !important;
+/* Headers de grupo */
+.group-headers {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    min-width: min-content; /* Permitir expansión completa */
 }
 
-/* Hover en filas */
-.grid-cell.hover-active {
-    background-color: #d4e9f7 !important;
-    cursor: pointer;
+.group-header {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    white-space: nowrap;
+    flex-shrink: 0; /* Prevenir compresión */
 }
 
-/* Asegurar que columnas sticky mantengan el color en hover */
-.equipos-body-grid > div:nth-child(26n + 1).hover-active,
-.equipos-body-grid > div:nth-child(26n + 2).hover-active,
-.equipos-body-grid > div:nth-child(26n + 3).hover-active {
-    background-color: #d4e9f7 !important;
+.gh-dominio { background: #fff9c4; color: #333; width: 380px; }
+.gh-ingreso { background: #b3e5fc; color: #333; width: 1680px; }
+.gh-observacion { background: #fff9c4; color: #333; width: 320px; }
+.gh-tecnico { background: #fff; color: #333; width: 700px; border: 1px solid #ddd; }
+.gh-comercial { background: #80deea; color: #333; width: 740px; }
+.gh-acciones { background: linear-gradient(135deg, #2c5f8d 0%, #1e4d7b 100%); color: white; width: 110px; }
+
+/* Headers de columnas */
+.column-headers {
+    display: flex;
+    position: sticky;
+    top: 43px;
+    z-index: 99;
+    min-width: min-content; /* Permitir expansión completa */
+}
+
+.col-header {
+    padding: 12px 10px;
+    border: 1px solid #0d2240;
+    background: #1e4d7b;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-align: center;
+    flex-shrink: 0; /* Prevenir compresión */
+}
+
+/* Headers específicos de columnas fijas */
+.fixed-section .col-header:nth-child(1),
+.fixed-section .col-header:nth-child(2),
+.fixed-section .col-header:nth-child(3) {
+    background: #fff9c4;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+/* Anchos de columnas fijas */
+.ch-cliente { width: 180px; }
+.ch-ost { width: 80px; }
+.ch-estado { width: 120px; }
+
+/* Anchos de columnas scrollables - AUMENTADOS */
+.ch-fecha-ingreso { width: 130px; }
+.ch-remito { width: 130px; }
+.ch-tipo { width: 220px; }
+.ch-marca { width: 160px; }
+.ch-modelo { width: 160px; }
+.ch-serie { width: 190px; }
+.ch-accesorios { width: 210px; }
+.ch-obs { width: 210px; }
+.ch-fotos { width: 160px; }
+.ch-prioridad { width: 110px; }
+.ch-fecha-envio { width: 160px; background: #fff9c4 !important; color: #333 !important; }
+.ch-proveedor { width: 160px; background: #fff9c4 !important; color: #333 !important; }
+.ch-det-reparacion { width: 210px; }
+.ch-hrs { width: 110px; }
+.ch-reingreso { width: 110px; background: #fff9c4 !important; color: #333 !important; }
+.ch-informe { width: 110px; }
+.ch-costo { width: 160px; }
+.ch-precio { width: 160px; background: #80deea !important; color: #333 !important; }
+.ch-ov { width: 130px; background: #80deea !important; color: #333 !important; }
+.ch-estado-ov { width: 130px; background: #80deea !important; color: #333 !important; }
+.ch-fecha-entrega { width: 160px; background: #80deea !important; color: #333 !important; }
+.ch-remito-entrega { width: 160px; background: #80deea !important; color: #333 !important; }
+.ch-acciones { width: 110px; }
+
+/* Contenedor de filas */
+.rows-container {
+    overflow-y: auto;
+    max-height: calc(75vh - 96px); /* Ajustado por headers más altos */
+    min-width: min-content; /* Permitir expansión completa */
+    -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+}
+
+/* Fila de datos */
+.data-row {
+    display: flex;
+    min-height: 60px; /* Aumentado para acomodar wrap */
+    min-width: min-content; /* Permitir expansión completa */
+    border-bottom: 1px solid #e0e0e0;
+}
+}
+
+.data-row:nth-child(even) {
+    background: #e8f4f8;
+}
+
+.data-row:nth-child(odd) {
+    background: #fff;
+}
+
+.data-row:hover {
+    background: #d4e9f7 !important;
+}
+
+/* Celda de datos */
+.cell {
+    padding: 12px 10px;
+    border-right: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 60px; /* Aumentado para acomodar wrap */
+    flex-shrink: 0; /* Prevenir compresión */
+}
+
+/* Permitir wrap en columnas importantes para ver texto completo */
+.ch-tipo, .ch-marca, .ch-modelo, .ch-serie, .ch-accesorios, 
+.ch-obs, .ch-det-reparacion, .ch-proveedor {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+    align-items: flex-start;
+    padding-top: 10px;
 }
 
 /* Celdas editables */
-.grid-cell.editable {
+.editable {
     cursor: text;
 }
 
-.grid-cell.editable:focus {
+.editable:focus {
     outline: 2px solid #667eea;
-    background-color: #fff3cd !important;
+    background: transparent !important; /* Sin fondo amarillo */
 }
 
-/* Asegurar que columnas sticky mantengan color cuando están en focus */
-.equipos-body-grid > div:nth-child(26n + 1).editable:focus,
-.equipos-body-grid > div:nth-child(26n + 2).editable:focus,
-.equipos-body-grid > div:nth-child(26n + 3).editable:focus {
-    background-color: #fff3cd !important;
-}
-
-/* Celdas editables con select (Tipo y Marca) */
 .editable-select {
     cursor: pointer;
-    background-color: #f8f9fa;
 }
 
 .editable-select:hover {
-    background-color: #fff3cd !important;
+    background: transparent !important; /* Sin fondo amarillo */
 }
 
-/* Celda de estado con dropdown */
+/* Estado */
 .estado-cell {
     cursor: pointer;
-    position: relative;
 }
 
 .estado-cell:hover {
-    background-color: #fff3cd !important;
-}
-
-/* Asegurar que la columna sticky de estado mantenga color en hover */
-.equipos-body-grid > div:nth-child(26n + 3).estado-cell:hover {
-    background-color: #fff3cd !important;
-}
-
-.estado-value {
-    width: 100%;
+    background: transparent !important; /* Sin fondo amarillo */
 }
 
 .estado-select {
@@ -390,36 +249,41 @@
     border: 2px solid #667eea;
     border-radius: 4px;
     font-size: 0.9rem;
+}
+
+/* Observación con icono */
+.obs-cell {
     cursor: pointer;
+    position: relative;
+    padding-right: 30px;
 }
 
-/* Checkbox styles para campos booleanos */
+.obs-cell::after {
+    content: "🔍";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.obs-cell:hover {
+    background: #e0e0e0 !important;
+}
+
+/* Checkbox */
 .checkbox-cell {
-    display: flex;
     justify-content: center;
-    align-items: center;
 }
 
-.checkbox-cell input[type="checkbox"] {
+.checkbox-cell input {
     width: 20px;
     height: 20px;
     cursor: pointer;
 }
 
-/* Links */
-.grid-cell a {
-    color: #1e4d7b;
-    text-decoration: none;
-    margin-right: 8px;
-}
-
-.grid-cell a:hover {
-    text-decoration: underline;
-}
-
-/* Botones */
+/* Botón */
 .btn {
-    padding: 0.5rem 1rem;
+    padding: 8px 16px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -438,6 +302,24 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+.btn-save {
+    background: #667eea;
+    color: white;
+    padding: 6px 12px;
+    font-size: 1.2rem;
+}
+
+/* Links */
+.cell a {
+    color: #1e4d7b;
+    text-decoration: none;
+    margin-right: 5px;
+}
+
+.cell a:hover {
+    text-decoration: underline;
+}
+
 /* Modal */
 .modal {
     display: none;
@@ -447,13 +329,13 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.5);
     align-items: center;
     justify-content: center;
 }
 
 .modal-content {
-    background-color: white;
+    background: white;
     padding: 0;
     border-radius: 8px;
     width: 90%;
@@ -466,12 +348,10 @@
 
 .modal-content-large {
     max-width: 800px;
-    max-height: 90vh;
 }
 
 .modal-header {
     padding: 20px;
-    border-bottom: 2px solid #1e4d7b;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-radius: 8px 8px 0 0;
@@ -488,6 +368,14 @@
     flex: 1;
 }
 
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 .search-box {
     width: 100%;
     padding: 12px;
@@ -500,15 +388,6 @@
 .search-box:focus {
     outline: none;
     border-color: #667eea;
-}
-
-.modal-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #ddd;
-    text-align: right;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
 }
 
 .close-btn {
@@ -524,7 +403,6 @@
     background: #444;
 }
 
-/* Modal de Observación */
 .obs-textarea {
     width: 100%;
     min-height: 200px;
@@ -541,10 +419,214 @@
     border-color: #667eea;
 }
 
-/* Responsive */
+.selector-item {
+    padding: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.selector-item:hover {
+    background: #f0f0f0;
+}
+
+.selector-add {
+    padding: 12px;
+    cursor: pointer;
+    background: #e8f4f8;
+    font-weight: bold;
+    color: #1e4d7b;
+}
+
+.selector-add:hover {
+    background: #d0e7f0;
+}
+
+/* RESPONSIVE - MÓVIL */
 @media (max-width: 768px) {
-    .equipos-wrapper {
+    /* Reducir altura máxima del contenedor */
+    .table-container {
+        max-height: 65vh;
+    }
+    
+    /* Mantener ancho razonable de columnas fijas en móvil */
+    .fixed-section {
+        width: 320px;
+    }
+    
+    .gh-dominio {
+        width: 320px;
+    }
+    
+    /* Anchos de columnas fijas - mantener legibles */
+    .ch-cliente { width: 150px; }
+    .ch-ost { width: 70px; }
+    .ch-estado { width: 100px; }
+    
+    /* Reducir padding en headers */
+    .col-header {
+        padding: 10px 8px;
         font-size: 0.8rem;
+    }
+    
+    .group-header {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    /* Reducir altura de filas moderadamente */
+    .data-row {
+        min-height: 50px; /* Ajustado para móvil */
+    }
+    
+    .cell {
+        min-height: 50px; /* Ajustado para móvil */
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+    
+    /* Ajustar contenedor de filas */
+    .rows-container {
+        max-height: calc(65vh - 90px); /* Ajustado */
+    }
+    
+    /* Mantener anchos razonables de columnas scrollables - NO comprimir demasiado */
+    .ch-fecha-ingreso { width: 110px; }
+    .ch-remito { width: 110px; }
+    .ch-tipo { width: 190px; }
+    .ch-marca { width: 130px; }
+    .ch-modelo { width: 130px; }
+    .ch-serie { width: 160px; }
+    .ch-accesorios { width: 180px; }
+    .ch-obs { width: 180px; }
+    .ch-fotos { width: 130px; }
+    .ch-prioridad { width: 90px; }
+    .ch-fecha-envio { width: 130px; }
+    .ch-proveedor { width: 130px; }
+    .ch-det-reparacion { width: 180px; }
+    .ch-hrs { width: 80px; }
+    .ch-reingreso { width: 90px; }
+    .ch-informe { width: 90px; }
+    .ch-costo { width: 130px; }
+    .ch-precio { width: 130px; }
+    .ch-ov { width: 110px; }
+    .ch-estado-ov { width: 110px; }
+    .ch-fecha-entrega { width: 130px; }
+    .ch-remito-entrega { width: 130px; }
+    .ch-acciones { width: 90px; }
+    
+    /* Ajustar anchos de headers de grupo proporcionalmente */
+    .gh-ingreso { width: 1480px; }
+    .gh-observacion { width: 280px; }
+    .gh-tecnico { width: 620px; }
+    .gh-comercial { width: 660px; }
+    .gh-acciones { width: 100px; }
+    
+    /* Hacer botones más touch-friendly */
+    .btn-save {
+        padding: 6px 10px;
+        font-size: 1.1rem;
+    }
+    
+    /* Hacer checkboxes más grandes para touch */
+    .checkbox-cell input {
+        width: 22px;
+        height: 22px;
+    }
+    
+    /* Hacer que las celdas editables sean más fáciles de tocar */
+    .editable, .editable-select, .estado-cell, .obs-cell {
+        min-height: 50px; /* Ajustado */
+        padding: 10px 8px;
+    }
+    
+    /* Ajustar modales para móvil */
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        max-height: 85vh;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .obs-textarea {
+        min-height: 180px;
+        font-size: 16px; /* Prevenir zoom en iOS */
+    }
+    
+    .search-box {
+        font-size: 16px; /* Prevenir zoom en iOS */
+        padding: 10px;
+    }
+    
+    /* Prevenir zoom en inputs de modal */
+    input[type="text"] {
+        font-size: 16px;
+    }
+    
+    /* Hacer el título más pequeño */
+    h2 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Ajustar botón de agregar */
+    .btn-primary {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Para pantallas muy pequeñas - solo ajustes mínimos */
+    .table-container {
+        max-height: 60vh;
+    }
+    
+    .fixed-section {
+        width: 260px;
+    }
+    
+    .gh-dominio {
+        width: 260px;
+    }
+    
+    .ch-cliente { width: 120px; }
+    .ch-ost { width: 60px; }
+    .ch-estado { width: 80px; }
+    
+    .cell {
+        padding: 8px 6px;
+        font-size: 0.8rem;
+    }
+    
+    .col-header {
+        padding: 8px 6px;
+        font-size: 0.75rem;
+    }
+    
+    .group-header {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    
+    h2 {
+        font-size: 1.1rem;
+    }
+    
+    .btn-primary {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .btn-save {
+        padding: 5px 8px;
+        font-size: 1rem;
+    }
+    
+    .rows-container {
+        max-height: calc(60vh - 86px); /* Ajustado */
     }
 }
 </style>
@@ -557,749 +639,434 @@
     <button class="btn btn-primary" onclick="location.href='#'">➕ Agregar Nuevo Equipo</button>
 </div>
 
-<div class="equipos-wrapper">
-    <!-- Header Container -->
-    <div class="equipos-header-container">
-        <!-- Grupos de headers -->
-        <div class="equipos-header-groups">
-            <div class="header-group">📋 Datos de Dominio</div>
-            <div class="header-group">📥 Detalle de Ingreso</div>
-            <div class="header-group">👁️ Detalle de Observación</div>
-            <div class="header-group">🔧 Detalles Técnicos y de Seguimiento</div>
-            <div class="header-group">💰 Detalles Comerciales</div>
-            <div class="header-group">⚙️ Acciones</div>
+<div class="table-container">
+    <div class="table-wrapper">
+        <!-- SECCIÓN FIJA -->
+        <div class="fixed-section">
+            <!-- Header de grupo fijo -->
+            <div class="group-headers">
+                <div class="group-header gh-dominio">📋 DATOS DE DOMINIO</div>
+            </div>
+            
+            <!-- Headers de columnas fijas -->
+            <div class="column-headers">
+                <div class="col-header ch-cliente">Cliente</div>
+                <div class="col-header ch-ost">OST</div>
+                <div class="col-header ch-estado">Estado</div>
+            </div>
+            
+            <!-- Filas fijas -->
+            <div class="rows-container" id="fixedRows">
+                {% for equipo in equipos %}
+                <div class="data-row" data-row="{{ loop.index }}" data-id="{{ equipo.id }}">
+                    <div class="cell ch-cliente">{{ equipo.cliente or 'N/A' }}</div>
+                    <div class="cell ch-ost">{{ equipo.ost or 'N/A' }}</div>
+                    <div class="cell ch-estado estado-cell" data-id="{{ equipo.id }}">
+                        <span class="estado-value">{{ equipo.estado or 'Pendiente' }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        
-        <!-- Headers individuales -->
-        <div class="equipos-header-grid">
-            <!-- Datos de Dominio (3) -->
-            <div class="grid-header">Cliente</div>
-            <div class="grid-header">OST</div>
-            <div class="grid-header">Estado</div>
-            
-            <!-- Detalle de Ingreso (10) -->
-            <div class="grid-header">Fecha Ingreso</div>
-            <div class="grid-header">Remito</div>
-            <div class="grid-header">Tipo</div>
-            <div class="grid-header">Marca</div>
-            <div class="grid-header">Modelo</div>
-            <div class="grid-header">Serie</div>
-            <div class="grid-header">Accesorios</div>
-            <div class="grid-header">Obs. Ingreso</div>
-            <div class="grid-header">Fotos</div>
-            <div class="grid-header">Prioridad</div>
-            
-            <!-- Detalle de Observación (2) -->
-            <div class="grid-header">Fecha Envío</div>
-            <div class="grid-header">Proveedor</div>
-            
-            <!-- Detalles Técnicos (5) -->
-            <div class="grid-header">Det. Reparación</div>
-            <div class="grid-header">Hrs</div>
-            <div class="grid-header">Reingreso</div>
-            <div class="grid-header">Informe</div>
-            <div class="grid-header">Costo</div>
-            
-            <!-- Detalles Comerciales (5) -->
-            <div class="grid-header">Precio</div>
-            <div class="grid-header">OV</div>
-            <div class="grid-header">Estado OV</div>
-            <div class="grid-header">Fecha Entrega</div>
-            <div class="grid-header">Remito Entrega</div>
-            
-            <!-- Acciones (1) -->
-            <div class="grid-header">Acciones</div>
-        </div>
-    </div>
 
-    <!-- Body Container -->
-    <div class="equipos-body-container">
-        <div class="equipos-body-grid">
-            {% for equipo in equipos %}
-            {% set row_color = 'even' if loop.index % 2 == 0 else 'odd' %}
-            
-            <!-- Datos de Dominio -->
-            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
-                {{ equipo.cliente or 'N/A' }}
-            </div>
-            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
-                {{ equipo.ost or 'N/A' }}
-            </div>
-            <div class="grid-cell estado-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="estado">
-                <span class="estado-value">{{ equipo.estado or 'Pendiente' }}</span>
+        <!-- SECCIÓN SCROLLABLE -->
+        <div class="scrollable-section" id="scrollableSection">
+            <!-- Headers de grupo scrollables -->
+            <div class="group-headers">
+                <div class="group-header gh-ingreso">📥 DETALLE DE INGRESO</div>
+                <div class="group-header gh-observacion">👁️ DETALLE DE OBSERVACIÓN</div>
+                <div class="group-header gh-tecnico">🔧 DETALLES TÉCNICOS Y DE SEGUIMIENTO</div>
+                <div class="group-header gh-comercial">💰 DETALLES COMERCIALES</div>
+                <div class="group-header gh-acciones">⚙️ ACCIONES</div>
             </div>
             
-            <!-- Detalle de Ingreso -->
-            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
-                {{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="remito">
-                {{ equipo.remito or '' }}
-            </div>
-            <div class="grid-cell editable-select" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="tipo_equipo" data-type="tipo">
-                {{ equipo.tipo_equipo or 'Seleccionar' }}
-            </div>
-            <div class="grid-cell editable-select" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="marca" data-type="marca">
-                {{ equipo.marca or 'Seleccionar' }}
-            </div>
-            <div class="grid-cell editable-select" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="modelo" data-type="modelo">
-                {{ equipo.modelo or 'Seleccionar' }}
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="numero_serie">
-                {{ equipo.numero_serie or '' }}
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="accesorios">
-                {{ equipo.accesorios or '' }}
-            </div>
-            <!-- Obs. Ingreso con modal -->
-            <div class="grid-cell obs-ingreso-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="observacion_ingreso" data-obs-completa="{{ equipo.observacion_ingreso or '' }}">
-                {{ (equipo.observacion_ingreso[:30] + '...') if equipo.observacion_ingreso and equipo.observacion_ingreso|length > 30 else (equipo.observacion_ingreso or '') }}
-            </div>
-            <!-- Fotos -->
-            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
-                {% set fotos = archivos|selectattr('numero_serie', 'equalto', equipo.numero_serie)|selectattr('categoria', 'equalto', 'falla')|list %}
-                {% if fotos %}
-                    {% for foto in fotos %}
-                    <a href="{{ foto.url_cloudinary }}" target="_blank">🖼️</a>
-                    {% endfor %}
-                {% else %}
-                    <span style="color: #999;">-</span>
-                {% endif %}
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="prioridad">
-                {{ equipo.prioridad or '' }}
+            <!-- Headers de columnas scrollables -->
+            <div class="column-headers">
+                <div class="col-header ch-fecha-ingreso">Fecha Ingreso</div>
+                <div class="col-header ch-remito">Remito</div>
+                <div class="col-header ch-tipo">Tipo</div>
+                <div class="col-header ch-marca">Marca</div>
+                <div class="col-header ch-modelo">Modelo</div>
+                <div class="col-header ch-serie">Serie</div>
+                <div class="col-header ch-accesorios">Accesorios</div>
+                <div class="col-header ch-obs">Obs. Ingreso</div>
+                <div class="col-header ch-fotos">Fotos</div>
+                <div class="col-header ch-prioridad">Prioridad</div>
+                <div class="col-header ch-fecha-envio">Fecha Envío</div>
+                <div class="col-header ch-proveedor">Proveedor</div>
+                <div class="col-header ch-det-reparacion">Det. Reparación</div>
+                <div class="col-header ch-hrs">Hrs</div>
+                <div class="col-header ch-reingreso">Reingreso</div>
+                <div class="col-header ch-informe">Informe</div>
+                <div class="col-header ch-costo">Costo</div>
+                <div class="col-header ch-precio">Precio</div>
+                <div class="col-header ch-ov">OV</div>
+                <div class="col-header ch-estado-ov">Estado OV</div>
+                <div class="col-header ch-fecha-entrega">Fecha Entrega</div>
+                <div class="col-header ch-remito-entrega">Remito Entrega</div>
+                <div class="col-header ch-acciones">Acciones</div>
             </div>
             
-            <!-- Detalle de Observación -->
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="fecha_envio">
-                {{ equipo.fecha_envio.strftime('%d/%m/%Y') if equipo.fecha_envio else '' }}
+            <!-- Filas scrollables -->
+            <div class="rows-container" id="scrollableRows">
+                {% for equipo in equipos %}
+                <div class="data-row" data-row="{{ loop.index }}" data-id="{{ equipo.id }}">
+                    <div class="cell ch-fecha-ingreso">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
+                    <div class="cell ch-remito editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="remito">{{ equipo.remito or '' }}</div>
+                    <div class="cell ch-tipo editable-select" data-id="{{ equipo.id }}" data-field="tipo_equipo" data-type="tipo">{{ equipo.tipo_equipo or 'Seleccionar' }}</div>
+                    <div class="cell ch-marca editable-select" data-id="{{ equipo.id }}" data-field="marca" data-type="marca">{{ equipo.marca or 'Seleccionar' }}</div>
+                    <div class="cell ch-modelo editable-select" data-id="{{ equipo.id }}" data-field="modelo" data-type="modelo">{{ equipo.modelo or 'Seleccionar' }}</div>
+                    <div class="cell ch-serie editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="numero_serie">{{ equipo.numero_serie or '' }}</div>
+                    <div class="cell ch-accesorios editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="accesorios">{{ equipo.accesorios or '' }}</div>
+                    <div class="cell ch-obs obs-cell" data-id="{{ equipo.id }}" data-obs="{{ equipo.observacion_ingreso or '' }}">{{ (equipo.observacion_ingreso[:25] + '...') if equipo.observacion_ingreso and equipo.observacion_ingreso|length > 25 else (equipo.observacion_ingreso or '') }}</div>
+                    <div class="cell ch-fotos">
+                        {% set fotos = archivos|selectattr('numero_serie', 'equalto', equipo.numero_serie)|selectattr('categoria', 'equalto', 'falla')|list %}
+                        {% if fotos %}{% for foto in fotos %}<a href="{{ foto.url_cloudinary }}" target="_blank">🖼️</a>{% endfor %}{% else %}-{% endif %}
+                    </div>
+                    <div class="cell ch-prioridad editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="prioridad">{{ equipo.prioridad or '' }}</div>
+                    <div class="cell ch-fecha-envio editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="fecha_envio">{{ equipo.fecha_envio.strftime('%d/%m/%Y') if equipo.fecha_envio else '' }}</div>
+                    <div class="cell ch-proveedor editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="proveedor">{{ equipo.proveedor or '' }}</div>
+                    <div class="cell ch-det-reparacion editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="detalles_reparacion">{{ (equipo.detalles_reparacion[:25] + '...') if equipo.detalles_reparacion and equipo.detalles_reparacion|length > 25 else (equipo.detalles_reparacion or '') }}</div>
+                    <div class="cell ch-hrs editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="horas_trabajo">{{ equipo.horas_trabajo or '' }}</div>
+                    <div class="cell ch-reingreso checkbox-cell"><input type="checkbox" {% if equipo.reingreso %}checked{% endif %} data-id="{{ equipo.id }}" data-field="reingreso"></div>
+                    <div class="cell ch-informe checkbox-cell"><input type="checkbox" {% if equipo.informe %}checked{% endif %} data-id="{{ equipo.id }}" data-field="informe"></div>
+                    <div class="cell ch-costo editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="costo">{{ '${:,.2f}'.format(equipo.costo) if equipo.costo else '' }}</div>
+                    <div class="cell ch-precio editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="precio">{{ '${:,.2f}'.format(equipo.precio) if equipo.precio else '' }}</div>
+                    <div class="cell ch-ov editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="ov">{{ equipo.ov or '' }}</div>
+                    <div class="cell ch-estado-ov editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="estado_ov">{{ equipo.estado_ov or '' }}</div>
+                    <div class="cell ch-fecha-entrega editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="fecha_entrega">{{ equipo.fecha_entrega.strftime('%d/%m/%Y') if equipo.fecha_entrega else '' }}</div>
+                    <div class="cell ch-remito-entrega editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="remito_entrega">{{ equipo.remito_entrega or '' }}</div>
+                    <div class="cell ch-acciones"><button class="btn btn-save" onclick="guardar({{ equipo.id }})">💾</button></div>
+                </div>
+                {% endfor %}
             </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="proveedor">
-                {{ equipo.proveedor or '' }}
-            </div>
-            
-            <!-- Detalles Técnicos -->
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="detalles_reparacion">
-                {{ (equipo.detalles_reparacion[:30] + '...') if equipo.detalles_reparacion and equipo.detalles_reparacion|length > 30 else (equipo.detalles_reparacion or '') }}
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="horas_trabajo">
-                {{ equipo.horas_trabajo or '' }}
-            </div>
-            <div class="grid-cell checkbox-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
-                <input type="checkbox" {% if equipo.reingreso %}checked{% endif %} 
-                       data-id="{{ equipo.id }}" data-field="reingreso">
-            </div>
-            <div class="grid-cell checkbox-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
-                <input type="checkbox" {% if equipo.informe %}checked{% endif %} 
-                       data-id="{{ equipo.id }}" data-field="informe">
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="costo">
-                {{ '${:,.2f}'.format(equipo.costo) if equipo.costo else '' }}
-            </div>
-            
-            <!-- Detalles Comerciales -->
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="precio">
-                {{ '${:,.2f}'.format(equipo.precio) if equipo.precio else '' }}
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="ov">
-                {{ equipo.ov or '' }}
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="estado_ov">
-                {{ equipo.estado_ov or '' }}
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="fecha_entrega">
-                {{ equipo.fecha_entrega.strftime('%d/%m/%Y') if equipo.fecha_entrega else '' }}
-            </div>
-            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
-                 data-id="{{ equipo.id }}" data-field="remito_entrega">
-                {{ equipo.remito_entrega or '' }}
-            </div>
-            
-            <!-- Acciones -->
-            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
-                <button class="btn btn-primary" onclick="guardarFila({{ equipo.id }})">💾</button>
-            </div>
-            {% endfor %}
         </div>
     </div>
 </div>
 
-<div style="margin-top: 1.5rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
-    <strong>💡 Tip:</strong> Las primeras 3 columnas son fijas. Haz clic en "Obs. Ingreso" para ver/editar el texto completo en un modal.
-</div>
-
-<!-- Modal de Observación de Ingreso -->
-<div id="modalObsIngreso" class="modal">
+<!-- Modal Observación -->
+<div id="modalObs" class="modal">
     <div class="modal-content modal-content-large">
         <div class="modal-header">
             <h3>📝 Observación de Ingreso - OST: <span id="obsOST"></span></h3>
         </div>
         <div class="modal-body">
-            <textarea id="obsTextarea" class="obs-textarea" placeholder="Escriba la observación aquí..."></textarea>
+            <textarea id="obsText" class="obs-textarea" placeholder="Escriba la observación..."></textarea>
         </div>
         <div class="modal-footer">
-            <button class="close-btn" onclick="cerrarModalObs()">Cancelar</button>
-            <button class="btn btn-primary" onclick="guardarObservacion()">💾 Guardar</button>
+            <button class="close-btn" onclick="cerrarObs()">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarObs()">💾 Guardar</button>
         </div>
     </div>
 </div>
 
-<!-- Otros modales continúan igual... -->
 <!-- Modal Selector -->
 <div id="modalSelector" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="selectorTitle">Seleccionar Opción</h3>
+            <h3 id="selectorTitle">Seleccionar</h3>
         </div>
         <div class="modal-body">
             <input type="text" id="selectorSearch" class="search-box" placeholder="Buscar...">
             <div id="selectorList"></div>
         </div>
         <div class="modal-footer">
-            <button class="close-btn" onclick="cerrarModalSelector()">Cerrar</button>
+            <button class="close-btn" onclick="cerrarSelector()">Cerrar</button>
         </div>
     </div>
 </div>
 
-<!-- Modal Nuevo Tipo -->
-<div id="modalNuevoTipo" class="modal">
+<!-- Modal Nuevo -->
+<div id="modalNuevo" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Agregar Nuevo Tipo de Equipo</h3>
+            <h3 id="nuevoTitle">Agregar Nuevo</h3>
         </div>
-        <form id="formNuevoTipo">
+        <form id="formNuevo">
             <div class="modal-body">
-                <input type="text" id="inputNuevoTipo" class="search-box" placeholder="Nombre del tipo..." required>
+                <input type="text" id="nuevoInput" class="search-box" placeholder="Nombre..." required>
             </div>
             <div class="modal-footer">
-                <button type="button" class="close-btn" onclick="cerrarModalNuevoTipo()">Cancelar</button>
+                <button type="button" class="close-btn" onclick="cerrarNuevo()">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Agregar</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Modal Nueva Marca -->
-<div id="modalNuevaMarca" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Agregar Nueva Marca</h3>
-        </div>
-        <form id="formNuevaMarca">
-            <div class="modal-body">
-                <input type="text" id="inputNuevaMarca" class="search-box" placeholder="Nombre de la marca..." required>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="close-btn" onclick="cerrarModalNuevaMarca()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Agregar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal Nuevo Modelo -->
-<div id="modalNuevoModelo" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Agregar Nuevo Modelo</h3>
-        </div>
-        <form id="formNuevoModelo">
-            <div class="modal-body">
-                <input type="text" id="inputNuevoModelo" class="search-box" placeholder="Nombre del modelo..." required>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="close-btn" onclick="cerrarModalNuevoModelo()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Agregar</button>
-            </div>
-        </form>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Sincronizar scroll horizontal entre header y body
-const headerContainer = document.querySelector('.equipos-header-container');
-const bodyContainer = document.querySelector('.equipos-body-container');
+// Sincronizar scroll vertical entre secciones
+const fixedRows = document.getElementById('fixedRows');
+const scrollableRows = document.getElementById('scrollableRows');
+const scrollableSection = document.getElementById('scrollableSection');
 
-bodyContainer.addEventListener('scroll', function() {
-    headerContainer.scrollLeft = this.scrollLeft;
+fixedRows.addEventListener('scroll', () => {
+    scrollableRows.scrollTop = fixedRows.scrollTop;
 });
 
-headerContainer.addEventListener('scroll', function() {
-    bodyContainer.scrollLeft = this.scrollLeft;
+scrollableRows.addEventListener('scroll', () => {
+    fixedRows.scrollTop = scrollableRows.scrollTop;
 });
 
-// Hover efecto para filas
-document.querySelectorAll('.grid-cell').forEach(function(cell) {
-    const rowIndex = cell.getAttribute('data-row');
-    
-    cell.addEventListener('mouseenter', function() {
-        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-            c.classList.add('hover-active');
+// Ocultar indicador de scroll cuando el usuario hace scroll
+scrollableSection.addEventListener('scroll', function() {
+    if (this.scrollLeft > 20) {
+        this.classList.add('scrolled');
+    } else {
+        this.classList.remove('scrolled');
+    }
+});
+
+// Hover sincronizado
+document.querySelectorAll('.data-row').forEach(row => {
+    const rowNum = row.getAttribute('data-row');
+    row.addEventListener('mouseenter', () => {
+        document.querySelectorAll(`[data-row="${rowNum}"]`).forEach(r => {
+            r.style.background = '#d4e9f7';
         });
     });
-    
-    cell.addEventListener('mouseleave', function() {
-        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-            c.classList.remove('hover-active');
+    row.addEventListener('mouseleave', () => {
+        document.querySelectorAll(`[data-row="${rowNum}"]`).forEach(r => {
+            r.style.background = '';
         });
     });
 });
 
-// Modal de Observación de Ingreso
-let currentObsCell = null;
-let currentObsEquipoId = null;
-let currentObsOST = null;
+// Modal Observación
+let obsCell, obsId;
 
-document.querySelectorAll('.obs-ingreso-cell').forEach(function(cell) {
+document.querySelectorAll('.obs-cell').forEach(cell => {
     cell.addEventListener('click', function() {
-        currentObsCell = this;
-        currentObsEquipoId = this.getAttribute('data-id');
+        obsCell = this;
+        obsId = this.getAttribute('data-id');
+        const obs = this.getAttribute('data-obs');
         
-        // Obtener OST de la misma fila
-        const rowIndex = this.getAttribute('data-row');
-        const ostCell = document.querySelector('[data-row="' + rowIndex + '"]');
-        currentObsOST = ostCell ? ostCell.textContent.trim() : 'N/A';
+        const rowNum = this.closest('.data-row').getAttribute('data-row');
+        const ostCell = document.querySelector(`.fixed-section [data-row="${rowNum}"] .ch-ost`);
+        const ost = ostCell ? ostCell.textContent : 'N/A';
         
-        // Obtener observación completa del atributo
-        const obsCompleta = this.getAttribute('data-obs-completa');
-        document.getElementById('obsTextarea').value = obsCompleta || '';
-        document.getElementById('obsOST').textContent = currentObsOST;
-        
-        document.getElementById('modalObsIngreso').style.display = 'flex';
+        document.getElementById('obsText').value = obs || '';
+        document.getElementById('obsOST').textContent = ost;
+        document.getElementById('modalObs').style.display = 'flex';
     });
 });
 
-function cerrarModalObs() {
-    document.getElementById('modalObsIngreso').style.display = 'none';
-    currentObsCell = null;
-    currentObsEquipoId = null;
-    currentObsOST = null;
+function cerrarObs() {
+    document.getElementById('modalObs').style.display = 'none';
 }
 
-function guardarObservacion() {
-    if (!currentObsEquipoId) return;
-    
-    const nuevoTexto = document.getElementById('obsTextarea').value.trim();
-    
-    fetch('/api/equipo/' + currentObsEquipoId, {
+function guardarObs() {
+    const texto = document.getElementById('obsText').value;
+    fetch(`/api/equipo/${obsId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ observacion_ingreso: nuevoTexto })
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            // Actualizar celda con texto truncado
-            const textoMostrar = nuevoTexto.length > 30 ? nuevoTexto.substring(0, 30) + '...' : nuevoTexto;
-            currentObsCell.textContent = textoMostrar;
-            currentObsCell.setAttribute('data-obs-completa', nuevoTexto);
-            
-            const rowIndex = currentObsCell.getAttribute('data-row');
-            document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                c.style.backgroundColor = '#d4edda';
-            });
-            setTimeout(function() {
-                document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                    c.style.backgroundColor = '';
-                });
-            }, 1500);
-            
-            alert('✅ Observación guardada correctamente');
-            cerrarModalObs();
-        } else {
-            alert('❌ Error al guardar: ' + (result.error || 'Error desconocido'));
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({observacion_ingreso: texto})
+    }).then(r => r.json()).then(d => {
+        if(d.success) {
+            const preview = texto.length > 25 ? texto.substring(0, 25) + '...' : texto;
+            obsCell.textContent = preview;
+            obsCell.setAttribute('data-obs', texto);
+            alert('✅ Guardado');
+            cerrarObs();
         }
-    })
-    .catch(error => {
-        alert('❌ Error de red: ' + error);
     });
 }
 
-document.getElementById('modalObsIngreso').addEventListener('click', function(e) {
-    if (e.target === this) { cerrarModalObs(); }
+document.getElementById('modalObs').addEventListener('click', e => {
+    if(e.target.id === 'modalObs') cerrarObs();
 });
 
-// Guardar celda editable al perder el foco
-document.querySelectorAll('.editable').forEach(function(cell) {
-    let valorOriginal = cell.textContent.trim();
-    
-    cell.addEventListener('focus', function() {
-        valorOriginal = this.textContent.trim();
-        this.style.backgroundColor = '#fff3cd';
-    });
-    
+// Celdas editables
+document.querySelectorAll('.editable').forEach(cell => {
+    let original = cell.textContent.trim();
+    cell.addEventListener('focus', () => { original = cell.textContent.trim(); });
     cell.addEventListener('blur', function() {
-        this.style.backgroundColor = '';
-        const nuevoValor = this.textContent.trim();
-        
-        if (nuevoValor !== valorOriginal) {
-            const equipoId = this.getAttribute('data-id');
+        const nuevo = this.textContent.trim();
+        if(nuevo !== original) {
+            const id = this.getAttribute('data-id');
             const field = this.getAttribute('data-field');
-            
-            const data = {};
-            data[field] = nuevoValor;
-            
-            fetch('/api/equipo/' + equipoId, {
+            fetch(`/api/equipo/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(function(response) { return response.json(); })
-            .then(function(result) {
-                if (result.success) {
-                    const rowIndex = cell.getAttribute('data-row');
-                    document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                        c.style.backgroundColor = '#d4edda';
-                    });
-                    setTimeout(function() {
-                        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                            c.style.backgroundColor = '';
-                        });
-                    }, 1500);
-                }
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({[field]: nuevo})
+            }).then(r => r.json()).then(d => {
+                if(d.success) console.log('✅ Guardado');
             });
         }
     });
 });
 
-// Cambio de checkboxes
-document.querySelectorAll('.checkbox-cell input[type="checkbox"]').forEach(function(checkbox) {
-    checkbox.addEventListener('change', function() {
-        const equipoId = this.getAttribute('data-id');
+// Checkboxes
+document.querySelectorAll('.checkbox-cell input').forEach(cb => {
+    cb.addEventListener('change', function() {
+        const id = this.getAttribute('data-id');
         const field = this.getAttribute('data-field');
-        const isChecked = this.checked;
-        
-        const data = {};
-        data[field] = isChecked;
-        
-        fetch('/api/equipo/' + equipoId, {
+        fetch(`/api/equipo/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(function(response) { return response.json(); })
-        .then(function(result) {
-            if (result.success) {
-                alert('✅ Campo actualizado');
-            }
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({[field]: this.checked})
+        }).then(r => r.json()).then(d => {
+            if(d.success) alert('✅ Guardado');
         });
     });
 });
 
-// Click en Estado para cambiar
-document.querySelectorAll('.estado-cell').forEach(function(cell) {
+// Estado
+document.querySelectorAll('.estado-cell').forEach(cell => {
     const estados = ['Pendiente', 'En Proceso', 'Completado', 'Entregado', 'Cancelado'];
-    
     cell.addEventListener('click', function() {
         const span = this.querySelector('.estado-value');
-        const estadoActual = span.textContent.trim();
-        
+        const actual = span.textContent.trim();
         const select = document.createElement('select');
         select.className = 'estado-select';
-        
-        estados.forEach(function(estado) {
-            const option = document.createElement('option');
-            option.value = estado;
-            option.textContent = estado;
-            if (estado === estadoActual) option.selected = true;
-            select.appendChild(option);
+        estados.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e;
+            opt.textContent = e;
+            if(e === actual) opt.selected = true;
+            select.appendChild(opt);
         });
-        
         span.style.display = 'none';
         this.appendChild(select);
         select.focus();
-        
         select.addEventListener('change', function() {
-            const nuevoEstado = this.value;
-            const equipoId = cell.getAttribute('data-id');
-            
-            fetch('/api/equipo/' + equipoId, {
+            const id = cell.getAttribute('data-id');
+            fetch(`/api/equipo/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ estado: nuevoEstado })
-            })
-            .then(function(response) { return response.json(); })
-            .then(function(result) {
-                if (result.success) {
-                    span.textContent = nuevoEstado;
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({estado: this.value})
+            }).then(r => r.json()).then(d => {
+                if(d.success) {
+                    span.textContent = select.value;
                     span.style.display = '';
                     select.remove();
-                    
-                    const rowIndex = cell.getAttribute('data-row');
-                    document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                        c.style.backgroundColor = '#d4edda';
-                    });
-                    setTimeout(function() {
-                        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                            c.style.backgroundColor = '';
-                        });
-                    }, 1500);
                 }
             });
         });
-        
-        select.addEventListener('blur', function() {
+        select.addEventListener('blur', () => {
             span.style.display = '';
-            this.remove();
+            select.remove();
         });
     });
 });
 
-function guardarFila(equipoId) {
-    alert('💾 Los cambios se guardan automáticamente al editar cada celda');
+function guardar(id) {
+    alert('💾 Los cambios se guardan automáticamente');
 }
 
-// Listas de opciones
-const TIPOS_EQUIPO = ["Analizador de Gases","Balanza","Bomba de Infusión","Cama Eléctrica","Capnógrafo","Capnómetro","Cardiotocógrafo","Cauterio","Centrífuga","Concentrador de Oxígeno","Desfibrilador","Detector Fetal","Doppler","Electrocardiografo","Electrocardiógrafo","Emisor de Ultrasonido","Espirómetro","Estetoscopio","Fototerapia","Lámpara Quirúrgica","Línea Arterial","Microscopio","Monitor","Monitor Fetal","Monitor Multiparamétrico","Nebulizador","Negatoscopio","Otoscopio","Oxímetro","PC","Pesa","Purificador de Aire","Respirador","Simulador","Simulador Materno-Fetal","Soporte Ventilación","Tensiometro Adulto","Tensiómetro Pediátrico","Ventilador"];
-
+// Selector
+const TIPOS = ["Analizador de Gases","Balanza","Bomba de Infusión","Cama Eléctrica","Capnógrafo","Capnómetro","Cardiotocógrafo","Cauterio","Centrífuga","Concentrador de Oxígeno","Desfibrilador","Detector Fetal","Doppler","Electrocardiografo","Electrocardiógrafo","Emisor de Ultrasonido","Espirómetro","Estetoscopio","Fototerapia","Lámpara Quirúrgica","Línea Arterial","Microscopio","Monitor","Monitor Fetal","Monitor Multiparamétrico","Nebulizador","Negatoscopio","Otoscopio","Oxímetro","PC","Pesa","Purificador de Aire","Respirador","Simulador","Simulador Materno-Fetal","Soporte Ventilación","Tensiometro Adulto","Tensiómetro Pediátrico","Ventilador"];
 const MARCAS = ["Abbot","Adox","Agilent","Air Sep","Aitecs","Akonic","Alison","Apema","Arcomed","Argas","Argimed","Argus","Arrow","ATI Audiscan II","Bamec","BCI","Bioamerican Science","Biocare","Biolight","Bistos","BLT","BMC","Braun","CAM","Cardiomax","Cardioprint","Cardiotécnica","Cavour","CEC","Cegens","Choice","Codemaster","Colden","Comen","Confort Cough","Contec","Covidien","Daiwha","Dasa","Datascope","Datex Ohmeda","Denver Instruments","Desconocido","Dixtal","Dong Jiang","Dräger","Dyne","Eccosur","Edan","Edan/Leex","Ekhoson","Electromedik","Enmind","Enray","Esaote","Everflo","EyM","Faeta","Feas","Fisher&Paykel","For You","Fukuda","General Electric","General Medictech","Genérico","Goldway","Healthdyne","HP","Humidias","Infant Star","Innomed","Innovo","LADIE","Leex","Lifotronic","Long Fian","Lovego","Lowentein","Maquet","Massimo","Maverick","Maxtec","MDV","Med Captain","Med joy","Medifusion","Meditech","Medix","Medrena","Medtronic","Microelectrónica","Micromedical","Mindray","Minicomp","MUX","N/E","Natal Care","Nellcor","Neumovent","Newton","Nihon Kohden","Nikon","Ohmeda","Philips","Pmed","Prestige","Presvac","Radian QBio","Respironics","Roma","San-Jor","Sechrist","Silfab","SK","SLE","Suncare","Sunmed","Super Star","Systel","Takaoka","Unimed","UTAH","Valleylab","Vicking","View Sonic","WechAllyn","WEM","Yuwell"];
+const MODELOS = ["60H","600 S","7B-1","7E-C","7E-G","7F-10","7F-5 Mini","9F-5","Autocat II","Autocat II Wave","Beneheart R3","Biomax 500","BT-350","BT-400","BT-500","C-12R","Capnomac","Capnomac Ultima","Cardiolife","Cardiosuny","Caris Plus","CC20","Cloud","CMS8000","CO2-M01","Covidien","D3","DB9","Desconocido","EN-S7","EN-V7","Evergo","Fabius","Fabius Plus","Fabius Plus XL","Force","Graph","Graphnet TS","HC100","Heart Start","HT-109","iE-101","iE-300","IM8B","iMEC10","Infinity Vista","Jay-5","Jay-5Q","LG103","Libra","M3A","MR810","NP-100","NP-600","OXI-3 Plus","Prisma Vent 40","Prisma Vent 50","Puritan Bennett 560","RG-401","RG-401 Plus","RG-501","RG-501 Plus","S3","Scio Four","SP-50","SP-50 Pro","Spirit 3","Star 8000","System 97","System 97e","Trilogy","Vapor 2000","Vista 120","VP-50","VP-50 Pro","YH-350","YH-360","YH-550","YH-560","YH-725","YH-730","5342","5346"];
 
-const MODELOS_EQUIPO = ["60H","600 S","7B-1","7E-C","7E-G","7F-10","7F-5 Mini","9F-5","Autocat II","Autocat II Wave","Beneheart R3","Biomax 500","BT-350","BT-400","BT-500","C-12R","Capnomac","Capnomac Ultima","Cardiolife","Cardiosuny","Caris Plus","CC20","Cloud","CMS8000","CO2-M01","Covidien","D3","DB9","Desconocido","EN-S7","EN-V7","Evergo","Fabius","Fabius Plus","Fabius Plus XL","Force","Graph","Graphnet TS","HC100","Heart Start","HT-109","iE-101","iE-300","IM8B","iMEC10","Infinity Vista","Jay-5","Jay-5Q","LG103","Libra","M3A","MR810","NP-100","NP-600","OXI-3 Plus","Prisma Vent 40","Prisma Vent 50","Puritan Bennett 560","RG-401","RG-401 Plus","RG-501","RG-501 Plus","S3","Scio Four","SP-50","SP-50 Pro","Spirit 3","Star 8000","System 97","System 97e","Trilogy","Vapor 2000","Vista 120","VP-50","VP-50 Pro","YH-350","YH-360","YH-550","YH-560","YH-725","YH-730","5342","5346"];
+let selCell, selType, selList;
 
-let selectorCurrentCell = null;
-let selectorCurrentType = null;
-let selectorCurrentList = [];
-
-function abrirModalSelector(cell, type, items) {
-    selectorCurrentCell = cell;
-    selectorCurrentType = type;
-    selectorCurrentList = items;
-    
-    const titles = {
-        'tipo': 'Seleccionar Tipo de Equipo',
-        'marca': 'Seleccionar Marca',
-        'modelo': 'Seleccionar Modelo'
-    };
-    
+function abrirSelector(cell, type, items) {
+    selCell = cell;
+    selType = type;
+    selList = items;
+    const titles = {tipo:'Tipo de Equipo', marca:'Marca', modelo:'Modelo'};
     document.getElementById('selectorTitle').textContent = titles[type];
     document.getElementById('selectorSearch').value = '';
-    
-    renderSelectorList(items);
+    renderSelector(items);
     document.getElementById('modalSelector').style.display = 'flex';
-    document.getElementById('selectorSearch').focus();
 }
 
-function cerrarModalSelector() {
+function cerrarSelector() {
     document.getElementById('modalSelector').style.display = 'none';
-    selectorCurrentCell = null;
-    selectorCurrentType = null;
 }
 
-function renderSelectorList(items) {
-    const listContainer = document.getElementById('selectorList');
-    listContainer.innerHTML = '';
-    
-    items.forEach(function(item) {
+function renderSelector(items) {
+    const list = document.getElementById('selectorList');
+    list.innerHTML = '';
+    items.forEach(item => {
         const div = document.createElement('div');
+        div.className = 'selector-item';
         div.textContent = item;
-        div.style.cssText = 'padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s;';
-        div.addEventListener('mouseenter', function() { this.style.backgroundColor = '#f0f0f0'; });
-        div.addEventListener('mouseleave', function() { this.style.backgroundColor = ''; });
-        div.addEventListener('click', function() { seleccionarOpcion(item); });
-        listContainer.appendChild(div);
+        div.onclick = () => seleccionar(item);
+        list.appendChild(div);
     });
-    
-    const divAgregar = document.createElement('div');
-    divAgregar.innerHTML = '➕ <strong>Agregar nuevo...</strong>';
-    divAgregar.style.cssText = 'padding: 12px 15px; cursor: pointer; background: #e8f4f8; font-weight: bold; color: #1e4d7b;';
-    divAgregar.addEventListener('mouseenter', function() { this.style.backgroundColor = '#d0e7f0'; });
-    divAgregar.addEventListener('mouseleave', function() { this.style.backgroundColor = '#e8f4f8'; });
-    divAgregar.addEventListener('click', function() {
-        cerrarModalSelector();
-        const modals = {
-            'tipo': 'modalNuevoTipo',
-            'marca': 'modalNuevaMarca',
-            'modelo': 'modalNuevoModelo'
-        };
-        document.getElementById(modals[selectorCurrentType]).style.display = 'flex';
-    });
-    listContainer.appendChild(divAgregar);
+    const add = document.createElement('div');
+    add.className = 'selector-add';
+    add.innerHTML = '➕ <strong>Agregar nuevo...</strong>';
+    add.onclick = () => {
+        cerrarSelector();
+        document.getElementById('nuevoTitle').textContent = `Agregar ${selType}`;
+        document.getElementById('modalNuevo').style.display = 'flex';
+    };
+    list.appendChild(add);
 }
 
-function seleccionarOpcion(valor) {
-    if (!selectorCurrentCell) return;
-    
-    const equipoId = selectorCurrentCell.getAttribute('data-id');
-    const field = selectorCurrentCell.getAttribute('data-field');
-    
-    selectorCurrentCell.textContent = valor;
-    
-    const data = {};
-    data[field] = valor;
-    
-    fetch('/api/equipo/' + equipoId, {
+function seleccionar(valor) {
+    if(!selCell) return;
+    const id = selCell.getAttribute('data-id');
+    const field = selCell.getAttribute('data-field');
+    selCell.textContent = valor;
+    fetch(`/api/equipo/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(function(response) { return response.json(); })
-    .then(function(result) {
-        if (result.success) {
-            const rowIndex = selectorCurrentCell.getAttribute('data-row');
-            document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                c.style.backgroundColor = '#d4edda';
-            });
-            setTimeout(function() {
-                document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                    c.style.backgroundColor = '';
-                });
-            }, 1500);
-        }
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({[field]: valor})
+    }).then(r => r.json()).then(d => {
+        if(d.success) console.log('✅');
     });
-    
-    cerrarModalSelector();
+    cerrarSelector();
 }
 
 document.getElementById('selectorSearch').addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase();
-    const filteredItems = selectorCurrentList.filter(function(item) {
-        return item.toLowerCase().includes(searchTerm);
-    });
-    renderSelectorList(filteredItems);
+    const term = this.value.toLowerCase();
+    const filtered = selList.filter(i => i.toLowerCase().includes(term));
+    renderSelector(filtered);
 });
 
-document.querySelectorAll('.editable-select').forEach(function(cell) {
+document.querySelectorAll('.editable-select').forEach(cell => {
     cell.addEventListener('click', function() {
         const type = this.getAttribute('data-type');
-        const lists = {
-            'tipo': TIPOS_EQUIPO,
-            'marca': MARCAS,
-            'modelo': MODELOS_EQUIPO
-        };
-        abrirModalSelector(this, type, lists[type]);
+        const lists = {tipo:TIPOS, marca:MARCAS, modelo:MODELOS};
+        abrirSelector(this, type, lists[type]);
     });
 });
 
-document.getElementById('modalSelector').addEventListener('click', function(e) {
-    if (e.target === this) { cerrarModalSelector(); }
-});
+document.getElementById('modalSelector').onclick = e => {
+    if(e.target.id === 'modalSelector') cerrarSelector();
+};
 
-// Modal Nuevo Tipo
-function cerrarModalNuevoTipo() {
-    document.getElementById('modalNuevoTipo').style.display = 'none';
-    document.getElementById('formNuevoTipo').reset();
+// Modal Nuevo
+function cerrarNuevo() {
+    document.getElementById('modalNuevo').style.display = 'none';
+    document.getElementById('formNuevo').reset();
 }
 
-document.getElementById('modalNuevoTipo').addEventListener('click', function(e) {
-    if (e.target === this) { cerrarModalNuevoTipo(); }
-});
+document.getElementById('modalNuevo').onclick = e => {
+    if(e.target.id === 'modalNuevo') cerrarNuevo();
+};
 
-document.getElementById('formNuevoTipo').addEventListener('submit', function(e) {
+document.getElementById('formNuevo').onsubmit = e => {
     e.preventDefault();
-    const nuevoTipo = document.getElementById('inputNuevoTipo').value.trim();
-    if (!nuevoTipo) return;
+    const nuevo = document.getElementById('nuevoInput').value.trim();
+    if(!nuevo) return;
     
-    TIPOS_EQUIPO.push(nuevoTipo);
-    TIPOS_EQUIPO.sort();
+    if(selType === 'tipo') TIPOS.push(nuevo);
+    else if(selType === 'marca') MARCAS.push(nuevo);
+    else if(selType === 'modelo') MODELOS.push(nuevo);
     
-    if (selectorCurrentCell) {
-        const equipoId = selectorCurrentCell.getAttribute('data-id');
-        fetch('/api/equipo/' + equipoId, {
+    if(selCell) {
+        const id = selCell.getAttribute('data-id');
+        const field = selCell.getAttribute('data-field');
+        fetch(`/api/equipo/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tipo_equipo: nuevoTipo })
-        })
-        .then(function(response) { return response.json(); })
-        .then(function(result) {
-            if (result.success) {
-                selectorCurrentCell.textContent = nuevoTipo;
-                alert('✅ Nuevo tipo agregado');
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({[field]: nuevo})
+        }).then(r => r.json()).then(d => {
+            if(d.success) {
+                selCell.textContent = nuevo;
+                alert('✅ Agregado');
             }
         });
     }
-    cerrarModalNuevoTipo();
-});
-
-// Modal Nueva Marca
-function cerrarModalNuevaMarca() {
-    document.getElementById('modalNuevaMarca').style.display = 'none';
-    document.getElementById('formNuevaMarca').reset();
-}
-
-document.getElementById('modalNuevaMarca').addEventListener('click', function(e) {
-    if (e.target === this) { cerrarModalNuevaMarca(); }
-});
-
-document.getElementById('formNuevaMarca').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const nuevaMarca = document.getElementById('inputNuevaMarca').value.trim();
-    if (!nuevaMarca) return;
-    
-    MARCAS.push(nuevaMarca);
-    MARCAS.sort();
-    
-    if (selectorCurrentCell) {
-        const equipoId = selectorCurrentCell.getAttribute('data-id');
-        fetch('/api/equipo/' + equipoId, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ marca: nuevaMarca })
-        })
-        .then(function(response) { return response.json(); })
-        .then(function(result) {
-            if (result.success) {
-                selectorCurrentCell.textContent = nuevaMarca;
-                alert('✅ Nueva marca agregada');
-            }
-        });
-    }
-    cerrarModalNuevaMarca();
-});
-
-// Modal Nuevo Modelo
-function cerrarModalNuevoModelo() {
-    document.getElementById('modalNuevoModelo').style.display = 'none';
-    document.getElementById('formNuevoModelo').reset();
-}
-
-document.getElementById('modalNuevoModelo').addEventListener('click', function(e) {
-    if (e.target === this) { cerrarModalNuevoModelo(); }
-});
-
-document.getElementById('formNuevoModelo').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const nuevoModelo = document.getElementById('inputNuevoModelo').value.trim();
-    if (!nuevoModelo) return;
-    
-    MODELOS_EQUIPO.push(nuevoModelo);
-    MODELOS_EQUIPO.sort();
-    
-    if (selectorCurrentCell) {
-        const equipoId = selectorCurrentCell.getAttribute('data-id');
-        fetch('/api/equipo/' + equipoId, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ modelo: nuevoModelo })
-        })
-        .then(function(response) { return response.json(); })
-        .then(function(result) {
-            if (result.success) {
-                selectorCurrentCell.textContent = nuevoModelo;
-                alert('✅ Nuevo modelo agregado');
-            }
-        });
-    }
-    cerrarModalNuevoModelo();
-});
+    cerrarNuevo();
+};
 </script>
 {% endblock %}
