@@ -18,54 +18,173 @@
     top: 0;
     z-index: 100;
     background: white;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Ocultar scrollbar del header */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
 }
 
-/* Grid de headers */
+.equipos-header-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+/* Fila de grupos de headers */
+.equipos-header-groups {
+    display: grid;
+    grid-template-columns: 
+        380px    /* Datos de Dominio (Cliente + OST + Estado) */
+        1580px   /* Detalle de Ingreso (10 columnas + Fotos) */
+        300px    /* Detalle de Observación (2 columnas) */
+        650px    /* Detalles Técnicos (5 columnas) */
+        690px    /* Detalles Comerciales (5 columnas) */
+        100px;   /* Acciones */
+}
+
+.header-group {
+    color: white;
+    font-weight: 700;
+    padding: 1px 15px;
+    border: 1px solid #0d2240;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Colores personalizados para cada grupo */
+.header-group:nth-child(1) { 
+    background: #fff9c4; /* Amarillo clarito - Datos de Dominio */
+    color: #333;
+    position: sticky;
+    left: 0;
+    z-index: 60;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.header-group:nth-child(2) { 
+    background: #b3e5fc; /* Celeste - Detalle de Ingreso */
+    color: #333;
+}
+
+.header-group:nth-child(3) { 
+    background: #fff9c4; /* Amarillo clarito - Detalle de Observación */
+    color: #333;
+}
+
+.header-group:nth-child(4) { 
+    background: #ffffff; /* Blanco - Detalles Técnicos */
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.header-group:nth-child(5) { 
+    background: #80deea; /* Turquesa - Detalles Comerciales */
+    color: #333;
+}
+
+.header-group:nth-child(6) { 
+    background: linear-gradient(135deg, #2c5f8d 0%, #1e4d7b 100%); /* Azul - Acciones */
+    color: white;
+}
+
+/* Grid de headers individuales */
 .equipos-header-grid {
     display: grid;
     grid-template-columns: 
+        /* Datos de Dominio */
         180px    /* Cliente */
         80px     /* OST */
         120px    /* Estado */
+        
+        /* Detalle de Ingreso */
         120px    /* Fecha Ingreso */
-        150px    /* Tipo */
-        120px    /* Marca */
+        120px    /* Remito */
+        210px    /* Tipo */
+        150px    /* Marca */
         150px    /* Modelo */
         180px    /* Serie */
-        150px    /* Fotos */
-        150px    /* Facturas */
         200px    /* Accesorios */
+        200px    /* Obs. Ingreso */
+        150px    /* Fotos */
         100px    /* Prioridad */
+        
+        /* Detalle de Observación */
+        150px    /* Fecha Envío */
+        150px    /* Proveedor */
+        
+        /* Detalles Técnicos y de seguimiento */
+        200px    /* Detalles Reparación */
+        100px    /* Hrs */
+        100px    /* Reingreso */
+        100px    /* Informe */
+        150px    /* Costo */
+        
+        /* Detalles Comerciales */
+        150px    /* Precio */
+        120px    /* OV */
+        120px    /* Estado OV */
+        150px    /* Fecha Entrega */
+        150px    /* Remito Entrega */
+        
+        /* Acciones */
         100px;   /* Acciones */
 }
 
 /* Contenedor del cuerpo con scroll */
 .equipos-body-container {
     max-height: 65vh;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: auto;
 }
 
 /* Grid del cuerpo - mismas columnas */
 .equipos-body-grid {
     display: grid;
     grid-template-columns: 
+        /* Datos de Dominio */
         180px    /* Cliente */
         80px     /* OST */
         120px    /* Estado */
+        
+        /* Detalle de Ingreso */
         120px    /* Fecha Ingreso */
-        150px    /* Tipo */
-        120px    /* Marca */
+        120px    /* Remito */
+        210px    /* Tipo */
+        150px    /* Marca */
         150px    /* Modelo */
         180px    /* Serie */
-        150px    /* Fotos */
-        150px    /* Facturas */
         200px    /* Accesorios */
+        200px    /* Obs. Ingreso */
+        150px    /* Fotos */
         100px    /* Prioridad */
+        
+        /* Detalle de Observación */
+        150px    /* Fecha Envío */
+        150px    /* Proveedor */
+        
+        /* Detalles Técnicos y de seguimiento */
+        200px    /* Detalles Reparación */
+        100px    /* Hrs */
+        100px    /* Reingreso */
+        100px    /* Informe */
+        150px    /* Costo */
+        
+        /* Detalles Comerciales */
+        150px    /* Precio */
+        120px    /* OV */
+        120px    /* Estado OV */
+        150px    /* Fecha Entrega */
+        150px    /* Remito Entrega */
+        
+        /* Acciones */
         100px;   /* Acciones */
 }
 
-/* Headers */
+/* Headers con colores por defecto (azul) */
 .grid-header {
     background-color: #1e4d7b !important;
     color: white !important;
@@ -82,13 +201,16 @@
     align-items: center;
 }
 
-/* Primeros 3 headers sticky horizontalmente */
+/* Colores específicos para headers individuales */
+/* Cliente, OST, Estado - Amarillo clarito */
 .grid-header:nth-child(1),
 .grid-header:nth-child(2),
 .grid-header:nth-child(3) {
+    background-color: #fff9c4 !important;
+    color: #333 !important;
+    border: 1px solid #ddd;
     position: sticky;
     z-index: 50;
-    background-color: #1e4d7b !important;
 }
 
 .grid-header:nth-child(1) { left: 0; }
@@ -98,7 +220,33 @@
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
 
-/* Celdas del cuerpo */
+/* Fecha Envío y Proveedor - Amarillo clarito */
+.grid-header:nth-child(14),
+.grid-header:nth-child(15) {
+    background-color: #fff9c4 !important;
+    color: #333 !important;
+    border: 1px solid #ddd;
+}
+
+/* Reingreso - Amarillo clarito */
+.grid-header:nth-child(18) {
+    background-color: #fff9c4 !important;
+    color: #333 !important;
+    border: 1px solid #ddd;
+}
+
+/* Precio, OV, Estado OV, Fecha Entrega, Remito Entrega - Turquesa */
+.grid-header:nth-child(21),
+.grid-header:nth-child(22),
+.grid-header:nth-child(23),
+.grid-header:nth-child(24),
+.grid-header:nth-child(25) {
+    background-color: #80deea !important;
+    color: #333 !important;
+    border: 1px solid #4dd0e1;
+}
+
+/* Celdas del cuerpo - ALTURA FIJA */
 .grid-cell {
     padding: 12px 15px;
     border: 1px solid #e0e0e0;
@@ -109,21 +257,48 @@
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
-    min-height: 48px;
+    height: 48px; /* Altura fija */
     box-sizing: border-box;
 }
 
-/* Primeras 3 columnas del cuerpo sticky horizontalmente */
-.equipos-body-grid > div:nth-child(13n + 1),
-.equipos-body-grid > div:nth-child(13n + 2),
-.equipos-body-grid > div:nth-child(13n + 3) {
-    position: sticky;
-    z-index: 10;
+/* Celda de Obs. Ingreso con indicador de que hay modal */
+.obs-ingreso-cell {
+    cursor: pointer;
+    background-color: #f0f0f0;
+    position: relative;
 }
 
-.equipos-body-grid > div:nth-child(13n + 1) { left: 0; }
-.equipos-body-grid > div:nth-child(13n + 2) { left: 180px; }
-.equipos-body-grid > div:nth-child(13n + 3) { 
+.obs-ingreso-cell:hover {
+    background-color: #e0e0e0 !important;
+}
+
+.obs-ingreso-cell::after {
+    content: "🔍";
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+}
+
+/* Primeras 3 columnas del cuerpo sticky horizontalmente */
+/* Total de columnas ahora: 26 */
+.equipos-body-grid > div:nth-child(26n + 1),
+.equipos-body-grid > div:nth-child(26n + 2),
+.equipos-body-grid > div:nth-child(26n + 3) {
+    position: sticky;
+    z-index: 20;
+}
+
+.equipos-body-grid > div:nth-child(26n + 1) { 
+    left: 0;
+}
+
+.equipos-body-grid > div:nth-child(26n + 2) { 
+    left: 180px;
+}
+
+.equipos-body-grid > div:nth-child(26n + 3) { 
     left: 260px;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
@@ -138,22 +313,29 @@
 }
 
 /* Mantener colores en columnas sticky */
-.equipos-body-grid > div:nth-child(13n + 1)[data-row-color="even"],
-.equipos-body-grid > div:nth-child(13n + 2)[data-row-color="even"],
-.equipos-body-grid > div:nth-child(13n + 3)[data-row-color="even"] {
-    background-color: #e8f4f8;
+.equipos-body-grid > div:nth-child(26n + 1)[data-row-color="even"],
+.equipos-body-grid > div:nth-child(26n + 2)[data-row-color="even"],
+.equipos-body-grid > div:nth-child(26n + 3)[data-row-color="even"] {
+    background-color: #e8f4f8 !important;
 }
 
-.equipos-body-grid > div:nth-child(13n + 1)[data-row-color="odd"],
-.equipos-body-grid > div:nth-child(13n + 2)[data-row-color="odd"],
-.equipos-body-grid > div:nth-child(13n + 3)[data-row-color="odd"] {
-    background-color: #ffffff;
+.equipos-body-grid > div:nth-child(26n + 1)[data-row-color="odd"],
+.equipos-body-grid > div:nth-child(26n + 2)[data-row-color="odd"],
+.equipos-body-grid > div:nth-child(26n + 3)[data-row-color="odd"] {
+    background-color: #ffffff !important;
 }
 
 /* Hover en filas */
 .grid-cell.hover-active {
     background-color: #d4e9f7 !important;
     cursor: pointer;
+}
+
+/* Asegurar que columnas sticky mantengan el color en hover */
+.equipos-body-grid > div:nth-child(26n + 1).hover-active,
+.equipos-body-grid > div:nth-child(26n + 2).hover-active,
+.equipos-body-grid > div:nth-child(26n + 3).hover-active {
+    background-color: #d4e9f7 !important;
 }
 
 /* Celdas editables */
@@ -163,6 +345,13 @@
 
 .grid-cell.editable:focus {
     outline: 2px solid #667eea;
+    background-color: #fff3cd !important;
+}
+
+/* Asegurar que columnas sticky mantengan color cuando están en focus */
+.equipos-body-grid > div:nth-child(26n + 1).editable:focus,
+.equipos-body-grid > div:nth-child(26n + 2).editable:focus,
+.equipos-body-grid > div:nth-child(26n + 3).editable:focus {
     background-color: #fff3cd !important;
 }
 
@@ -186,6 +375,11 @@
     background-color: #fff3cd !important;
 }
 
+/* Asegurar que la columna sticky de estado mantenga color en hover */
+.equipos-body-grid > div:nth-child(26n + 3).estado-cell:hover {
+    background-color: #fff3cd !important;
+}
+
 .estado-value {
     width: 100%;
 }
@@ -196,6 +390,19 @@
     border: 2px solid #667eea;
     border-radius: 4px;
     font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* Checkbox styles para campos booleanos */
+.checkbox-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.checkbox-cell input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
     cursor: pointer;
 }
 
@@ -231,34 +438,114 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-/* Scrollbar */
-.equipos-body-container::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-.equipos-body-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.equipos-body-container::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 5px;
-}
-
-.equipos-body-container::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Sincronizar scroll horizontal entre header y body */
-.equipos-header-scroll-sync {
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-}
-
-.equipos-header-scroll-sync::-webkit-scrollbar {
+/* Modal */
+.modal {
     display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 0;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-content-large {
+    max-width: 800px;
+    max-height: 90vh;
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 2px solid #1e4d7b;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.search-box {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #ddd;
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.close-btn {
+    background: #666;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    background: #444;
+}
+
+/* Modal de Observación */
+.obs-textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.obs-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .equipos-wrapper {
+        font-size: 0.8rem;
+    }
 }
 </style>
 {% endblock %}
@@ -267,395 +554,443 @@
 <h2 style="margin-bottom: 1.5rem; color: #1e4d7b;">🖥️ Gestión de Equipos</h2>
 
 <div style="margin-bottom: 1.5rem;">
-    <button class="btn btn-primary" onclick="mostrarModal()">➕ Agregar Nuevo Equipo</button>
-</div>
-
-<!-- Modal Agregar Equipo -->
-<div id="modalEquipo" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
-        <h3 style="margin-bottom: 1.5rem; color: #1e4d7b;">🖥️ Nuevo Equipo</h3>
-        <form id="formEquipo">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">ID Solicitud *</label>
-                    <input type="number" name="solicitud_id" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Número Equipo *</label>
-                    <input type="number" name="numero_equipo" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Tipo Equipo *</label>
-                    <input type="text" name="tipo_equipo" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Marca</label>
-                    <input type="text" name="marca" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Modelo</label>
-                    <input type="text" name="modelo" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Número de Serie</label>
-                    <input type="text" name="numero_serie" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Cliente</label>
-                    <input type="text" name="cliente" value="Syemed" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Prioridad</label>
-                    <select name="prioridad" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="Baja">Baja</option>
-                        <option value="Media" selected>Media</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Crítica">Crítica</option>
-                    </select>
-                </div>
-                <div style="grid-column: 1 / -1;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Accesorios</label>
-                    <textarea name="accesorios" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"></textarea>
-                </div>
-                <div style="grid-column: 1 / -1;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Observación de Ingreso</label>
-                    <textarea name="observacion_ingreso" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"></textarea>
-                </div>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
-                <button type="button" class="btn" onclick="cerrarModal()" style="background: #6c757d; color: white;">❌ Cancelar</button>
-                <button type="submit" class="btn btn-primary">💾 Guardar Equipo</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal Selector (Tipo y Marca) -->
-<div id="modalSelector" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; display: flex; flex-direction: column;">
-        <h3 id="selectorTitle" style="margin-bottom: 1rem; color: #1e4d7b;"></h3>
-        <input type="text" id="selectorSearch" placeholder="🔍 Buscar..." style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; margin-bottom: 1rem;">
-        <div id="selectorList" style="flex: 1; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; max-height: 400px;"></div>
-        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
-            <button type="button" class="btn" onclick="cerrarModalSelector()" style="background: #6c757d; color: white;">❌ Cancelar</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Agregar Nuevo Tipo -->
-<div id="modalNuevoTipo" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
-        <h3 style="margin-bottom: 1.5rem; color: #1e4d7b;">➕ Agregar Nuevo Tipo de Equipo</h3>
-        <form id="formNuevoTipo">
-            <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre del Tipo *</label>
-                <input type="text" id="inputNuevoTipo" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem;">
-                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Este tipo se agregará a la lista de opciones disponibles.</p>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
-                <button type="button" class="btn" onclick="cerrarModalNuevoTipo()" style="background: #6c757d; color: white;">❌ Cancelar</button>
-                <button type="submit" class="btn btn-primary">✅ Agregar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal Agregar Nueva Marca -->
-<div id="modalNuevaMarca" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
-        <h3 style="margin-bottom: 1.5rem; color: #1e4d7b;">➕ Agregar Nueva Marca</h3>
-        <form id="formNuevaMarca">
-            <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre de la Marca *</label>
-                <input type="text" id="inputNuevaMarca" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem;">
-                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Esta marca se agregará a la lista de opciones disponibles.</p>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
-                <button type="button" class="btn" onclick="cerrarModalNuevaMarca()" style="background: #6c757d; color: white;">❌ Cancelar</button>
-                <button type="submit" class="btn btn-primary">✅ Agregar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal Agregar Nuevo Modelo -->
-<div id="modalNuevoModelo" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
-        <h3 style="margin-bottom: 1.5rem; color: #1e4d7b;">➕ Agregar Nuevo Modelo</h3>
-        <form id="formNuevoModelo">
-            <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre del Modelo *</label>
-                <input type="text" id="inputNuevoModelo" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem;">
-                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Este modelo se agregará a la lista de opciones disponibles.</p>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
-                <button type="button" class="btn" onclick="cerrarModalNuevoModelo()" style="background: #6c757d; color: white;">❌ Cancelar</button>
-                <button type="submit" class="btn btn-primary">✅ Agregar</button>
-            </div>
-        </form>
-    </div>
+    <button class="btn btn-primary" onclick="location.href='#'">➕ Agregar Nuevo Equipo</button>
 </div>
 
 <div class="equipos-wrapper">
-    <!-- HEADERS -->
+    <!-- Header Container -->
     <div class="equipos-header-container">
-        <div class="equipos-header-scroll-sync" id="headerScroll">
-            <div class="equipos-header-grid">
-                <div class="grid-header">Cliente</div>
-                <div class="grid-header">OST</div>
-                <div class="grid-header">Estado</div>
-                <div class="grid-header">Fecha Ingreso</div>
-                <div class="grid-header">Tipo</div>
-                <div class="grid-header">Marca</div>
-                <div class="grid-header">Modelo</div>
-                <div class="grid-header">Serie</div>
-                <div class="grid-header">📸 Fotos</div>
-                <div class="grid-header">📄 Facturas</div>
-                <div class="grid-header">Accesorios</div>
-                <div class="grid-header">Prioridad</div>
-                <div class="grid-header">Acciones</div>
-            </div>
+        <!-- Grupos de headers -->
+        <div class="equipos-header-groups">
+            <div class="header-group">📋 Datos de Dominio</div>
+            <div class="header-group">📥 Detalle de Ingreso</div>
+            <div class="header-group">👁️ Detalle de Observación</div>
+            <div class="header-group">🔧 Detalles Técnicos y de Seguimiento</div>
+            <div class="header-group">💰 Detalles Comerciales</div>
+            <div class="header-group">⚙️ Acciones</div>
+        </div>
+        
+        <!-- Headers individuales -->
+        <div class="equipos-header-grid">
+            <!-- Datos de Dominio (3) -->
+            <div class="grid-header">Cliente</div>
+            <div class="grid-header">OST</div>
+            <div class="grid-header">Estado</div>
+            
+            <!-- Detalle de Ingreso (10) -->
+            <div class="grid-header">Fecha Ingreso</div>
+            <div class="grid-header">Remito</div>
+            <div class="grid-header">Tipo</div>
+            <div class="grid-header">Marca</div>
+            <div class="grid-header">Modelo</div>
+            <div class="grid-header">Serie</div>
+            <div class="grid-header">Accesorios</div>
+            <div class="grid-header">Obs. Ingreso</div>
+            <div class="grid-header">Fotos</div>
+            <div class="grid-header">Prioridad</div>
+            
+            <!-- Detalle de Observación (2) -->
+            <div class="grid-header">Fecha Envío</div>
+            <div class="grid-header">Proveedor</div>
+            
+            <!-- Detalles Técnicos (5) -->
+            <div class="grid-header">Det. Reparación</div>
+            <div class="grid-header">Hrs</div>
+            <div class="grid-header">Reingreso</div>
+            <div class="grid-header">Informe</div>
+            <div class="grid-header">Costo</div>
+            
+            <!-- Detalles Comerciales (5) -->
+            <div class="grid-header">Precio</div>
+            <div class="grid-header">OV</div>
+            <div class="grid-header">Estado OV</div>
+            <div class="grid-header">Fecha Entrega</div>
+            <div class="grid-header">Remito Entrega</div>
+            
+            <!-- Acciones (1) -->
+            <div class="grid-header">Acciones</div>
         </div>
     </div>
 
-    <!-- CUERPO -->
-    <div class="equipos-body-container" id="bodyScroll">
+    <!-- Body Container -->
+    <div class="equipos-body-container">
         <div class="equipos-body-grid">
             {% for equipo in equipos %}
-                {% set row_color = "even" if loop.index0 % 2 == 0 else "odd" %}
-                
-                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" title="{{ equipo.cliente }}">{{ equipo.cliente }}</div>
-                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">{{ equipo.ost }}</div>
-                <div class="grid-cell estado-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="estado" title="{{ equipo.estado or 'Pendiente' }}">
-                    <span class="estado-value">{{ equipo.estado or 'Pendiente' }}</span>
-                    <select class="estado-select" style="display: none;">
-                        <option value="Pendiente">Pendiente</option>
-                        <option value="Aprobación pendiente">Aprobación pendiente</option>
-                        <option value="A presupuestar">A presupuestar</option>
-                        <option value="Baja técnica">Baja técnica</option>
-                        <option value="En curso">En curso</option>
-                        <option value="Finalizado">Finalizado</option>
-                        <option value="Listo para entregar">Listo para entregar</option>
-                        <option value="Repuestos">Repuestos</option>
-                        <option value="Tercerizado">Tercerizado</option>
-                        <option value="L/E - Faltantes">L/E - Faltantes</option>
-                        <option value="Enviado/Falta Remito">Enviado/Falta Remito</option>
-                    </select>
-                </div>
-                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
-                <div class="grid-cell editable-select" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="tipo_equipo" data-type="tipo" title="{{ equipo.tipo_equipo or 'Click para seleccionar' }}">{{ equipo.tipo_equipo or 'Seleccionar...' }}</div>
-                <div class="grid-cell editable-select" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="marca" data-type="marca" title="{{ equipo.marca or 'Click para seleccionar' }}">{{ equipo.marca or 'Seleccionar...' }}</div>
-                <div class="grid-cell editable-select" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="modelo" data-type="modelo" title="{{ equipo.modelo or 'Click para seleccionar' }}">{{ equipo.modelo or 'Seleccionar...' }}</div>
-                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="numero_serie" contenteditable="true">{{ equipo.numero_serie or '' }}</div>
-                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">
-                    {% if equipo.urls_fotos_fallas %}
-                        {% set urls = equipo.urls_fotos_fallas.split('||') %}
-                        {% for url in urls %}
-                            {% if url %}
-                                <a href="{{ url }}" target="_blank">🖼️ {{ loop.index }}</a>
-                            {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        Sin archivos
-                    {% endif %}
-                </div>
-                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">
-                    {% if equipo.urls_facturas %}
-                        {% set urls = equipo.urls_facturas.split('||') %}
-                        {% for url in urls %}
-                            {% if url %}
-                                <a href="{{ url }}" target="_blank">📄 {{ loop.index }}</a>
-                            {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        Sin archivos
-                    {% endif %}
-                </div>
-                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="accesorios" contenteditable="true">{{ equipo.accesorios or '' }}</div>
-                <div class="grid-cell editable" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}" data-id="{{ equipo.id }}" data-field="prioridad" contenteditable="true">{{ equipo.prioridad or '' }}</div>
-                <div class="grid-cell" data-row="{{ loop.index0 }}" data-row-color="{{ row_color }}">
-                    <button class="btn btn-primary" onclick="guardarFila({{ equipo.id }})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">💾</button>
-                </div>
+            {% set row_color = 'even' if loop.index % 2 == 0 else 'odd' %}
+            
+            <!-- Datos de Dominio -->
+            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
+                {{ equipo.cliente or 'N/A' }}
+            </div>
+            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
+                {{ equipo.ost or 'N/A' }}
+            </div>
+            <div class="grid-cell estado-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="estado">
+                <span class="estado-value">{{ equipo.estado or 'Pendiente' }}</span>
+            </div>
+            
+            <!-- Detalle de Ingreso -->
+            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
+                {{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="remito">
+                {{ equipo.remito or '' }}
+            </div>
+            <div class="grid-cell editable-select" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="tipo_equipo" data-type="tipo">
+                {{ equipo.tipo_equipo or 'Seleccionar' }}
+            </div>
+            <div class="grid-cell editable-select" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="marca" data-type="marca">
+                {{ equipo.marca or 'Seleccionar' }}
+            </div>
+            <div class="grid-cell editable-select" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="modelo" data-type="modelo">
+                {{ equipo.modelo or 'Seleccionar' }}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="numero_serie">
+                {{ equipo.numero_serie or '' }}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="accesorios">
+                {{ equipo.accesorios or '' }}
+            </div>
+            <!-- Obs. Ingreso con modal -->
+            <div class="grid-cell obs-ingreso-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="observacion_ingreso" data-obs-completa="{{ equipo.observacion_ingreso or '' }}">
+                {{ (equipo.observacion_ingreso[:30] + '...') if equipo.observacion_ingreso and equipo.observacion_ingreso|length > 30 else (equipo.observacion_ingreso or '') }}
+            </div>
+            <!-- Fotos -->
+            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
+                {% set fotos = archivos|selectattr('numero_serie', 'equalto', equipo.numero_serie)|selectattr('categoria', 'equalto', 'falla')|list %}
+                {% if fotos %}
+                    {% for foto in fotos %}
+                    <a href="{{ foto.url_cloudinary }}" target="_blank">🖼️</a>
+                    {% endfor %}
+                {% else %}
+                    <span style="color: #999;">-</span>
+                {% endif %}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="prioridad">
+                {{ equipo.prioridad or '' }}
+            </div>
+            
+            <!-- Detalle de Observación -->
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="fecha_envio">
+                {{ equipo.fecha_envio.strftime('%d/%m/%Y') if equipo.fecha_envio else '' }}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="proveedor">
+                {{ equipo.proveedor or '' }}
+            </div>
+            
+            <!-- Detalles Técnicos -->
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="detalles_reparacion">
+                {{ (equipo.detalles_reparacion[:30] + '...') if equipo.detalles_reparacion and equipo.detalles_reparacion|length > 30 else (equipo.detalles_reparacion or '') }}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="horas_trabajo">
+                {{ equipo.horas_trabajo or '' }}
+            </div>
+            <div class="grid-cell checkbox-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
+                <input type="checkbox" {% if equipo.reingreso %}checked{% endif %} 
+                       data-id="{{ equipo.id }}" data-field="reingreso">
+            </div>
+            <div class="grid-cell checkbox-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
+                <input type="checkbox" {% if equipo.informe %}checked{% endif %} 
+                       data-id="{{ equipo.id }}" data-field="informe">
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="costo">
+                {{ '${:,.2f}'.format(equipo.costo) if equipo.costo else '' }}
+            </div>
+            
+            <!-- Detalles Comerciales -->
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="precio">
+                {{ '${:,.2f}'.format(equipo.precio) if equipo.precio else '' }}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="ov">
+                {{ equipo.ov or '' }}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="estado_ov">
+                {{ equipo.estado_ov or '' }}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="fecha_entrega">
+                {{ equipo.fecha_entrega.strftime('%d/%m/%Y') if equipo.fecha_entrega else '' }}
+            </div>
+            <div class="grid-cell editable" contenteditable="true" data-row="{{ loop.index }}" data-row-color="{{ row_color }}" 
+                 data-id="{{ equipo.id }}" data-field="remito_entrega">
+                {{ equipo.remito_entrega or '' }}
+            </div>
+            
+            <!-- Acciones -->
+            <div class="grid-cell" data-row="{{ loop.index }}" data-row-color="{{ row_color }}">
+                <button class="btn btn-primary" onclick="guardarFila({{ equipo.id }})">💾</button>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
 
+<div style="margin-top: 1.5rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+    <strong>💡 Tip:</strong> Las primeras 3 columnas son fijas. Haz clic en "Obs. Ingreso" para ver/editar el texto completo en un modal.
+</div>
+
+<!-- Modal de Observación de Ingreso -->
+<div id="modalObsIngreso" class="modal">
+    <div class="modal-content modal-content-large">
+        <div class="modal-header">
+            <h3>📝 Observación de Ingreso - OST: <span id="obsOST"></span></h3>
+        </div>
+        <div class="modal-body">
+            <textarea id="obsTextarea" class="obs-textarea" placeholder="Escriba la observación aquí..."></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="close-btn" onclick="cerrarModalObs()">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarObservacion()">💾 Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Otros modales continúan igual... -->
+<!-- Modal Selector -->
+<div id="modalSelector" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="selectorTitle">Seleccionar Opción</h3>
+        </div>
+        <div class="modal-body">
+            <input type="text" id="selectorSearch" class="search-box" placeholder="Buscar...">
+            <div id="selectorList"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="close-btn" onclick="cerrarModalSelector()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Tipo -->
+<div id="modalNuevoTipo" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Agregar Nuevo Tipo de Equipo</h3>
+        </div>
+        <form id="formNuevoTipo">
+            <div class="modal-body">
+                <input type="text" id="inputNuevoTipo" class="search-box" placeholder="Nombre del tipo..." required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="close-btn" onclick="cerrarModalNuevoTipo()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Agregar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Nueva Marca -->
+<div id="modalNuevaMarca" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Agregar Nueva Marca</h3>
+        </div>
+        <form id="formNuevaMarca">
+            <div class="modal-body">
+                <input type="text" id="inputNuevaMarca" class="search-box" placeholder="Nombre de la marca..." required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="close-btn" onclick="cerrarModalNuevaMarca()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Agregar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Nuevo Modelo -->
+<div id="modalNuevoModelo" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Agregar Nuevo Modelo</h3>
+        </div>
+        <form id="formNuevoModelo">
+            <div class="modal-body">
+                <input type="text" id="inputNuevoModelo" class="search-box" placeholder="Nombre del modelo..." required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="close-btn" onclick="cerrarModalNuevoModelo()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Agregar</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 // Sincronizar scroll horizontal entre header y body
-const headerScroll = document.getElementById('headerScroll');
-const bodyScroll = document.getElementById('bodyScroll');
+const headerContainer = document.querySelector('.equipos-header-container');
+const bodyContainer = document.querySelector('.equipos-body-container');
 
-let isHeaderScrolling = false;
-let isBodyScrolling = false;
-
-bodyScroll.addEventListener('scroll', function() {
-    if (!isHeaderScrolling) {
-        isBodyScrolling = true;
-        headerScroll.scrollLeft = this.scrollLeft;
-        setTimeout(function() { isBodyScrolling = false; }, 10);
-    }
+bodyContainer.addEventListener('scroll', function() {
+    headerContainer.scrollLeft = this.scrollLeft;
 });
 
-headerScroll.addEventListener('scroll', function() {
-    if (!isBodyScrolling) {
-        isHeaderScrolling = true;
-        bodyScroll.scrollLeft = this.scrollLeft;
-        setTimeout(function() { isHeaderScrolling = false; }, 10);
-    }
+headerContainer.addEventListener('scroll', function() {
+    bodyContainer.scrollLeft = this.scrollLeft;
 });
 
-// Hover sincronizado en filas
+// Hover efecto para filas
 document.querySelectorAll('.grid-cell').forEach(function(cell) {
+    const rowIndex = cell.getAttribute('data-row');
+    
     cell.addEventListener('mouseenter', function() {
-        const rowIndex = this.getAttribute('data-row');
-        if (rowIndex !== null) {
-            document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                c.classList.add('hover-active');
-            });
-        }
+        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+            c.classList.add('hover-active');
+        });
     });
     
     cell.addEventListener('mouseleave', function() {
+        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+            c.classList.remove('hover-active');
+        });
+    });
+});
+
+// Modal de Observación de Ingreso
+let currentObsCell = null;
+let currentObsEquipoId = null;
+let currentObsOST = null;
+
+document.querySelectorAll('.obs-ingreso-cell').forEach(function(cell) {
+    cell.addEventListener('click', function() {
+        currentObsCell = this;
+        currentObsEquipoId = this.getAttribute('data-id');
+        
+        // Obtener OST de la misma fila
         const rowIndex = this.getAttribute('data-row');
-        if (rowIndex !== null) {
-            document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                c.classList.remove('hover-active');
-            });
-        }
+        const ostCell = document.querySelector('[data-row="' + rowIndex + '"]');
+        currentObsOST = ostCell ? ostCell.textContent.trim() : 'N/A';
+        
+        // Obtener observación completa del atributo
+        const obsCompleta = this.getAttribute('data-obs-completa');
+        document.getElementById('obsTextarea').value = obsCompleta || '';
+        document.getElementById('obsOST').textContent = currentObsOST;
+        
+        document.getElementById('modalObsIngreso').style.display = 'flex';
     });
 });
 
-// Modal Agregar Equipo
-function mostrarModal() {
-    document.getElementById('modalEquipo').style.display = 'flex';
+function cerrarModalObs() {
+    document.getElementById('modalObsIngreso').style.display = 'none';
+    currentObsCell = null;
+    currentObsEquipoId = null;
+    currentObsOST = null;
 }
 
-function cerrarModal() {
-    document.getElementById('modalEquipo').style.display = 'none';
-    document.getElementById('formEquipo').reset();
-}
-
-document.getElementById('modalEquipo').addEventListener('click', function(e) {
-    if (e.target === this) {
-        cerrarModal();
-    }
-});
-
-document.getElementById('formEquipo').addEventListener('submit', function(e) {
-    e.preventDefault();
+function guardarObservacion() {
+    if (!currentObsEquipoId) return;
     
-    const formData = new FormData(this);
-    const data = {
-        solicitud_id: parseInt(formData.get('solicitud_id')),
-        numero_equipo: parseInt(formData.get('numero_equipo')),
-        tipo_equipo: formData.get('tipo_equipo'),
-        marca: formData.get('marca'),
-        modelo: formData.get('modelo'),
-        numero_serie: formData.get('numero_serie'),
-        cliente: formData.get('cliente'),
-        prioridad: formData.get('prioridad'),
-        accesorios: formData.get('accesorios'),
-        observacion_ingreso: formData.get('observacion_ingreso')
-    };
+    const nuevoTexto = document.getElementById('obsTextarea').value.trim();
     
-    fetch('/api/equipo/add', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-    })
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(result) {
-        if (result.success) {
-            alert('✅ Equipo agregado correctamente. OST: ' + result.ost);
-            cerrarModal();
-            location.reload();
-        } else {
-            alert('❌ Error al agregar: ' + (result.error || 'Error desconocido'));
-        }
-    })
-    .catch(function(error) {
-        alert('❌ Error de red: ' + error);
-    });
-});
-
-// Guardar fila
-function guardarFila(equipoId) {
-    const editableCells = document.querySelectorAll('.editable[data-id="' + equipoId + '"]');
-    
-    const data = {};
-    editableCells.forEach(function(cell) {
-        const field = cell.getAttribute('data-field');
-        data[field] = cell.textContent.trim();
-    });
-    
-    fetch('/api/equipo/' + equipoId, {
+    fetch('/api/equipo/' + currentObsEquipoId, {
         method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ observacion_ingreso: nuevoTexto })
     })
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(result) {
+    .then(response => response.json())
+    .then(result => {
         if (result.success) {
-            alert('✅ Equipo actualizado correctamente');
-            const rowCells = document.querySelectorAll('[data-id="' + equipoId + '"]');
-            const rowIndex = rowCells[0].getAttribute('data-row');
-            document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(cell) {
-                cell.style.backgroundColor = '#d4edda';
+            // Actualizar celda con texto truncado
+            const textoMostrar = nuevoTexto.length > 30 ? nuevoTexto.substring(0, 30) + '...' : nuevoTexto;
+            currentObsCell.textContent = textoMostrar;
+            currentObsCell.setAttribute('data-obs-completa', nuevoTexto);
+            
+            const rowIndex = currentObsCell.getAttribute('data-row');
+            document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                c.style.backgroundColor = '#d4edda';
             });
             setTimeout(function() {
-                document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(cell) {
-                    cell.style.backgroundColor = '';
+                document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                    c.style.backgroundColor = '';
                 });
-            }, 2000);
+            }, 1500);
+            
+            alert('✅ Observación guardada correctamente');
+            cerrarModalObs();
         } else {
-            alert('❌ Error al actualizar: ' + (result.error || 'Error desconocido'));
+            alert('❌ Error al guardar: ' + (result.error || 'Error desconocido'));
         }
     })
-    .catch(function(error) {
+    .catch(error => {
         alert('❌ Error de red: ' + error);
     });
 }
 
-// Celdas editables
+document.getElementById('modalObsIngreso').addEventListener('click', function(e) {
+    if (e.target === this) { cerrarModalObs(); }
+});
+
+// Guardar celda editable al perder el foco
 document.querySelectorAll('.editable').forEach(function(cell) {
+    let valorOriginal = cell.textContent.trim();
+    
     cell.addEventListener('focus', function() {
+        valorOriginal = this.textContent.trim();
         this.style.backgroundColor = '#fff3cd';
     });
     
     cell.addEventListener('blur', function() {
         this.style.backgroundColor = '';
+        const nuevoValor = this.textContent.trim();
+        
+        if (nuevoValor !== valorOriginal) {
+            const equipoId = this.getAttribute('data-id');
+            const field = this.getAttribute('data-field');
+            
+            const data = {};
+            data[field] = nuevoValor;
+            
+            fetch('/api/equipo/' + equipoId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                if (result.success) {
+                    const rowIndex = cell.getAttribute('data-row');
+                    document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                        c.style.backgroundColor = '#d4edda';
+                    });
+                    setTimeout(function() {
+                        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                            c.style.backgroundColor = '';
+                        });
+                    }, 1500);
+                }
+            });
+        }
     });
 });
 
-// Manejo de dropdown de estado
-document.querySelectorAll('.estado-cell').forEach(function(cell) {
-    const equipoId = cell.getAttribute('data-id');
-    const estadoValue = cell.querySelector('.estado-value');
-    const estadoSelect = cell.querySelector('.estado-select');
-    
-    cell.addEventListener('click', function() {
-        estadoValue.style.display = 'none';
-        estadoSelect.style.display = 'block';
-        estadoSelect.focus();
-    });
-    
-    estadoSelect.addEventListener('change', function() {
-        const nuevoEstado = this.value;
-        estadoValue.textContent = nuevoEstado;
+// Cambio de checkboxes
+document.querySelectorAll('.checkbox-cell input[type="checkbox"]').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        const equipoId = this.getAttribute('data-id');
+        const field = this.getAttribute('data-field');
+        const isChecked = this.checked;
         
-        const data = { estado: nuevoEstado };
+        const data = {};
+        data[field] = isChecked;
         
         fetch('/api/equipo/' + equipoId, {
             method: 'PUT',
@@ -665,30 +1000,77 @@ document.querySelectorAll('.estado-cell').forEach(function(cell) {
         .then(function(response) { return response.json(); })
         .then(function(result) {
             if (result.success) {
-                const rowIndex = cell.getAttribute('data-row');
-                document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                    c.style.backgroundColor = '#d4edda';
-                });
-                setTimeout(function() {
-                    document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
-                        c.style.backgroundColor = '';
-                    });
-                }, 1500);
+                alert('✅ Campo actualizado');
             }
         });
-        
-        estadoSelect.style.display = 'none';
-        estadoValue.style.display = 'block';
-    });
-    
-    estadoSelect.addEventListener('blur', function() {
-        estadoSelect.style.display = 'none';
-        estadoValue.style.display = 'block';
     });
 });
 
-// Datos de tipos y marcas
-const TIPOS_EQUIPO = ["Agitador Orbital","Analizador de gases","Asistente de Tos","Aspirador de secreciones","Aspirador Manual","Audiómetro","Autoanalizador","APAP","Balanza de Pie","Balanza de Pie Electrónica","Balanza Electrónica","Balanza Mecánica","Balanza Pediátrica","Balón de Contrapulsación","Batería","Bomba a jeringa","BPAP","Cable paciente ECG 5D Vet","Cable paciente ECG 3D","Cable paciente ECG 5D","Cable paciente ECG 10D","Bomba de Infusión","Bomba de Presión Negativa","Cables Varios","Calentador Humidificador","Capnógrafo","Cardiodesfibrilador","Central de Monitoreo","Centrífuga","Colposcopio","Colposcopio Digital","Concentrador de Oxígeno","Concentrador de Oxígeno Portátil","CPAP","CPU","DEA","Desfibrilador","Detector Fetal","Ecógrafo","Electrobisturí","Electrocardiógrafo","Electrocoagulador","Electroencefalógrafo","Equipo Presión Negativa","Estufa de Esterilización","Extensión SpO2","Fotoestimulador","Fuente de alimentación de Balanza","Fuente de alimentación de Monitor Fetal","Holter","Incubadora","Luminoterapia","Marcapasos","Manguera PNI","Manguito Cuff PNI","Mesa de Anestesia","Microscopio de banco","Microscopio de pared","Mochila de Oxígeno","Módulo de Capnografía","Módulo de Incubadora","Módulo PI","Monitor Fetal","Monitor Multiparamétrico","Oxicapnógrafo","Oxímetro de Pulso","Pedal monopolar Electrobisturí","Potenciales Evocados","Respirador","Respirador Portátil","Sensor de Temperatura","Sensor SpO2 B.Ad.","Sensor SpO2 Neo","Sensor SpO2 Vet","Sensor SpO2 + Extensión","Transductor Fetal Ultrasonido","Transductor Fetal Tocogineco","Tubo de Oxígeno","Vaporizador de anestesia","Video Colposcopio","Pie de Suero"];
+// Click en Estado para cambiar
+document.querySelectorAll('.estado-cell').forEach(function(cell) {
+    const estados = ['Pendiente', 'En Proceso', 'Completado', 'Entregado', 'Cancelado'];
+    
+    cell.addEventListener('click', function() {
+        const span = this.querySelector('.estado-value');
+        const estadoActual = span.textContent.trim();
+        
+        const select = document.createElement('select');
+        select.className = 'estado-select';
+        
+        estados.forEach(function(estado) {
+            const option = document.createElement('option');
+            option.value = estado;
+            option.textContent = estado;
+            if (estado === estadoActual) option.selected = true;
+            select.appendChild(option);
+        });
+        
+        span.style.display = 'none';
+        this.appendChild(select);
+        select.focus();
+        
+        select.addEventListener('change', function() {
+            const nuevoEstado = this.value;
+            const equipoId = cell.getAttribute('data-id');
+            
+            fetch('/api/equipo/' + equipoId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: nuevoEstado })
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                if (result.success) {
+                    span.textContent = nuevoEstado;
+                    span.style.display = '';
+                    select.remove();
+                    
+                    const rowIndex = cell.getAttribute('data-row');
+                    document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                        c.style.backgroundColor = '#d4edda';
+                    });
+                    setTimeout(function() {
+                        document.querySelectorAll('[data-row="' + rowIndex + '"]').forEach(function(c) {
+                            c.style.backgroundColor = '';
+                        });
+                    }, 1500);
+                }
+            });
+        });
+        
+        select.addEventListener('blur', function() {
+            span.style.display = '';
+            this.remove();
+        });
+    });
+});
+
+function guardarFila(equipoId) {
+    alert('💾 Los cambios se guardan automáticamente al editar cada celda');
+}
+
+// Listas de opciones
+const TIPOS_EQUIPO = ["Analizador de Gases","Balanza","Bomba de Infusión","Cama Eléctrica","Capnógrafo","Capnómetro","Cardiotocógrafo","Cauterio","Centrífuga","Concentrador de Oxígeno","Desfibrilador","Detector Fetal","Doppler","Electrocardiografo","Electrocardiógrafo","Emisor de Ultrasonido","Espirómetro","Estetoscopio","Fototerapia","Lámpara Quirúrgica","Línea Arterial","Microscopio","Monitor","Monitor Fetal","Monitor Multiparamétrico","Nebulizador","Negatoscopio","Otoscopio","Oxímetro","PC","Pesa","Purificador de Aire","Respirador","Simulador","Simulador Materno-Fetal","Soporte Ventilación","Tensiometro Adulto","Tensiómetro Pediátrico","Ventilador"];
 
 const MARCAS = ["Abbot","Adox","Agilent","Air Sep","Aitecs","Akonic","Alison","Apema","Arcomed","Argas","Argimed","Argus","Arrow","ATI Audiscan II","Bamec","BCI","Bioamerican Science","Biocare","Biolight","Bistos","BLT","BMC","Braun","CAM","Cardiomax","Cardioprint","Cardiotécnica","Cavour","CEC","Cegens","Choice","Codemaster","Colden","Comen","Confort Cough","Contec","Covidien","Daiwha","Dasa","Datascope","Datex Ohmeda","Denver Instruments","Desconocido","Dixtal","Dong Jiang","Dräger","Dyne","Eccosur","Edan","Edan/Leex","Ekhoson","Electromedik","Enmind","Enray","Esaote","Everflo","EyM","Faeta","Feas","Fisher&Paykel","For You","Fukuda","General Electric","General Medictech","Genérico","Goldway","Healthdyne","HP","Humidias","Infant Star","Innomed","Innovo","LADIE","Leex","Lifotronic","Long Fian","Lovego","Lowentein","Maquet","Massimo","Maverick","Maxtec","MDV","Med Captain","Med joy","Medifusion","Meditech","Medix","Medrena","Medtronic","Microelectrónica","Micromedical","Mindray","Minicomp","MUX","N/E","Natal Care","Nellcor","Neumovent","Newton","Nihon Kohden","Nikon","Ohmeda","Philips","Pmed","Prestige","Presvac","Radian QBio","Respironics","Roma","San-Jor","Sechrist","Silfab","SK","SLE","Suncare","Sunmed","Super Star","Systel","Takaoka","Unimed","UTAH","Valleylab","Vicking","View Sonic","WechAllyn","WEM","Yuwell"];
 
