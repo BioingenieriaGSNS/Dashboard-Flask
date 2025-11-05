@@ -224,6 +224,24 @@
     background: inherit !important;
 }
 
+/* Celdas de fecha */
+.editable-date {
+    cursor: pointer;
+    position: relative;
+}
+
+.editable-date:hover {
+    background: inherit !important;
+}
+
+.date-input {
+    width: 100%;
+    padding: 4px;
+    border: 2px solid #667eea;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
 /* Estado */
 .estado-cell {
     cursor: pointer;
@@ -831,8 +849,8 @@
                     <div class="cell ch-costo editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="costo_reparacion">{{ equipo.costo_reparacion or '' }}</div>
                     <div class="cell ch-precio editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="precio_cliente">{{ equipo.precio_cliente or '' }}</div>
                     <div class="cell ch-ov editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="numero_ov">{{ equipo.numero_ov or '' }}</div>
-                    <div class="cell ch-estado-ov editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="estado_ov">{{ equipo.estado_ov or '' }}</div>
-                    <div class="cell ch-fecha-entrega editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="fecha_entrega">{{ equipo.fecha_entrega or '' }}</div>
+                    <div class="cell ch-estado-ov editable-select" data-id="{{ equipo.id }}" data-field="estado_ov" data-type="estado_ov">{{ equipo.estado_ov or 'Seleccionar' }}</div>
+                    <div class="cell ch-fecha-entrega editable-date" data-id="{{ equipo.id }}" data-field="fecha_entrega">{{ equipo.fecha_entrega or '' }}</div>
                     <div class="cell ch-remito-entrega editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="remito_entrega">{{ equipo.remito_entrega or '' }}</div>
                     <div class="cell ch-acciones"><button class="btn btn-save" onclick="guardar({{ equipo.id }})">💾</button></div>
                 </div>
