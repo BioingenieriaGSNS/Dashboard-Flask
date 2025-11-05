@@ -100,36 +100,32 @@ def equipos():
         return "Error de conexión a la base de datos", 500
     
     cursor = conn.cursor()
+    
+    # Obtener equipos
     cursor.execute("""
-        SELECT e.id, e.solicitud_id, s.fecha_solicitud, s.solicitante, s.estado as estado_solicitud,
-               e.ost, e.numero_equipo, e.tipo_equipo, e.marca, e.modelo, 
-               e.numero_serie, e.en_garantia, e.fecha_compra, e.fecha_ingreso,
-               e.cliente, e.remito, e.accesorios, e.prioridad, 
-               e.observacion_ingreso, e.fecha_envio, e.proveedor,
-               e.detalles_reparacion, e.horas_trabajo, e.reingreso,
-               e.informe, e.costo, e.precio, e.ov, e.estado_ov,
-               e.fecha_entrega, e.remito_entrega, e.estado,
-               STRING_AGG(
-                   CASE WHEN a.categoria = 'falla' 
-                   THEN a.url_cloudinary 
-                   END, '||'
-               ) as urls_fotos_fallas,
-               STRING_AGG(
-                   CASE WHEN a.categoria = 'factura' 
-                   THEN a.url_cloudinary 
-                   END, '||'
-               ) as urls_facturas
-        FROM equipos e
-        LEFT JOIN solicitudes s ON e.solicitud_id = s.id
-        LEFT JOIN archivos_adjuntos a ON a.equipo_id = e.id
-        GROUP BY e.id, s.fecha_solicitud, s.solicitante, s.estado
-        ORDER BY e.fecha_ingreso DESC
+        SELECT id, cliente, ost, estado, fecha_ingreso, remito,
+               tipo_equipo, marca, modelo, numero_serie, accesorios,
+               observacion_ingreso, prioridad, fecha_envio, proveedor,
+               detalles_reparacion, horas_trabajo, reingreso, informe,
+               costo, precio, ov, estado_ov, fecha_entrega, remito_entrega
+        FROM equipos
+        ORDER BY fecha_ingreso DESC
     """)
     equipos = cursor.fetchall()
+    
+    # Obtener archivos para las fotos (hacer JOIN con equipos para obtener numero_serie)
+    cursor.execute("""
+        SELECT e.numero_serie, a.categoria, a.url_cloudinary
+        FROM archivos_adjuntos a
+        INNER JOIN equipos e ON a.equipo_id = e.id
+        WHERE e.numero_serie IS NOT NULL
+    """)
+    archivos = cursor.fetchall()
+    
     cursor.close()
     conn.close()
     
-    return render_template('equipos.html', equipos=equipos)
+    return render_template('equipos.html', equipos=equipos, archivos=archivos)
 
 @app.route('/archivos')
 def archivos():
@@ -195,9 +191,121 @@ def update_solicitud(id):
         conn.close()
         return jsonify({'error': str(e)}), 500
 
+# ============================================
+# NUEVOS ENDPOINTS PARA EL FORMULARIO DE AGREGAR EQUIPO
+# ============================================
+
+@app.route('/api/proximo-ost', methods=['GET'])
+def obtener_proximo_ost():
+    """Obtiene el próximo número OST disponible"""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'error': 'Error de conexión'}), 500
+    
+    cursor = conn.cursor()
+    
+    try:
+        # Obtener el OST máximo actual
+        cursor.execute("SELECT MAX(ost) as ultimo_ost FROM equipos")
+        result = cursor.fetchone()
+        ultimo_ost = result['ultimo_ost']
+        
+        # Si no hay equipos, empezar desde 1
+        if ultimo_ost is None or ultimo_ost == 0:
+            proximo_ost = 1
+        else:
+            proximo_ost = ultimo_ost + 1
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'proximo_ost': str(proximo_ost)
+        })
+    
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/equipos', methods=['POST'])
+def crear_equipo():
+    """API para crear un nuevo equipo (usado por el formulario de agregar)"""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'error': 'Error de conexión'}), 500
+    
+    data = request.json
+    cursor = conn.cursor()
+    
+    try:
+        # Validar campos requeridos
+        if not data.get('cliente'):
+            return jsonify({'success': False, 'error': 'El campo "cliente" es requerido'}), 400
+        
+        if not data.get('tipo_equipo'):
+            return jsonify({'success': False, 'error': 'El campo "tipo_equipo" es requerido'}), 400
+        
+        # Convertir fecha de string a date si viene como string
+        fecha_ingreso = data.get('fecha_ingreso')
+        if isinstance(fecha_ingreso, str):
+            try:
+                fecha_ingreso = datetime.strptime(fecha_ingreso, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Formato de fecha inválido'}), 400
+        
+        # Insertar el equipo (el OST se autogenera por la secuencia PostgreSQL)
+        cursor.execute("""
+            INSERT INTO equipos (
+                cliente, tipo_equipo, marca, modelo, numero_serie,
+                fecha_ingreso, remito, accesorios, prioridad, 
+                observacion_ingreso, estado
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id, ost
+        """, (
+            data.get('cliente'),
+            data.get('tipo_equipo'),
+            data.get('marca'),
+            data.get('modelo'),
+            data.get('numero_serie'),
+            fecha_ingreso,
+            data.get('remito'),
+            data.get('accesorios'),
+            data.get('prioridad'),
+            data.get('observacion_ingreso'),
+            'Pendiente'
+        ))
+        
+        result = cursor.fetchone()
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'id': result['id'],
+            'ost': result['ost'],
+            'message': 'Equipo creado exitosamente'
+        }), 201
+    
+    except Exception as e:
+        conn.rollback()
+        cursor.close()
+        conn.close()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ============================================
+# FIN DE NUEVOS ENDPOINTS
+# ============================================
+
 @app.route('/api/equipo/add', methods=['POST'])
 def add_equipo():
-    """API para agregar equipo"""
+    """API para agregar equipo (antiguo endpoint - mantener por compatibilidad)"""
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Error de conexión'}), 500
@@ -268,6 +376,9 @@ def update_equipo(id):
         if 'prioridad' in data:
             campos.append('prioridad = %s')
             valores.append(data.get('prioridad'))
+        if 'remito' in data:
+            campos.append('remito = %s')
+            valores.append(data.get('remito'))
         if 'observacion_ingreso' in data:
             campos.append('observacion_ingreso = %s')
             valores.append(data.get('observacion_ingreso'))
@@ -277,21 +388,42 @@ def update_equipo(id):
         if 'horas_trabajo' in data:
             campos.append('horas_trabajo = %s')
             valores.append(data.get('horas_trabajo'))
-        if 'costo' in data:
+        if 'reingreso' in data:
+            campos.append('reingreso = %s')
+            valores.append(data.get('reingreso'))
+        if 'informe_tecnico' in data:
+            campos.append('informe = %s')
+            valores.append(data.get('informe_tecnico'))
+        if 'costo_reparacion' in data:
             campos.append('costo = %s')
-            valores.append(data.get('costo'))
-        if 'precio' in data:
+            valores.append(data.get('costo_reparacion'))
+        if 'precio_cliente' in data:
             campos.append('precio = %s')
-            valores.append(data.get('precio'))
-        if 'ov' in data:
+            valores.append(data.get('precio_cliente'))
+        if 'numero_ov' in data:
             campos.append('ov = %s')
-            valores.append(data.get('ov'))
+            valores.append(data.get('numero_ov'))
         if 'estado_ov' in data:
             campos.append('estado_ov = %s')
             valores.append(data.get('estado_ov'))
+        if 'fecha_entrega' in data:
+            campos.append('fecha_entrega = %s')
+            valores.append(data.get('fecha_entrega'))
+        if 'remito_entrega' in data:
+            campos.append('remito_entrega = %s')
+            valores.append(data.get('remito_entrega'))
         if 'estado' in data:
             campos.append('estado = %s')
             valores.append(data.get('estado'))
+        if 'proveedor' in data:
+            campos.append('proveedor = %s')
+            valores.append(data.get('proveedor'))
+        if 'fecha_envio_proveedor' in data:
+            campos.append('fecha_envio = %s')
+            valores.append(data.get('fecha_envio_proveedor'))
+        if 'detalle_reparacion' in data:
+            campos.append('detalles_reparacion = %s')
+            valores.append(data.get('detalle_reparacion'))
         
         if not campos:
             return jsonify({'error': 'No hay campos para actualizar'}), 400
@@ -300,9 +432,6 @@ def update_equipo(id):
         valores.append(id)
         
         query = f"UPDATE equipos SET {', '.join(campos)} WHERE id = %s"
-        
-        print(f"Query: {query}")
-        print(f"Valores: {valores}")
         
         cursor.execute(query, valores)
         conn.commit()

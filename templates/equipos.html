@@ -14,7 +14,7 @@
     background: white;
     border: 1px solid #ddd;
     max-height: 75vh;
-    overflow: hidden; /* Sin scroll horizontal aquí */
+    overflow: hidden;
     position: relative;
 }
 
@@ -42,8 +42,8 @@
     overflow-x: auto;
     overflow-y: hidden;
     position: relative;
-    -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
-    min-width: 0; /* Permitir que se encoja si es necesario */
+    -webkit-overflow-scrolling: touch;
+    min-width: 0;
 }
 
 /* Indicador de scroll horizontal */
@@ -79,7 +79,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    min-width: min-content; /* Permitir expansión completa */
+    min-width: min-content;
 }
 
 .group-header {
@@ -91,7 +91,7 @@
     letter-spacing: 1px;
     text-align: center;
     white-space: nowrap;
-    flex-shrink: 0; /* Prevenir compresión */
+    flex-shrink: 0;
 }
 
 .gh-dominio { background: #fff9c4; color: #333; width: 380px; }
@@ -107,7 +107,7 @@
     position: sticky;
     top: 43px;
     z-index: 99;
-    min-width: min-content; /* Permitir expansión completa */
+    min-width: min-content;
 }
 
 .col-header {
@@ -120,7 +120,7 @@
     text-transform: uppercase;
     white-space: nowrap;
     text-align: center;
-    flex-shrink: 0; /* Prevenir compresión */
+    flex-shrink: 0;
 }
 
 /* Headers específicos de columnas fijas */
@@ -137,7 +137,7 @@
 .ch-ost { width: 80px; }
 .ch-estado { width: 120px; }
 
-/* Anchos de columnas scrollables - AUMENTADOS */
+/* Anchos de columnas scrollables */
 .ch-fecha-ingreso { width: 130px; }
 .ch-remito { width: 130px; }
 .ch-tipo { width: 220px; }
@@ -165,18 +165,18 @@
 /* Contenedor de filas */
 .rows-container {
     overflow-y: auto;
-    max-height: calc(75vh - 96px); /* Ajustado por headers más altos */
-    min-width: min-content; /* Permitir expansión completa */
-    -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+    max-height: calc(75vh - 96px);
+    min-width: min-content;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Fila de datos */
 .data-row {
     display: flex;
-    height: 60px; /* ALTURA FIJA en lugar de min-height */
-    min-width: min-content; /* Permitir expansión completa */
+    height: 60px;
+    min-width: min-content;
     border-bottom: 1px solid #e0e0e0;
-    flex-shrink: 0; /* PREVENIR compresión de las filas */
+    flex-shrink: 0;
 }
 
 .data-row:nth-child(even) {
@@ -201,12 +201,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    height: 60px; /* ALTURA FIJA en lugar de min-height */
-    flex-shrink: 0; /* Prevenir compresión */
-    background: inherit !important; /* FORZAR herencia del color de la fila */
+    height: 60px;
+    flex-shrink: 0;
+    background: inherit !important;
 }
-
-/* Todas las celdas mantienen nowrap para altura consistente */
 
 /* Celdas editables */
 .editable {
@@ -215,7 +213,7 @@
 
 .editable:focus {
     outline: 2px solid #667eea;
-    background: inherit !important; /* Mantener color de fila al hacer focus */
+    background: inherit !important;
 }
 
 .editable-select {
@@ -223,7 +221,7 @@
 }
 
 .editable-select:hover {
-    background: inherit !important; /* Mantener color de fila al hacer hover */
+    background: inherit !important;
 }
 
 /* Estado */
@@ -232,7 +230,7 @@
 }
 
 .estado-cell:hover {
-    background: inherit !important; /* Mantener color de fila al hacer hover */
+    background: inherit !important;
 }
 
 .estado-select {
@@ -326,13 +324,24 @@
     justify-content: center;
 }
 
+/* Modal de agregar equipo tiene z-index base */
+#modalAgregarEquipo {
+    z-index: 1000;
+}
+
+/* Modales selectores deben estar POR ENCIMA del modal de agregar equipo */
+#modalSelector,
+#modalNuevo {
+    z-index: 1200 !important; /* Mucho más alto para asegurar que estén encima */
+}
+
 .modal-content {
     background: white;
     padding: 0;
     border-radius: 8px;
     width: 90%;
     max-width: 500px;
-    max-height: 80vh;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
@@ -340,6 +349,7 @@
 
 .modal-content-large {
     max-width: 800px;
+    max-height: 85vh; /* Reducido para asegurar que el footer se vea */
 }
 
 .modal-header {
@@ -347,6 +357,9 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .modal-header h3 {
@@ -354,10 +367,31 @@
     font-size: 1.3rem;
 }
 
+.close-x {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.close-x:hover {
+    background: rgba(255,255,255,0.3);
+}
+
 .modal-body {
     padding: 20px;
     overflow-y: auto;
     flex: 1;
+    min-height: 0;
+    max-height: calc(85vh - 140px); /* Altura modal - header - footer */
 }
 
 .modal-footer {
@@ -366,6 +400,8 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+    flex-shrink: 0; /* Evitar que el footer se comprima */
+    background: white; /* Asegurar que sea visible */
 }
 
 .search-box {
@@ -433,14 +469,84 @@
     background: #d0e7f0;
 }
 
+/* Estilos para formulario de agregar equipo */
+.form-field {
+    margin-bottom: 15px;
+}
+
+.form-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-field input[readonly] {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-grid-full {
+    grid-column: 1 / -1;
+}
+
+.selector-button {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selector-button:hover {
+    border-color: #667eea;
+    background: #f8f9fa;
+}
+
+.selector-button::after {
+    content: '▼';
+    font-size: 0.8rem;
+    color: #666;
+}
+
 /* RESPONSIVE - MÓVIL */
 @media (max-width: 768px) {
-    /* Reducir altura máxima del contenedor */
     .table-container {
         max-height: 65vh;
     }
     
-    /* Mantener ancho razonable de columnas fijas en móvil */
     .fixed-section {
         width: 320px;
     }
@@ -449,12 +555,10 @@
         width: 320px;
     }
     
-    /* Anchos de columnas fijas - mantener legibles */
     .ch-cliente { width: 150px; }
     .ch-ost { width: 70px; }
     .ch-estado { width: 100px; }
     
-    /* Reducir padding en headers */
     .col-header {
         padding: 10px 8px;
         font-size: 0.8rem;
@@ -465,24 +569,21 @@
         font-size: 0.85rem;
     }
     
-    /* Ajustar altura de filas */
     .data-row {
-        height: 50px; /* ALTURA FIJA para móvil */
+        height: 50px;
     }
     
     .cell {
-        height: 50px; /* ALTURA FIJA para móvil */
+        height: 50px;
         padding: 10px 8px;
         font-size: 0.85rem;
-        background: inherit !important; /* FORZAR herencia del color de la fila */
+        background: inherit !important;
     }
     
-    /* Ajustar contenedor de filas */
     .rows-container {
-        max-height: calc(65vh - 90px); /* Ajustado */
+        max-height: calc(65vh - 90px);
     }
     
-    /* Mantener anchos razonables de columnas scrollables - NO comprimir demasiado */
     .ch-fecha-ingreso { width: 110px; }
     .ch-remito { width: 110px; }
     .ch-tipo { width: 190px; }
@@ -507,73 +608,70 @@
     .ch-remito-entrega { width: 130px; }
     .ch-acciones { width: 90px; }
     
-    /* Ajustar anchos de headers de grupo proporcionalmente */
     .gh-ingreso { width: 1480px; }
     .gh-observacion { width: 280px; }
     .gh-tecnico { width: 620px; }
     .gh-comercial { width: 660px; }
     .gh-acciones { width: 100px; }
     
-    /* Hacer botones más touch-friendly */
     .btn-save {
         padding: 6px 10px;
         font-size: 1.1rem;
     }
     
-    /* Hacer checkboxes más grandes para touch */
     .checkbox-cell input {
         width: 22px;
         height: 22px;
     }
     
-    /* Hacer que las celdas editables sean más fáciles de tocar */
     .editable, .editable-select, .estado-cell, .obs-cell {
-        height: 50px; /* ALTURA FIJA */
+        height: 50px;
         padding: 10px 8px;
-        background: inherit !important; /* Mantener color de fila */
+        background: inherit !important;
     }
     
-    /* Ajustar modales para móvil */
     .modal-content {
         width: 95%;
         max-width: 95%;
-        max-height: 85vh;
+        max-height: 90vh;
     }
     
     .modal-body {
         padding: 15px;
+        max-height: calc(90vh - 140px); /* Altura - header - footer */
     }
     
     .obs-textarea {
         min-height: 180px;
-        font-size: 16px; /* Prevenir zoom en iOS */
-    }
-    
-    .search-box {
-        font-size: 16px; /* Prevenir zoom en iOS */
-        padding: 10px;
-    }
-    
-    /* Prevenir zoom en inputs de modal */
-    input[type="text"] {
         font-size: 16px;
     }
     
-    /* Hacer el título más pequeño */
+    .search-box {
+        font-size: 16px;
+        padding: 10px;
+    }
+    
+    input[type="text"],
+    input[type="date"] {
+        font-size: 16px;
+    }
+    
     h2 {
         font-size: 1.3rem;
         margin-bottom: 1rem;
     }
     
-    /* Ajustar botón de agregar */
     .btn-primary {
         font-size: 0.9rem;
         padding: 0.5rem 1rem;
     }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {
-    /* Para pantallas muy pequeñas - solo ajustes mínimos */
     .table-container {
         max-height: 60vh;
     }
@@ -591,14 +689,14 @@
     .ch-estado { width: 80px; }
     
     .cell {
-        height: 45px; /* ALTURA FIJA para pantallas pequeñas */
+        height: 45px;
         padding: 8px 6px;
         font-size: 0.8rem;
-        background: inherit !important; /* FORZAR herencia del color de la fila */
+        background: inherit !important;
     }
     
     .data-row {
-        height: 45px; /* ALTURA FIJA para pantallas pequeñas */
+        height: 45px;
     }
     
     .col-header {
@@ -626,7 +724,7 @@
     }
     
     .rows-container {
-        max-height: calc(60vh - 86px); /* Ajustado */
+        max-height: calc(60vh - 86px);
     }
 }
 </style>
@@ -661,8 +759,8 @@
                 <div class="data-row" data-row="{{ loop.index }}" data-id="{{ equipo.id }}">
                     <div class="cell ch-cliente">{{ equipo.cliente or 'N/A' }}</div>
                     <div class="cell ch-ost">{{ equipo.ost or 'N/A' }}</div>
-                    <div class="cell ch-estado estado-cell" data-id="{{ equipo.id }}">
-                        <span class="estado-value">{{ equipo.estado or 'Pendiente' }}</span>
+                    <div class="cell ch-estado estado-cell editable-select" data-id="{{ equipo.id }}" data-field="estado" data-type="estado">
+                        {{ equipo.estado or 'Pendiente' }}
                     </div>
                 </div>
                 {% endfor %}
@@ -682,7 +780,7 @@
             
             <!-- Headers de columnas scrollables -->
             <div class="column-headers">
-                <div class="col-header ch-fecha-ingreso">Fecha Ingreso</div>
+                <div class="cell ch-fecha-ingreso editable-date" data-id="{{ equipo.id }}" data-field="fecha_ingreso">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
                 <div class="col-header ch-remito">Remito</div>
                 <div class="col-header ch-tipo">Tipo</div>
                 <div class="col-header ch-marca">Marca</div>
@@ -720,24 +818,21 @@
                     <div class="cell ch-accesorios editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="accesorios">{{ equipo.accesorios or '' }}</div>
                     <div class="cell ch-obs obs-cell" data-id="{{ equipo.id }}" data-obs="{{ equipo.observacion_ingreso or '' }}">{{ (equipo.observacion_ingreso[:25] + '...') if equipo.observacion_ingreso and equipo.observacion_ingreso|length > 25 else (equipo.observacion_ingreso or '') }}</div>
                     <div class="cell ch-fotos">
-                        <!-- NOTA: Para que las fotos funcionen, el backend debe pasar la variable 'archivos' 
-                             al renderizar este template. Esta variable debe contener los objetos de archivo 
-                             con los campos: numero_serie, categoria, y url_cloudinary -->
                         {% set fotos = archivos|selectattr('numero_serie', 'equalto', equipo.numero_serie)|selectattr('categoria', 'equalto', 'falla')|list %}
                         {% if fotos %}{% for foto in fotos %}<a href="{{ foto.url_cloudinary }}" target="_blank">🖼️</a>{% endfor %}{% else %}-{% endif %}
                     </div>
-                    <div class="cell ch-prioridad editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="prioridad">{{ equipo.prioridad or '' }}</div>
-                    <div class="cell ch-fecha-envio editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="fecha_envio">{{ equipo.fecha_envio.strftime('%d/%m/%Y') if equipo.fecha_envio else '' }}</div>
+                    <div class="cell ch-prioridad editable-select" data-id="{{ equipo.id }}" data-field="prioridad" data-type="prioridad">{{ equipo.prioridad or 'Seleccionar' }}</div>
+                    <div class="cell ch-fecha-envio editable-date" data-id="{{ equipo.id }}" data-field="fecha_envio_proveedor">{{ equipo.fecha_envio_proveedor or '' }}</div>
                     <div class="cell ch-proveedor editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="proveedor">{{ equipo.proveedor or '' }}</div>
-                    <div class="cell ch-det-reparacion editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="detalles_reparacion">{{ (equipo.detalles_reparacion[:25] + '...') if equipo.detalles_reparacion and equipo.detalles_reparacion|length > 25 else (equipo.detalles_reparacion or '') }}</div>
+                    <div class="cell ch-det-reparacion editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="detalle_reparacion">{{ equipo.detalle_reparacion or '' }}</div>
                     <div class="cell ch-hrs editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="horas_trabajo">{{ equipo.horas_trabajo or '' }}</div>
-                    <div class="cell ch-reingreso checkbox-cell"><input type="checkbox" {% if equipo.reingreso %}checked{% endif %} data-id="{{ equipo.id }}" data-field="reingreso"></div>
-                    <div class="cell ch-informe checkbox-cell"><input type="checkbox" {% if equipo.informe %}checked{% endif %} data-id="{{ equipo.id }}" data-field="informe"></div>
-                    <div class="cell ch-costo editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="costo">{{ '${:,.2f}'.format(equipo.costo) if equipo.costo else '' }}</div>
-                    <div class="cell ch-precio editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="precio">{{ '${:,.2f}'.format(equipo.precio) if equipo.precio else '' }}</div>
-                    <div class="cell ch-ov editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="ov">{{ equipo.ov or '' }}</div>
+                    <div class="cell ch-reingreso checkbox-cell"><input type="checkbox" data-id="{{ equipo.id }}" data-field="reingreso" {{ 'checked' if equipo.reingreso else '' }}></div>
+                    <div class="cell ch-informe checkbox-cell"><input type="checkbox" data-id="{{ equipo.id }}" data-field="informe_tecnico" {{ 'checked' if equipo.informe_tecnico else '' }}></div>
+                    <div class="cell ch-costo editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="costo_reparacion">{{ equipo.costo_reparacion or '' }}</div>
+                    <div class="cell ch-precio editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="precio_cliente">{{ equipo.precio_cliente or '' }}</div>
+                    <div class="cell ch-ov editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="numero_ov">{{ equipo.numero_ov or '' }}</div>
                     <div class="cell ch-estado-ov editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="estado_ov">{{ equipo.estado_ov or '' }}</div>
-                    <div class="cell ch-fecha-entrega editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="fecha_entrega">{{ equipo.fecha_entrega.strftime('%d/%m/%Y') if equipo.fecha_entrega else '' }}</div>
+                    <div class="cell ch-fecha-entrega editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="fecha_entrega">{{ equipo.fecha_entrega or '' }}</div>
                     <div class="cell ch-remito-entrega editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="remito_entrega">{{ equipo.remito_entrega or '' }}</div>
                     <div class="cell ch-acciones"><button class="btn btn-save" onclick="guardar({{ equipo.id }})">💾</button></div>
                 </div>
@@ -752,6 +847,7 @@
     <div class="modal-content modal-content-large">
         <div class="modal-header">
             <h3>📝 Observación de Ingreso - OST: <span id="obsOST"></span></h3>
+            <button class="close-x" onclick="cerrarObs()">×</button>
         </div>
         <div class="modal-body">
             <textarea id="obsText" class="obs-textarea" placeholder="Escriba la observación..."></textarea>
@@ -768,6 +864,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="selectorTitle">Seleccionar</h3>
+            <button class="close-x" onclick="cerrarSelector()">×</button>
         </div>
         <div class="modal-body">
             <input type="text" id="selectorSearch" class="search-box" placeholder="Buscar...">
@@ -784,6 +881,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="nuevoTitle">Agregar Nuevo</h3>
+            <button class="close-x" onclick="cerrarNuevo()">×</button>
         </div>
         <form id="formNuevo">
             <div class="modal-body">
@@ -802,41 +900,66 @@
     <div class="modal-content modal-content-large">
         <div class="modal-header">
             <h3>➕ Agregar Nuevo Equipo</h3>
+            <button class="close-x" onclick="cerrarModalAgregarEquipo()">×</button>
         </div>
-        <form id="formAgregarEquipo" action="/equipos/nuevo" method="POST">
+        <form id="formAgregarEquipo">
             <div class="modal-body">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Cliente *</label>
-                        <input type="text" name="cliente" class="search-box" placeholder="Nombre del cliente" required>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Cliente *</label>
+                        <input type="text" name="cliente" id="cliente" placeholder="Nombre del cliente" required>
                     </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">OST *</label>
-                        <input type="text" name="ost" class="search-box" placeholder="Número de OST" required>
+                    <div class="form-field">
+                        <label>OST (Auto) *</label>
+                        <input type="text" name="ost" id="ost" placeholder="Se generará automáticamente" readonly>
                     </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Tipo de Equipo</label>
-                        <input type="text" name="tipo_equipo" class="search-box" placeholder="Ej: Monitor">
+                    <div class="form-field">
+                        <label>Fecha de Ingreso *</label>
+                        <input type="date" name="fecha_ingreso" id="fecha_ingreso" required>
                     </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Marca</label>
-                        <input type="text" name="marca" class="search-box" placeholder="Ej: Philips">
+                    <div class="form-field">
+                        <label>Remito</label>
+                        <input type="text" name="remito" id="remito" placeholder="Número de remito">
                     </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Modelo</label>
-                        <input type="text" name="modelo" class="search-box" placeholder="Ej: M3A">
+                    <div class="form-field">
+                        <label>Tipo de Equipo *</label>
+                        <button type="button" class="selector-button" id="btnTipoEquipo" onclick="abrirSelectorForm('tipo')">
+                            <span id="tipoEquipoText">Seleccionar tipo</span>
+                        </button>
+                        <input type="hidden" name="tipo_equipo" id="tipo_equipo">
                     </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Número de Serie</label>
-                        <input type="text" name="numero_serie" class="search-box" placeholder="Número de serie">
+                    <div class="form-field">
+                        <label>Marca</label>
+                        <button type="button" class="selector-button" id="btnMarca" onclick="abrirSelectorForm('marca')">
+                            <span id="marcaText">Seleccionar marca</span>
+                        </button>
+                        <input type="hidden" name="marca" id="marca">
                     </div>
-                    <div style="grid-column: 1 / -1;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Accesorios</label>
-                        <input type="text" name="accesorios" class="search-box" placeholder="Cables, sensores, etc.">
+                    <div class="form-field">
+                        <label>Modelo</label>
+                        <button type="button" class="selector-button" id="btnModelo" onclick="abrirSelectorForm('modelo')">
+                            <span id="modeloText">Seleccionar modelo</span>
+                        </button>
+                        <input type="hidden" name="modelo" id="modelo">
                     </div>
-                    <div style="grid-column: 1 / -1;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Observación de Ingreso</label>
-                        <textarea name="observacion_ingreso" class="obs-textarea" style="min-height: 100px;" placeholder="Descripción del problema o falla..."></textarea>
+                    <div class="form-field">
+                        <label>Número de Serie</label>
+                        <input type="text" name="numero_serie" id="numero_serie" placeholder="Número de serie">
+                    </div>
+                    <div class="form-field">
+                        <label>Prioridad</label>
+                        <button type="button" class="selector-button" id="btnPrioridad" onclick="abrirSelectorForm('prioridad')">
+                            <span id="prioridadText">Seleccionar prioridad</span>
+                        </button>
+                        <input type="hidden" name="prioridad" id="prioridad">
+                    </div>
+                    <div class="form-field form-grid-full">
+                        <label>Accesorios</label>
+                        <input type="text" name="accesorios" id="accesorios" placeholder="Cables, sensores, etc.">
+                    </div>
+                    <div class="form-field form-grid-full">
+                        <label>Observación de Ingreso</label>
+                        <textarea name="observacion_ingreso" id="observacion_ingreso" class="obs-textarea" style="min-height: 100px;" placeholder="Descripción del problema o falla..."></textarea>
                     </div>
                 </div>
             </div>
@@ -1015,17 +1138,31 @@ function guardar(id) {
 const TIPOS = ["Analizador de Gases","Balanza","Bomba de Infusión","Cama Eléctrica","Capnógrafo","Capnómetro","Cardiotocógrafo","Cauterio","Centrífuga","Concentrador de Oxígeno","Desfibrilador","Detector Fetal","Doppler","Electrocardiografo","Electrocardiógrafo","Emisor de Ultrasonido","Espirómetro","Estetoscopio","Fototerapia","Lámpara Quirúrgica","Línea Arterial","Microscopio","Monitor","Monitor Fetal","Monitor Multiparamétrico","Nebulizador","Negatoscopio","Otoscopio","Oxímetro","PC","Pesa","Purificador de Aire","Respirador","Simulador","Simulador Materno-Fetal","Soporte Ventilación","Tensiometro Adulto","Tensiómetro Pediátrico","Ventilador"];
 const MARCAS = ["Abbot","Adox","Agilent","Air Sep","Aitecs","Akonic","Alison","Apema","Arcomed","Argas","Argimed","Argus","Arrow","ATI Audiscan II","Bamec","BCI","Bioamerican Science","Biocare","Biolight","Bistos","BLT","BMC","Braun","CAM","Cardiomax","Cardioprint","Cardiotécnica","Cavour","CEC","Cegens","Choice","Codemaster","Colden","Comen","Confort Cough","Contec","Covidien","Daiwha","Dasa","Datascope","Datex Ohmeda","Denver Instruments","Desconocido","Dixtal","Dong Jiang","Dräger","Dyne","Eccosur","Edan","Edan/Leex","Ekhoson","Electromedik","Enmind","Enray","Esaote","Everflo","EyM","Faeta","Feas","Fisher&Paykel","For You","Fukuda","General Electric","General Medictech","Genérico","Goldway","Healthdyne","HP","Humidias","Infant Star","Innomed","Innovo","LADIE","Leex","Lifotronic","Long Fian","Lovego","Lowentein","Maquet","Massimo","Maverick","Maxtec","MDV","Med Captain","Med joy","Medifusion","Meditech","Medix","Medrena","Medtronic","Microelectrónica","Micromedical","Mindray","Minicomp","MUX","N/E","Natal Care","Nellcor","Neumovent","Newton","Nihon Kohden","Nikon","Ohmeda","Philips","Pmed","Prestige","Presvac","Radian QBio","Respironics","Roma","San-Jor","Sechrist","Silfab","SK","SLE","Suncare","Sunmed","Super Star","Systel","Takaoka","Unimed","UTAH","Valleylab","Vicking","View Sonic","WechAllyn","WEM","Yuwell"];
 const MODELOS = ["60H","600 S","7B-1","7E-C","7E-G","7F-10","7F-5","7F-5 Mini","9F-5","Autocat II","Autocat II Wave","Beneheart R3","Biomax 500","BT-350","BT-400","BT-500","C-12R","Capnomac","Capnomac Ultima","Cardiolife","Cardiosuny","Caris Plus","CC20","Cloud","CMS8000","CO2-M01","Covidien","D3","DB9","Desconocido","EN-S7","EN-V7","Evergo","Fabius","Fabius Plus","Fabius Plus XL","Force","Graph","Graphnet TS","HC100","Heart Start","HT-109","iE-101","iE-300","IM8B","iMEC10","Infinity Vista","Jay-5","Jay-5Q","LG103","Libra","M3A","MR810","NP-100","NP-600","OXI-3 Plus","Prisma Vent 40","Prisma Vent 50","Puritan Bennett 560","RG-401","RG-401 Plus","RG-501","RG-501 Plus","S3","Scio Four","SP-50","SP-50 Pro","Spirit 3","Star 8000","System 97","System 97e","Trilogy","Vapor 2000","Vista 120","VP-50","VP-50 Pro","YH-350","YH-360","YH-550","YH-560","YH-725","YH-730","5342","5346"];
+const PRIORIDADES = ["Baja","Normal","En la semana","Importante","Urgente"];
 
-let selCell, selType, selList;
+let selCell, selType, selList, isFormSelector = false;
 
 function abrirSelector(cell, type, items) {
     selCell = cell;
     selType = type;
     selList = items;
-    const titles = {tipo:'Tipo de Equipo', marca:'Marca', modelo:'Modelo'};
+    isFormSelector = false;
+    const titles = {tipo:'Tipo de Equipo', marca:'Marca', modelo:'Modelo', prioridad:'Prioridad'};
     document.getElementById('selectorTitle').textContent = titles[type];
     document.getElementById('selectorSearch').value = '';
     renderSelector(items);
+    document.getElementById('modalSelector').style.display = 'flex';
+}
+
+function abrirSelectorForm(type) {
+    selType = type;
+    isFormSelector = true;
+    const lists = {tipo:TIPOS, marca:MARCAS, modelo:MODELOS, prioridad:PRIORIDADES};
+    selList = lists[type];
+    const titles = {tipo:'Tipo de Equipo', marca:'Marca', modelo:'Modelo', prioridad:'Prioridad'};
+    document.getElementById('selectorTitle').textContent = titles[type];
+    document.getElementById('selectorSearch').value = '';
+    renderSelector(selList);
     document.getElementById('modalSelector').style.display = 'flex';
 }
 
@@ -1043,29 +1180,55 @@ function renderSelector(items) {
         div.onclick = () => seleccionar(item);
         list.appendChild(div);
     });
-    const add = document.createElement('div');
-    add.className = 'selector-add';
-    add.innerHTML = '➕ <strong>Agregar nuevo...</strong>';
-    add.onclick = () => {
-        cerrarSelector();
-        document.getElementById('nuevoTitle').textContent = `Agregar ${selType}`;
-        document.getElementById('modalNuevo').style.display = 'flex';
-    };
-    list.appendChild(add);
+    
+    // Solo mostrar "Agregar nuevo" si NO es prioridad (prioridad tiene valores fijos)
+    if(selType !== 'prioridad') {
+        const add = document.createElement('div');
+        add.className = 'selector-add';
+        add.innerHTML = '➕ <strong>Agregar nuevo...</strong>';
+        add.onclick = () => {
+            cerrarSelector();
+            document.getElementById('nuevoTitle').textContent = `Agregar ${selType}`;
+            document.getElementById('modalNuevo').style.display = 'flex';
+        };
+        list.appendChild(add);
+    }
 }
 
 function seleccionar(valor) {
-    if(!selCell) return;
-    const id = selCell.getAttribute('data-id');
-    const field = selCell.getAttribute('data-field');
-    selCell.textContent = valor;
-    fetch(`/api/equipo/${id}`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({[field]: valor})
-    }).then(r => r.json()).then(d => {
-        if(d.success) console.log('✅');
-    });
+    if(isFormSelector) {
+        // Estamos en el formulario de agregar equipo
+        // Actualizar según el tipo
+        if(selType === 'prioridad') {
+            document.getElementById('prioridad').value = valor;
+            document.getElementById('prioridadText').textContent = valor;
+        }
+        else if(selType === 'tipo') {
+            document.getElementById('tipo_equipo').value = valor;
+            document.getElementById('tipoEquipoText').textContent = valor;
+        }
+        else if(selType === 'marca') {
+            document.getElementById('marca').value = valor;
+            document.getElementById('marcaText').textContent = valor;
+        }
+        else if(selType === 'modelo') {
+            document.getElementById('modelo').value = valor;
+            document.getElementById('modeloText').textContent = valor;
+        }
+    } else {
+        // Estamos editando una celda existente
+        if(!selCell) return;
+        const id = selCell.getAttribute('data-id');
+        const field = selCell.getAttribute('data-field');
+        selCell.textContent = valor;
+        fetch(`/api/equipo/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({[field]: valor})
+        }).then(r => r.json()).then(d => {
+            if(d.success) console.log('✅');
+        });
+    }
     cerrarSelector();
 }
 
@@ -1078,7 +1241,7 @@ document.getElementById('selectorSearch').addEventListener('input', function() {
 document.querySelectorAll('.editable-select').forEach(cell => {
     cell.addEventListener('click', function() {
         const type = this.getAttribute('data-type');
-        const lists = {tipo:TIPOS, marca:MARCAS, modelo:MODELOS};
+        const lists = {tipo:TIPOS, marca:MARCAS, modelo:MODELOS, prioridad:PRIORIDADES};
         abrirSelector(this, type, lists[type]);
     });
 });
@@ -1106,35 +1269,103 @@ document.getElementById('formNuevo').onsubmit = e => {
     else if(selType === 'marca') MARCAS.push(nuevo);
     else if(selType === 'modelo') MODELOS.push(nuevo);
     
-    if(selCell) {
-        const id = selCell.getAttribute('data-id');
-        const field = selCell.getAttribute('data-field');
-        fetch(`/api/equipo/${id}`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({[field]: nuevo})
-        }).then(r => r.json()).then(d => {
-            if(d.success) {
-                selCell.textContent = nuevo;
-                alert('✅ Agregado');
-            }
-        });
+    if(isFormSelector) {
+        // Actualizar el formulario
+        if(selType === 'tipo') {
+            document.getElementById('tipo_equipo').value = nuevo;
+            document.getElementById('tipoEquipoText').textContent = nuevo;
+        } else if(selType === 'marca') {
+            document.getElementById('marca').value = nuevo;
+            document.getElementById('marcaText').textContent = nuevo;
+        } else if(selType === 'modelo') {
+            document.getElementById('modelo').value = nuevo;
+            document.getElementById('modeloText').textContent = nuevo;
+        }
+    } else {
+        // Actualizar celda existente
+        if(selCell) {
+            const id = selCell.getAttribute('data-id');
+            const field = selCell.getAttribute('data-field');
+            fetch(`/api/equipo/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({[field]: nuevo})
+            }).then(r => r.json()).then(d => {
+                if(d.success) {
+                    selCell.textContent = nuevo;
+                    alert('✅ Agregado');
+                }
+            });
+        }
     }
     cerrarNuevo();
 };
 
 // Modal Agregar Equipo
 function abrirModalAgregarEquipo() {
+    // Obtener el próximo número OST
+    fetch('/api/proximo-ost')
+        .then(r => r.json())
+        .then(d => {
+            if(d.success) {
+                document.getElementById('ost').value = d.proximo_ost;
+            }
+        });
+    
+    // Establecer fecha actual
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha_ingreso').value = hoy;
+    
     document.getElementById('modalAgregarEquipo').style.display = 'flex';
 }
 
 function cerrarModalAgregarEquipo() {
     document.getElementById('modalAgregarEquipo').style.display = 'none';
     document.getElementById('formAgregarEquipo').reset();
+    // Resetear textos de selectores
+    document.getElementById('tipoEquipoText').textContent = 'Seleccionar tipo';
+    document.getElementById('marcaText').textContent = 'Seleccionar marca';
+    document.getElementById('modeloText').textContent = 'Seleccionar modelo';
+    document.getElementById('prioridadText').textContent = 'Seleccionar prioridad';
 }
 
 document.getElementById('modalAgregarEquipo').addEventListener('click', e => {
     if(e.target.id === 'modalAgregarEquipo') cerrarModalAgregarEquipo();
+});
+
+document.getElementById('formAgregarEquipo').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Validar que se haya seleccionado al menos el tipo de equipo
+    if(!data.tipo_equipo) {
+        alert('⚠️ Debe seleccionar un tipo de equipo');
+        return;
+    }
+    
+    fetch('/api/equipos', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✅ Equipo agregado correctamente');
+            cerrarModalAgregarEquipo();
+            location.reload(); // Recargar la página para mostrar el nuevo equipo
+        } else {
+            alert('❌ Error al agregar equipo: ' + (result.error || 'Error desconocido'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Error de red: ' + error);
+    });
 });
 </script>
 {% endblock %}
