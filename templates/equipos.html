@@ -148,18 +148,18 @@
 .ch-obs { width: 210px; }
 .ch-fotos { width: 160px; }
 .ch-prioridad { width: 110px; }
-.ch-fecha-envio { width: 160px; background: #fff9c4 !important; color: #333 !important; }
-.ch-proveedor { width: 160px; background: #fff9c4 !important; color: #333 !important; }
+.ch-fecha-envio { width: 160px; }
+.ch-proveedor { width: 160px; }
 .ch-det-reparacion { width: 210px; }
 .ch-hrs { width: 110px; }
-.ch-reingreso { width: 110px; background: #fff9c4 !important; color: #333 !important; }
+.ch-reingreso { width: 110px; }
 .ch-informe { width: 110px; }
 .ch-costo { width: 160px; }
-.ch-precio { width: 160px; background: #80deea !important; color: #333 !important; }
-.ch-ov { width: 130px; background: #80deea !important; color: #333 !important; }
-.ch-estado-ov { width: 130px; background: #80deea !important; color: #333 !important; }
-.ch-fecha-entrega { width: 160px; background: #80deea !important; color: #333 !important; }
-.ch-remito-entrega { width: 160px; background: #80deea !important; color: #333 !important; }
+.ch-precio { width: 160px; }
+.ch-ov { width: 130px; }
+.ch-estado-ov { width: 130px; }
+.ch-fecha-entrega { width: 160px; }
+.ch-remito-entrega { width: 160px; }
 .ch-acciones { width: 110px; }
 
 /* Contenedor de filas */
@@ -173,10 +173,10 @@
 /* Fila de datos */
 .data-row {
     display: flex;
-    min-height: 60px; /* Aumentado para acomodar wrap */
+    height: 60px; /* ALTURA FIJA en lugar de min-height */
     min-width: min-content; /* Permitir expansión completa */
     border-bottom: 1px solid #e0e0e0;
-}
+    flex-shrink: 0; /* PREVENIR compresión de las filas */
 }
 
 .data-row:nth-child(even) {
@@ -201,20 +201,12 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-height: 60px; /* Aumentado para acomodar wrap */
+    height: 60px; /* ALTURA FIJA en lugar de min-height */
     flex-shrink: 0; /* Prevenir compresión */
+    background: inherit !important; /* FORZAR herencia del color de la fila */
 }
 
-/* Permitir wrap en columnas importantes para ver texto completo */
-.ch-tipo, .ch-marca, .ch-modelo, .ch-serie, .ch-accesorios, 
-.ch-obs, .ch-det-reparacion, .ch-proveedor {
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    line-height: 1.3;
-    align-items: flex-start;
-    padding-top: 10px;
-}
+/* Todas las celdas mantienen nowrap para altura consistente */
 
 /* Celdas editables */
 .editable {
@@ -223,7 +215,7 @@
 
 .editable:focus {
     outline: 2px solid #667eea;
-    background: transparent !important; /* Sin fondo amarillo */
+    background: inherit !important; /* Mantener color de fila al hacer focus */
 }
 
 .editable-select {
@@ -231,7 +223,7 @@
 }
 
 .editable-select:hover {
-    background: transparent !important; /* Sin fondo amarillo */
+    background: inherit !important; /* Mantener color de fila al hacer hover */
 }
 
 /* Estado */
@@ -240,7 +232,7 @@
 }
 
 .estado-cell:hover {
-    background: transparent !important; /* Sin fondo amarillo */
+    background: inherit !important; /* Mantener color de fila al hacer hover */
 }
 
 .estado-select {
@@ -473,15 +465,16 @@
         font-size: 0.85rem;
     }
     
-    /* Reducir altura de filas moderadamente */
+    /* Ajustar altura de filas */
     .data-row {
-        min-height: 50px; /* Ajustado para móvil */
+        height: 50px; /* ALTURA FIJA para móvil */
     }
     
     .cell {
-        min-height: 50px; /* Ajustado para móvil */
+        height: 50px; /* ALTURA FIJA para móvil */
         padding: 10px 8px;
         font-size: 0.85rem;
+        background: inherit !important; /* FORZAR herencia del color de la fila */
     }
     
     /* Ajustar contenedor de filas */
@@ -535,8 +528,9 @@
     
     /* Hacer que las celdas editables sean más fáciles de tocar */
     .editable, .editable-select, .estado-cell, .obs-cell {
-        min-height: 50px; /* Ajustado */
+        height: 50px; /* ALTURA FIJA */
         padding: 10px 8px;
+        background: inherit !important; /* Mantener color de fila */
     }
     
     /* Ajustar modales para móvil */
@@ -597,8 +591,14 @@
     .ch-estado { width: 80px; }
     
     .cell {
+        height: 45px; /* ALTURA FIJA para pantallas pequeñas */
         padding: 8px 6px;
         font-size: 0.8rem;
+        background: inherit !important; /* FORZAR herencia del color de la fila */
+    }
+    
+    .data-row {
+        height: 45px; /* ALTURA FIJA para pantallas pequeñas */
     }
     
     .col-header {
@@ -633,10 +633,10 @@
 {% endblock %}
 
 {% block content %}
-<h2 style="margin-bottom: 1.5rem; color: #1e4d7b;">🖥️ Gestión de Equipos</h2>
+<h2 style="margin-top: 0.5rem; margin-bottom: 1rem; color: #1e4d7b;">🖥️ Gestión de Equipos</h2>
 
 <div style="margin-bottom: 1.5rem;">
-    <button class="btn btn-primary" onclick="location.href='#'">➕ Agregar Nuevo Equipo</button>
+    <button class="btn btn-primary" onclick="abrirModalAgregarEquipo()">➕ Agregar Nuevo Equipo</button>
 </div>
 
 <div class="table-container">
@@ -720,6 +720,9 @@
                     <div class="cell ch-accesorios editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="accesorios">{{ equipo.accesorios or '' }}</div>
                     <div class="cell ch-obs obs-cell" data-id="{{ equipo.id }}" data-obs="{{ equipo.observacion_ingreso or '' }}">{{ (equipo.observacion_ingreso[:25] + '...') if equipo.observacion_ingreso and equipo.observacion_ingreso|length > 25 else (equipo.observacion_ingreso or '') }}</div>
                     <div class="cell ch-fotos">
+                        <!-- NOTA: Para que las fotos funcionen, el backend debe pasar la variable 'archivos' 
+                             al renderizar este template. Esta variable debe contener los objetos de archivo 
+                             con los campos: numero_serie, categoria, y url_cloudinary -->
                         {% set fotos = archivos|selectattr('numero_serie', 'equalto', equipo.numero_serie)|selectattr('categoria', 'equalto', 'falla')|list %}
                         {% if fotos %}{% for foto in fotos %}<a href="{{ foto.url_cloudinary }}" target="_blank">🖼️</a>{% endfor %}{% else %}-{% endif %}
                     </div>
@@ -789,6 +792,57 @@
             <div class="modal-footer">
                 <button type="button" class="close-btn" onclick="cerrarNuevo()">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Agregar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Agregar Equipo -->
+<div id="modalAgregarEquipo" class="modal">
+    <div class="modal-content modal-content-large">
+        <div class="modal-header">
+            <h3>➕ Agregar Nuevo Equipo</h3>
+        </div>
+        <form id="formAgregarEquipo" action="/equipos/nuevo" method="POST">
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Cliente *</label>
+                        <input type="text" name="cliente" class="search-box" placeholder="Nombre del cliente" required>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">OST *</label>
+                        <input type="text" name="ost" class="search-box" placeholder="Número de OST" required>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Tipo de Equipo</label>
+                        <input type="text" name="tipo_equipo" class="search-box" placeholder="Ej: Monitor">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Marca</label>
+                        <input type="text" name="marca" class="search-box" placeholder="Ej: Philips">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Modelo</label>
+                        <input type="text" name="modelo" class="search-box" placeholder="Ej: M3A">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Número de Serie</label>
+                        <input type="text" name="numero_serie" class="search-box" placeholder="Número de serie">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Accesorios</label>
+                        <input type="text" name="accesorios" class="search-box" placeholder="Cables, sensores, etc.">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Observación de Ingreso</label>
+                        <textarea name="observacion_ingreso" class="obs-textarea" style="min-height: 100px;" placeholder="Descripción del problema o falla..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="close-btn" onclick="cerrarModalAgregarEquipo()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">💾 Guardar Equipo</button>
             </div>
         </form>
     </div>
@@ -960,7 +1014,7 @@ function guardar(id) {
 // Selector
 const TIPOS = ["Analizador de Gases","Balanza","Bomba de Infusión","Cama Eléctrica","Capnógrafo","Capnómetro","Cardiotocógrafo","Cauterio","Centrífuga","Concentrador de Oxígeno","Desfibrilador","Detector Fetal","Doppler","Electrocardiografo","Electrocardiógrafo","Emisor de Ultrasonido","Espirómetro","Estetoscopio","Fototerapia","Lámpara Quirúrgica","Línea Arterial","Microscopio","Monitor","Monitor Fetal","Monitor Multiparamétrico","Nebulizador","Negatoscopio","Otoscopio","Oxímetro","PC","Pesa","Purificador de Aire","Respirador","Simulador","Simulador Materno-Fetal","Soporte Ventilación","Tensiometro Adulto","Tensiómetro Pediátrico","Ventilador"];
 const MARCAS = ["Abbot","Adox","Agilent","Air Sep","Aitecs","Akonic","Alison","Apema","Arcomed","Argas","Argimed","Argus","Arrow","ATI Audiscan II","Bamec","BCI","Bioamerican Science","Biocare","Biolight","Bistos","BLT","BMC","Braun","CAM","Cardiomax","Cardioprint","Cardiotécnica","Cavour","CEC","Cegens","Choice","Codemaster","Colden","Comen","Confort Cough","Contec","Covidien","Daiwha","Dasa","Datascope","Datex Ohmeda","Denver Instruments","Desconocido","Dixtal","Dong Jiang","Dräger","Dyne","Eccosur","Edan","Edan/Leex","Ekhoson","Electromedik","Enmind","Enray","Esaote","Everflo","EyM","Faeta","Feas","Fisher&Paykel","For You","Fukuda","General Electric","General Medictech","Genérico","Goldway","Healthdyne","HP","Humidias","Infant Star","Innomed","Innovo","LADIE","Leex","Lifotronic","Long Fian","Lovego","Lowentein","Maquet","Massimo","Maverick","Maxtec","MDV","Med Captain","Med joy","Medifusion","Meditech","Medix","Medrena","Medtronic","Microelectrónica","Micromedical","Mindray","Minicomp","MUX","N/E","Natal Care","Nellcor","Neumovent","Newton","Nihon Kohden","Nikon","Ohmeda","Philips","Pmed","Prestige","Presvac","Radian QBio","Respironics","Roma","San-Jor","Sechrist","Silfab","SK","SLE","Suncare","Sunmed","Super Star","Systel","Takaoka","Unimed","UTAH","Valleylab","Vicking","View Sonic","WechAllyn","WEM","Yuwell"];
-const MODELOS = ["60H","600 S","7B-1","7E-C","7E-G","7F-10","7F-5 Mini","9F-5","Autocat II","Autocat II Wave","Beneheart R3","Biomax 500","BT-350","BT-400","BT-500","C-12R","Capnomac","Capnomac Ultima","Cardiolife","Cardiosuny","Caris Plus","CC20","Cloud","CMS8000","CO2-M01","Covidien","D3","DB9","Desconocido","EN-S7","EN-V7","Evergo","Fabius","Fabius Plus","Fabius Plus XL","Force","Graph","Graphnet TS","HC100","Heart Start","HT-109","iE-101","iE-300","IM8B","iMEC10","Infinity Vista","Jay-5","Jay-5Q","LG103","Libra","M3A","MR810","NP-100","NP-600","OXI-3 Plus","Prisma Vent 40","Prisma Vent 50","Puritan Bennett 560","RG-401","RG-401 Plus","RG-501","RG-501 Plus","S3","Scio Four","SP-50","SP-50 Pro","Spirit 3","Star 8000","System 97","System 97e","Trilogy","Vapor 2000","Vista 120","VP-50","VP-50 Pro","YH-350","YH-360","YH-550","YH-560","YH-725","YH-730","5342","5346"];
+const MODELOS = ["60H","600 S","7B-1","7E-C","7E-G","7F-10","7F-5","7F-5 Mini","9F-5","Autocat II","Autocat II Wave","Beneheart R3","Biomax 500","BT-350","BT-400","BT-500","C-12R","Capnomac","Capnomac Ultima","Cardiolife","Cardiosuny","Caris Plus","CC20","Cloud","CMS8000","CO2-M01","Covidien","D3","DB9","Desconocido","EN-S7","EN-V7","Evergo","Fabius","Fabius Plus","Fabius Plus XL","Force","Graph","Graphnet TS","HC100","Heart Start","HT-109","iE-101","iE-300","IM8B","iMEC10","Infinity Vista","Jay-5","Jay-5Q","LG103","Libra","M3A","MR810","NP-100","NP-600","OXI-3 Plus","Prisma Vent 40","Prisma Vent 50","Puritan Bennett 560","RG-401","RG-401 Plus","RG-501","RG-501 Plus","S3","Scio Four","SP-50","SP-50 Pro","Spirit 3","Star 8000","System 97","System 97e","Trilogy","Vapor 2000","Vista 120","VP-50","VP-50 Pro","YH-350","YH-360","YH-550","YH-560","YH-725","YH-730","5342","5346"];
 
 let selCell, selType, selList;
 
@@ -1068,5 +1122,19 @@ document.getElementById('formNuevo').onsubmit = e => {
     }
     cerrarNuevo();
 };
+
+// Modal Agregar Equipo
+function abrirModalAgregarEquipo() {
+    document.getElementById('modalAgregarEquipo').style.display = 'flex';
+}
+
+function cerrarModalAgregarEquipo() {
+    document.getElementById('modalAgregarEquipo').style.display = 'none';
+    document.getElementById('formAgregarEquipo').reset();
+}
+
+document.getElementById('modalAgregarEquipo').addEventListener('click', e => {
+    if(e.target.id === 'modalAgregarEquipo') cerrarModalAgregarEquipo();
+});
 </script>
 {% endblock %}
