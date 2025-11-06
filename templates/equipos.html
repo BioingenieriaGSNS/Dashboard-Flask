@@ -234,6 +234,16 @@
     background: inherit !important;
 }
 
+/* Celdas de dinero */
+.editable-money {
+    cursor: pointer;
+    position: relative;
+}
+
+.editable-money:hover {
+    background: inherit !important;
+}
+
 .date-input {
     width: 100%;
     padding: 4px;
@@ -775,7 +785,7 @@
             <div class="rows-container" id="fixedRows">
                 {% for equipo in equipos %}
                 <div class="data-row" data-row="{{ loop.index }}" data-id="{{ equipo.id }}">
-                    <div class="cell ch-cliente">{{ equipo.cliente or 'N/A' }}</div>
+                    <div class="cell ch-cliente editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="cliente">{{ equipo.cliente or '' }}</div>
                     <div class="cell ch-ost">{{ equipo.ost or 'N/A' }}</div>
                     <div class="cell ch-estado estado-cell editable-select" data-id="{{ equipo.id }}" data-field="estado" data-type="estado">
                         {{ equipo.estado or 'Pendiente' }}
@@ -798,7 +808,7 @@
             
             <!-- Headers de columnas scrollables -->
             <div class="column-headers">
-                <div class="cell ch-fecha-ingreso editable-date" data-id="{{ equipo.id }}" data-field="fecha_ingreso">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
+                <div class="col-header ch-fecha-ingreso">Fecha Ingreso</div>
                 <div class="col-header ch-remito">Remito</div>
                 <div class="col-header ch-tipo">Tipo</div>
                 <div class="col-header ch-marca">Marca</div>
@@ -827,7 +837,7 @@
             <div class="rows-container" id="scrollableRows">
                 {% for equipo in equipos %}
                 <div class="data-row" data-row="{{ loop.index }}" data-id="{{ equipo.id }}">
-                    <div class="cell ch-fecha-ingreso">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
+                    <div class="cell ch-fecha-ingreso editable-date" data-id="{{ equipo.id }}" data-field="fecha_ingreso">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
                     <div class="cell ch-remito editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="remito">{{ equipo.remito or '' }}</div>
                     <div class="cell ch-tipo editable-select" data-id="{{ equipo.id }}" data-field="tipo_equipo" data-type="tipo">{{ equipo.tipo_equipo or 'Seleccionar' }}</div>
                     <div class="cell ch-marca editable-select" data-id="{{ equipo.id }}" data-field="marca" data-type="marca">{{ equipo.marca or 'Seleccionar' }}</div>
@@ -840,17 +850,17 @@
                         {% if fotos %}{% for foto in fotos %}<a href="{{ foto.url_cloudinary }}" target="_blank">🖼️</a>{% endfor %}{% else %}-{% endif %}
                     </div>
                     <div class="cell ch-prioridad editable-select" data-id="{{ equipo.id }}" data-field="prioridad" data-type="prioridad">{{ equipo.prioridad or 'Seleccionar' }}</div>
-                    <div class="cell ch-fecha-envio editable-date" data-id="{{ equipo.id }}" data-field="fecha_envio_proveedor">{{ equipo.fecha_envio_proveedor or '' }}</div>
+                    <div class="cell ch-fecha-envio editable-date" data-id="{{ equipo.id }}" data-field="fecha_envio_proveedor">{{ equipo.fecha_envio.strftime('%d/%m/%Y') if equipo.fecha_envio else 'N/A' }}</div>
                     <div class="cell ch-proveedor editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="proveedor">{{ equipo.proveedor or '' }}</div>
-                    <div class="cell ch-det-reparacion editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="detalle_reparacion">{{ equipo.detalle_reparacion or '' }}</div>
+                    <div class="cell ch-det-reparacion editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="detalle_reparacion">{{ equipo.detalles_reparacion or '' }}</div>
                     <div class="cell ch-hrs editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="horas_trabajo">{{ equipo.horas_trabajo or '' }}</div>
                     <div class="cell ch-reingreso checkbox-cell"><input type="checkbox" data-id="{{ equipo.id }}" data-field="reingreso" {{ 'checked' if equipo.reingreso else '' }}></div>
                     <div class="cell ch-informe checkbox-cell"><input type="checkbox" data-id="{{ equipo.id }}" data-field="informe_tecnico" {{ 'checked' if equipo.informe_tecnico else '' }}></div>
-                    <div class="cell ch-costo editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="costo_reparacion">{{ equipo.costo_reparacion or '' }}</div>
-                    <div class="cell ch-precio editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="precio_cliente">{{ equipo.precio_cliente or '' }}</div>
+                    <div class="cell ch-costo editable-money" data-id="{{ equipo.id }}" data-field="costo_reparacion">{{ ('$' + equipo.costo_reparacion|string) if equipo.costo_reparacion else 'N/A' }}</div>
+                    <div class="cell ch-precio editable-money" data-id="{{ equipo.id }}" data-field="precio_cliente">{{ ('$' + equipo.precio_cliente|string) if equipo.precio_cliente else 'N/A' }}</div>
                     <div class="cell ch-ov editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="numero_ov">{{ equipo.numero_ov or '' }}</div>
                     <div class="cell ch-estado-ov editable-select" data-id="{{ equipo.id }}" data-field="estado_ov" data-type="estado_ov">{{ equipo.estado_ov or 'Seleccionar' }}</div>
-                    <div class="cell ch-fecha-entrega editable-date" data-id="{{ equipo.id }}" data-field="fecha_entrega">{{ equipo.fecha_entrega or '' }}</div>
+                    <div class="cell ch-fecha-entrega editable-date" data-id="{{ equipo.id }}" data-field="fecha_entrega">{{ equipo.fecha_entrega.strftime('%d/%m/%Y') if equipo.fecha_entrega else 'N/A' }}</div>
                     <div class="cell ch-remito-entrega editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="remito_entrega">{{ equipo.remito_entrega or '' }}</div>
                     <div class="cell ch-acciones"><button class="btn btn-save" onclick="guardar({{ equipo.id }})">💾</button></div>
                 </div>
@@ -1109,42 +1119,11 @@ document.querySelectorAll('.checkbox-cell input').forEach(cb => {
     });
 });
 
-// Estado
+// Estado - Usando selector como los demás
 document.querySelectorAll('.estado-cell').forEach(cell => {
-    const estados = ['Pendiente', 'En Proceso', 'Completado', 'Entregado', 'Cancelado'];
     cell.addEventListener('click', function() {
-        const span = this.querySelector('.estado-value');
-        const actual = span.textContent.trim();
-        const select = document.createElement('select');
-        select.className = 'estado-select';
-        estados.forEach(e => {
-            const opt = document.createElement('option');
-            opt.value = e;
-            opt.textContent = e;
-            if(e === actual) opt.selected = true;
-            select.appendChild(opt);
-        });
-        span.style.display = 'none';
-        this.appendChild(select);
-        select.focus();
-        select.addEventListener('change', function() {
-            const id = cell.getAttribute('data-id');
-            fetch(`/api/equipo/${id}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({estado: this.value})
-            }).then(r => r.json()).then(d => {
-                if(d.success) {
-                    span.textContent = select.value;
-                    span.style.display = '';
-                    select.remove();
-                }
-            });
-        });
-        select.addEventListener('blur', () => {
-            span.style.display = '';
-            select.remove();
-        });
+        const estados = ['Pendiente', 'En Proceso', 'Completado', 'Entregado', 'Cancelado'];
+        abrirSelector(this, 'estado', estados);
     });
 });
 
@@ -1157,6 +1136,8 @@ const TIPOS = ["Analizador de Gases","Balanza","Bomba de Infusión","Cama Eléct
 const MARCAS = ["Abbot","Adox","Agilent","Air Sep","Aitecs","Akonic","Alison","Apema","Arcomed","Argas","Argimed","Argus","Arrow","ATI Audiscan II","Bamec","BCI","Bioamerican Science","Biocare","Biolight","Bistos","BLT","BMC","Braun","CAM","Cardiomax","Cardioprint","Cardiotécnica","Cavour","CEC","Cegens","Choice","Codemaster","Colden","Comen","Confort Cough","Contec","Covidien","Daiwha","Dasa","Datascope","Datex Ohmeda","Denver Instruments","Desconocido","Dixtal","Dong Jiang","Dräger","Dyne","Eccosur","Edan","Edan/Leex","Ekhoson","Electromedik","Enmind","Enray","Esaote","Everflo","EyM","Faeta","Feas","Fisher&Paykel","For You","Fukuda","General Electric","General Medictech","Genérico","Goldway","Healthdyne","HP","Humidias","Infant Star","Innomed","Innovo","LADIE","Leex","Lifotronic","Long Fian","Lovego","Lowentein","Maquet","Massimo","Maverick","Maxtec","MDV","Med Captain","Med joy","Medifusion","Meditech","Medix","Medrena","Medtronic","Microelectrónica","Micromedical","Mindray","Minicomp","MUX","N/E","Natal Care","Nellcor","Neumovent","Newton","Nihon Kohden","Nikon","Ohmeda","Philips","Pmed","Prestige","Presvac","Radian QBio","Respironics","Roma","San-Jor","Sechrist","Silfab","SK","SLE","Suncare","Sunmed","Super Star","Systel","Takaoka","Unimed","UTAH","Valleylab","Vicking","View Sonic","WechAllyn","WEM","Yuwell"];
 const MODELOS = ["60H","600 S","7B-1","7E-C","7E-G","7F-10","7F-5","7F-5 Mini","9F-5","Autocat II","Autocat II Wave","Beneheart R3","Biomax 500","BT-350","BT-400","BT-500","C-12R","Capnomac","Capnomac Ultima","Cardiolife","Cardiosuny","Caris Plus","CC20","Cloud","CMS8000","CO2-M01","Covidien","D3","DB9","Desconocido","EN-S7","EN-V7","Evergo","Fabius","Fabius Plus","Fabius Plus XL","Force","Graph","Graphnet TS","HC100","Heart Start","HT-109","iE-101","iE-300","IM8B","iMEC10","Infinity Vista","Jay-5","Jay-5Q","LG103","Libra","M3A","MR810","NP-100","NP-600","OXI-3 Plus","Prisma Vent 40","Prisma Vent 50","Puritan Bennett 560","RG-401","RG-401 Plus","RG-501","RG-501 Plus","S3","Scio Four","SP-50","SP-50 Pro","Spirit 3","Star 8000","System 97","System 97e","Trilogy","Vapor 2000","Vista 120","VP-50","VP-50 Pro","YH-350","YH-360","YH-550","YH-560","YH-725","YH-730","5342","5346"];
 const PRIORIDADES = ["Baja","Normal","En la semana","Importante","Urgente"];
+const ESTADOS = ["Pendiente","En Proceso","Completado","Entregado","Cancelado"];
+const ESTADOS_OV = ["Aprobado","Garantía","N/A","No se repara","Presupuesto"];
 
 let selCell, selType, selList, isFormSelector = false;
 
@@ -1175,9 +1156,9 @@ function abrirSelector(cell, type, items) {
 function abrirSelectorForm(type) {
     selType = type;
     isFormSelector = true;
-    const lists = {tipo:TIPOS, marca:MARCAS, modelo:MODELOS, prioridad:PRIORIDADES};
+    const lists = {tipo:TIPOS, marca:MARCAS, modelo:MODELOS, prioridad:PRIORIDADES, estado:ESTADOS, estado_ov:ESTADOS_OV};
     selList = lists[type];
-    const titles = {tipo:'Tipo de Equipo', marca:'Marca', modelo:'Modelo', prioridad:'Prioridad'};
+    const titles = {tipo:'Tipo de Equipo', marca:'Marca', modelo:'Modelo', prioridad:'Prioridad', estado:'Estado', estado_ov:'Estado OV'};
     document.getElementById('selectorTitle').textContent = titles[type];
     document.getElementById('selectorSearch').value = '';
     renderSelector(selList);
@@ -1199,8 +1180,8 @@ function renderSelector(items) {
         list.appendChild(div);
     });
     
-    // Solo mostrar "Agregar nuevo" si NO es prioridad (prioridad tiene valores fijos)
-    if(selType !== 'prioridad') {
+    // Solo mostrar "Agregar nuevo" si NO es prioridad, estado o estado_ov (tienen valores fijos)
+    if(selType !== 'prioridad' && selType !== 'estado' && selType !== 'estado_ov') {
         const add = document.createElement('div');
         add.className = 'selector-add';
         add.innerHTML = '➕ <strong>Agregar nuevo...</strong>';
@@ -1259,8 +1240,201 @@ document.getElementById('selectorSearch').addEventListener('input', function() {
 document.querySelectorAll('.editable-select').forEach(cell => {
     cell.addEventListener('click', function() {
         const type = this.getAttribute('data-type');
-        const lists = {tipo:TIPOS, marca:MARCAS, modelo:MODELOS, prioridad:PRIORIDADES};
+        const lists = {tipo:TIPOS, marca:MARCAS, modelo:MODELOS, prioridad:PRIORIDADES, estado:ESTADOS, estado_ov:ESTADOS_OV};
         abrirSelector(this, type, lists[type]);
+    });
+});
+
+// Celdas de fecha con modal mejorado
+document.querySelectorAll('.editable-date').forEach(cell => {
+    cell.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        const field = this.getAttribute('data-field');
+        const textoActual = this.textContent.trim();
+        
+        // Crear modal de fecha
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h3>📅 Seleccionar Fecha</h3>
+                    <button class="close-x" onclick="this.closest('.modal').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Fecha:</label>
+                        <input type="date" id="tempDateInput" class="search-box" style="margin-bottom: 0;">
+                    </div>
+                    <div style="text-align: center; color: #666; margin: 10px 0;">- o -</div>
+                    <button type="button" class="btn btn-primary" id="btnNA" style="width: 100%; background: #999;">
+                        N/A (Sin fecha)
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="close-btn" onclick="this.closest('.modal').remove()">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarFecha">💾 Guardar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Convertir fecha actual si existe (formato dd/mm/yyyy a yyyy-mm-dd)
+        const inputFecha = modal.querySelector('#tempDateInput');
+        if(textoActual && textoActual !== 'N/A') {
+            const partes = textoActual.split('/');
+            if(partes.length === 3) {
+                inputFecha.value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+            }
+        }
+        
+        // Botón N/A
+        modal.querySelector('#btnNA').addEventListener('click', function() {
+            fetch(`/api/equipo/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({[field]: null})
+            }).then(r => r.json()).then(d => {
+                if(d.success) {
+                    cell.textContent = 'N/A';
+                    modal.remove();
+                    console.log('✅ Fecha guardada como N/A');
+                }
+            });
+        });
+        
+        // Botón Guardar
+        modal.querySelector('#btnGuardarFecha').addEventListener('click', function() {
+            const valor = inputFecha.value;
+            if(valor) {
+                const [year, month, day] = valor.split('-');
+                const fechaMostrar = `${day}/${month}/${year}`;
+                
+                fetch(`/api/equipo/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({[field]: valor})
+                }).then(r => r.json()).then(d => {
+                    if(d.success) {
+                        cell.textContent = fechaMostrar;
+                        modal.remove();
+                        console.log('✅ Fecha guardada');
+                    }
+                });
+            } else {
+                alert('⚠️ Por favor selecciona una fecha o marca N/A');
+            }
+        });
+        
+        // Cerrar al hacer clic fuera
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) {
+                modal.remove();
+            }
+        });
+    });
+});
+
+// Celdas de dinero con modal
+document.querySelectorAll('.editable-money').forEach(cell => {
+    cell.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        const field = this.getAttribute('data-field');
+        const textoActual = this.textContent.trim();
+        
+        // Crear modal de dinero
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h3>💰 Ingresar Monto</h3>
+                    <button class="close-x" onclick="this.closest('.modal').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Monto ($):</label>
+                        <input type="number" id="tempMoneyInput" class="search-box" placeholder="0.00" step="0.01" style="margin-bottom: 0;">
+                    </div>
+                    <div style="text-align: center; color: #666; margin: 10px 0;">- o -</div>
+                    <button type="button" class="btn btn-primary" id="btnMoneyNA" style="width: 100%; background: #999;">
+                        N/A (Sin monto)
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="close-btn" onclick="this.closest('.modal').remove()">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarMoney">💾 Guardar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Extraer valor numérico si existe
+        const inputMoney = modal.querySelector('#tempMoneyInput');
+        if(textoActual && textoActual !== 'N/A') {
+            const valorNumerico = textoActual.replace('$', '').replace(',', '').trim();
+            if(valorNumerico) {
+                inputMoney.value = valorNumerico;
+            }
+        }
+        
+        inputMoney.focus();
+        
+        // Botón N/A
+        modal.querySelector('#btnMoneyNA').addEventListener('click', function() {
+            fetch(`/api/equipo/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({[field]: null})
+            }).then(r => r.json()).then(d => {
+                if(d.success) {
+                    cell.textContent = 'N/A';
+                    modal.remove();
+                    console.log('✅ Monto guardado como N/A');
+                }
+            });
+        });
+        
+        // Botón Guardar
+        modal.querySelector('#btnGuardarMoney').addEventListener('click', function() {
+            const valor = inputMoney.value;
+            if(valor && valor !== '') {
+                const valorNumerico = parseFloat(valor);
+                if(!isNaN(valorNumerico)) {
+                    fetch(`/api/equipo/${id}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({[field]: valorNumerico.toString()})
+                    }).then(r => r.json()).then(d => {
+                        if(d.success) {
+                            cell.textContent = '$' + valorNumerico.toFixed(2);
+                            modal.remove();
+                            console.log('✅ Monto guardado');
+                        }
+                    });
+                } else {
+                    alert('⚠️ Por favor ingresa un número válido');
+                }
+            } else {
+                alert('⚠️ Por favor ingresa un monto o marca N/A');
+            }
+        });
+        
+        // Cerrar al hacer clic fuera
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) {
+                modal.remove();
+            }
+        });
+        
+        // Enter para guardar
+        inputMoney.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                modal.querySelector('#btnGuardarMoney').click();
+            }
+        });
     });
 });
 

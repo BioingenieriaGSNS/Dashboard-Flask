@@ -106,8 +106,12 @@ def equipos():
         SELECT id, cliente, ost, estado, fecha_ingreso, remito,
                tipo_equipo, marca, modelo, numero_serie, accesorios,
                observacion_ingreso, prioridad, fecha_envio, proveedor,
-               detalles_reparacion, horas_trabajo, reingreso, informe,
-               costo, precio, ov, estado_ov, fecha_entrega, remito_entrega
+               detalles_reparacion, horas_trabajo, reingreso, 
+               informe AS informe_tecnico,
+               costo AS costo_reparacion, 
+               precio AS precio_cliente, 
+               ov AS numero_ov, 
+               estado_ov, fecha_entrega, remito_entrega
         FROM equipos
         ORDER BY fecha_ingreso DESC
     """)
@@ -259,6 +263,11 @@ def crear_equipo():
                 return jsonify({'success': False, 'error': 'Formato de fecha inválido'}), 400
         
         # Insertar el equipo (el OST se autogenera por la secuencia PostgreSQL)
+        # Convertir cadenas vacías a None para la base de datos
+        def empty_to_none(value):
+            return None if value == '' or value is None else value
+        
+        # Insertar el equipo (el OST se autogenera por la secuencia PostgreSQL)
         cursor.execute("""
             INSERT INTO equipos (
                 cliente, tipo_equipo, marca, modelo, numero_serie,
@@ -270,17 +279,16 @@ def crear_equipo():
         """, (
             data.get('cliente'),
             data.get('tipo_equipo'),
-            data.get('marca'),
-            data.get('modelo'),
-            data.get('numero_serie'),
+            empty_to_none(data.get('marca')),
+            empty_to_none(data.get('modelo')),
+            empty_to_none(data.get('numero_serie')),
             fecha_ingreso,
-            data.get('remito'),
-            data.get('accesorios'),
-            data.get('prioridad'),
-            data.get('observacion_ingreso'),
+            empty_to_none(data.get('remito')),
+            empty_to_none(data.get('accesorios')),
+            data.get('prioridad', 'Media'),
+            empty_to_none(data.get('observacion_ingreso')),
             'Pendiente'
         ))
-        
         result = cursor.fetchone()
         conn.commit()
         cursor.close()
@@ -358,6 +366,9 @@ def update_equipo(id):
         campos = []
         valores = []
         
+        if 'cliente' in data:
+            campos.append('cliente = %s')
+            valores.append(data.get('cliente'))
         if 'tipo_equipo' in data:
             campos.append('tipo_equipo = %s')
             valores.append(data.get('tipo_equipo'))
@@ -382,9 +393,9 @@ def update_equipo(id):
         if 'observacion_ingreso' in data:
             campos.append('observacion_ingreso = %s')
             valores.append(data.get('observacion_ingreso'))
-        if 'detalles_reparacion' in data:
+        if 'detalle_reparacion' in data:
             campos.append('detalles_reparacion = %s')
-            valores.append(data.get('detalles_reparacion'))
+            valores.append(data.get('detalle_reparacion'))
         if 'horas_trabajo' in data:
             campos.append('horas_trabajo = %s')
             valores.append(data.get('horas_trabajo'))
@@ -406,6 +417,12 @@ def update_equipo(id):
         if 'estado_ov' in data:
             campos.append('estado_ov = %s')
             valores.append(data.get('estado_ov'))
+        if 'fecha_ingreso' in data:
+            campos.append('fecha_ingreso = %s')
+            valores.append(data.get('fecha_ingreso'))
+        if 'fecha_envio_proveedor' in data:
+            campos.append('fecha_envio = %s')
+            valores.append(data.get('fecha_envio_proveedor'))
         if 'fecha_entrega' in data:
             campos.append('fecha_entrega = %s')
             valores.append(data.get('fecha_entrega'))
@@ -418,12 +435,6 @@ def update_equipo(id):
         if 'proveedor' in data:
             campos.append('proveedor = %s')
             valores.append(data.get('proveedor'))
-        if 'fecha_envio_proveedor' in data:
-            campos.append('fecha_envio = %s')
-            valores.append(data.get('fecha_envio_proveedor'))
-        if 'detalle_reparacion' in data:
-            campos.append('detalles_reparacion = %s')
-            valores.append(data.get('detalle_reparacion'))
         
         if not campos:
             return jsonify({'error': 'No hay campos para actualizar'}), 400
