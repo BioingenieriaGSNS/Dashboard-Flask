@@ -770,6 +770,21 @@
 
 {% block content %}
 <h2 style="margin-top: 0.5rem; margin-bottom: 1rem; color: #1e4d7b;">🖥️ Gestión de Equipos</h2>
+<!-- FILTROS -->
+<div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
+    <h3 style="margin-bottom: 1rem; color: #1e4d7b;">🔍 Filtros</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <input type="text" id="filtroCliente" placeholder="🏢 Filtrar por Cliente" class="search-box" style="margin: 0;">
+        <input type="text" id="filtroOST" placeholder="📋 Filtrar por OST" class="search-box" style="margin: 0;">
+        <input type="text" id="filtroEstado" placeholder="📊 Filtrar por Estado" class="search-box" style="margin: 0;">
+        <input type="text" id="filtroTipo" placeholder="💻 Filtrar por Tipo" class="search-box" style="margin: 0;">
+        <input type="text" id="filtroMarca" placeholder="🏭 Filtrar por Marca" class="search-box" style="margin: 0;">
+        <input type="text" id="filtroSerie" placeholder="🔢 Filtrar por Serie" class="search-box" style="margin: 0;">
+    </div>
+    <div style="margin-top: 1rem; text-align: right;">
+        <button onclick="limpiarFiltros()" class="btn btn-primary" style="background: #999;">🔄 Limpiar Filtros</button>
+    </div>
+</div>
 
 <div style="margin-bottom: 1.5rem;">
     <button class="btn btn-primary" onclick="abrirModalAgregarEquipo()">➕ Agregar Nuevo Equipo</button>
@@ -1568,6 +1583,55 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
         console.error('Error:', error);
         alert('❌ Error de red: ' + error);
     });
+    // Sistema de filtros
+    function aplicarFiltros() {
+        const filtroCliente = document.getElementById('filtroCliente').value.toLowerCase();
+        const filtroOST = document.getElementById('filtroOST').value.toLowerCase();
+        const filtroEstado = document.getElementById('filtroEstado').value.toLowerCase();
+        const filtroTipo = document.getElementById('filtroTipo').value.toLowerCase();
+        const filtroMarca = document.getElementById('filtroMarca').value.toLowerCase();
+        const filtroSerie = document.getElementById('filtroSerie').value.toLowerCase();
+        
+        const filas = document.querySelectorAll('.data-row');
+        
+        filas.forEach(fila => {
+            const cliente = fila.querySelector('[data-field="cliente_nombre"]')?.textContent.toLowerCase() || '';
+            const ost = fila.querySelector('[data-field="ost"]')?.textContent.toLowerCase() || '';
+            const estado = fila.querySelector('[data-field="estado"]')?.textContent.toLowerCase() || '';
+            const tipo = fila.querySelector('[data-field="tipo_equipo"]')?.textContent.toLowerCase() || '';
+            const marca = fila.querySelector('[data-field="marca"]')?.textContent.toLowerCase() || '';
+            const serie = fila.querySelector('[data-field="numero_serie"]')?.textContent.toLowerCase() || '';
+            
+            const cumpleFiltros = 
+                cliente.includes(filtroCliente) &&
+                ost.includes(filtroOST) &&
+                estado.includes(filtroEstado) &&
+                tipo.includes(filtroTipo) &&
+                marca.includes(filtroMarca) &&
+                serie.includes(filtroSerie);
+            
+            fila.style.display = cumpleFiltros ? 'flex' : 'none';
+        });
+    }
+
+    function limpiarFiltros() {
+        document.getElementById('filtroCliente').value = '';
+        document.getElementById('filtroOST').value = '';
+        document.getElementById('filtroEstado').value = '';
+        document.getElementById('filtroTipo').value = '';
+        document.getElementById('filtroMarca').value = '';
+        document.getElementById('filtroSerie').value = '';
+        aplicarFiltros();
+    }
+
+    // Aplicar filtros en tiempo real
+    document.getElementById('filtroCliente')?.addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroOST')?.addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroEstado')?.addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroTipo')?.addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroMarca')?.addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroSerie')?.addEventListener('input', aplicarFiltros);
+
 });
 </script>
 {% endblock %}
