@@ -262,6 +262,113 @@
     font-size: 0.9rem;
 }
 
+/* Filtros estilo Google Sheets */
+.filter-icon {
+    display: none;
+    margin-left: 5px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.filter-icon:hover {
+    opacity: 1;
+}
+
+.filter-icon.active {
+    display: inline;
+    color: #667eea;
+    opacity: 1;
+}
+
+.col-header.filterable {
+    cursor: pointer;
+    position: relative;
+}
+
+.col-header.filterable:hover {
+    background: #2c5f8d !important;
+}
+
+.filter-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 200px;
+    max-width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+}
+
+.filter-dropdown.active {
+    display: block;
+}
+
+.filter-search {
+    width: calc(100% - 20px);
+    padding: 8px;
+    margin: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.filter-options {
+    padding: 5px;
+}
+
+.filter-option {
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.filter-option:hover {
+    background: #f0f0f0;
+}
+
+.filter-option input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.filter-actions {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    gap: 5px;
+    justify-content: space-between;
+}
+
+.filter-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.filter-actions .btn-aplicar {
+    background: #667eea;
+    color: white;
+}
+
+.filter-actions .btn-limpiar {
+    background: #f0f0f0;
+    color: #333;
+}
+
 /* Estado */
 .estado-cell {
     cursor: pointer;
@@ -771,19 +878,12 @@
 {% block content %}
 <h2 style="margin-top: 0.5rem; margin-bottom: 1rem; color: #1e4d7b;">🖥️ Gestión de Equipos</h2>
 <!-- FILTROS -->
-<div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
-    <h3 style="margin-bottom: 1rem; color: #1e4d7b;">🔍 Filtros</h3>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-        <input type="text" id="filtroCliente" placeholder="🏢 Filtrar por Cliente" class="search-box" style="margin: 0;">
-        <input type="text" id="filtroOST" placeholder="📋 Filtrar por OST" class="search-box" style="margin: 0;">
-        <input type="text" id="filtroEstado" placeholder="📊 Filtrar por Estado" class="search-box" style="margin: 0;">
-        <input type="text" id="filtroTipo" placeholder="💻 Filtrar por Tipo" class="search-box" style="margin: 0;">
-        <input type="text" id="filtroMarca" placeholder="🏭 Filtrar por Marca" class="search-box" style="margin: 0;">
-        <input type="text" id="filtroSerie" placeholder="🔢 Filtrar por Serie" class="search-box" style="margin: 0;">
-    </div>
-    <div style="margin-top: 1rem; text-align: right;">
-        <button onclick="limpiarFiltros()" class="btn btn-primary" style="background: #999;">🔄 Limpiar Filtros</button>
-    </div>
+<!-- BOTÓN DE FILTROS -->
+<div style="margin-bottom: 1rem;">
+    <button class="btn btn-primary" onclick="toggleFiltros()" id="btnFiltros" style="background: #667eea;">
+        🔍 Activar Filtros
+    </button>
+    <span id="estadoFiltros" style="margin-left: 1rem; color: #666; font-size: 0.9rem;"></span>
 </div>
 
 <div style="margin-bottom: 1.5rem;">
@@ -801,9 +901,15 @@
             
             <!-- Headers de columnas fijas -->
             <div class="column-headers">
-                <div class="col-header ch-cliente">Cliente</div>
-                <div class="col-header ch-ost">OST</div>
-                <div class="col-header ch-estado">Estado</div>
+                <div class="col-header ch-cliente filterable" data-column="cliente">
+                    Cliente <span class="filter-icon">▼</span>
+                </div>
+                <div class="col-header ch-ost filterable" data-column="ost">
+                    OST <span class="filter-icon">▼</span>
+                </div>
+                <div class="col-header ch-estado filterable" data-column="estado">
+                    Estado <span class="filter-icon">▼</span>
+                </div>
             </div>
             
             <!-- Filas fijas -->
@@ -835,10 +941,16 @@
             <div class="column-headers">
                 <div class="col-header ch-fecha-ingreso">Fecha Ingreso</div>
                 <div class="col-header ch-remito">Remito</div>
-                <div class="col-header ch-tipo">Tipo</div>
-                <div class="col-header ch-marca">Marca</div>
+                <div class="col-header ch-tipo filterable" data-column="tipo_equipo">
+                    Tipo <span class="filter-icon">▼</span>
+                </div>
+                <div class="col-header ch-marca filterable" data-column="marca">
+                    Marca <span class="filter-icon">▼</span>
+                </div>
                 <div class="col-header ch-modelo">Modelo</div>
-                <div class="col-header ch-serie">Serie</div>
+                <div class="col-header ch-serie filterable" data-column="numero_serie">
+                    Nº Serie <span class="filter-icon">▼</span>
+                </div>
                 <div class="col-header ch-accesorios">Accesorios</div>
                 <div class="col-header ch-obs">Obs. Ingreso</div>
                 <div class="col-header ch-fotos">Fotos</div>
@@ -1583,55 +1695,213 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
         console.error('Error:', error);
         alert('❌ Error de red: ' + error);
     });
-    // Sistema de filtros
-    function aplicarFiltros() {
-        const filtroCliente = document.getElementById('filtroCliente').value.toLowerCase();
-        const filtroOST = document.getElementById('filtroOST').value.toLowerCase();
-        const filtroEstado = document.getElementById('filtroEstado').value.toLowerCase();
-        const filtroTipo = document.getElementById('filtroTipo').value.toLowerCase();
-        const filtroMarca = document.getElementById('filtroMarca').value.toLowerCase();
-        const filtroSerie = document.getElementById('filtroSerie').value.toLowerCase();
+    
+    // Sistema de filtros estilo Google Sheets
+
+});
+
+    // Sistema de filtros estilo Google Sheets (FUERA del addEventListener)
+    let filtrosActivos = false;
+    let filtrosAplicados = {};
+
+    function toggleFiltros() {
+        filtrosActivos = !filtrosActivos;
+        const btn = document.getElementById('btnFiltros');
+        const icons = document.querySelectorAll('.filter-icon');
+        const estado = document.getElementById('estadoFiltros');
         
-        const filas = document.querySelectorAll('.data-row');
-        
-        filas.forEach(fila => {
-            const cliente = fila.querySelector('[data-field="cliente_nombre"]')?.textContent.toLowerCase() || '';
-            const ost = fila.querySelector('[data-field="ost"]')?.textContent.toLowerCase() || '';
-            const estado = fila.querySelector('[data-field="estado"]')?.textContent.toLowerCase() || '';
-            const tipo = fila.querySelector('[data-field="tipo_equipo"]')?.textContent.toLowerCase() || '';
-            const marca = fila.querySelector('[data-field="marca"]')?.textContent.toLowerCase() || '';
-            const serie = fila.querySelector('[data-field="numero_serie"]')?.textContent.toLowerCase() || '';
-            
-            const cumpleFiltros = 
-                cliente.includes(filtroCliente) &&
-                ost.includes(filtroOST) &&
-                estado.includes(filtroEstado) &&
-                tipo.includes(filtroTipo) &&
-                marca.includes(filtroMarca) &&
-                serie.includes(filtroSerie);
-            
-            fila.style.display = cumpleFiltros ? 'flex' : 'none';
+        if (filtrosActivos) {
+            btn.textContent = '🔍 Desactivar Filtros';
+            btn.style.background = '#f44336';
+            icons.forEach(icon => icon.classList.add('active'));
+            estado.textContent = 'Filtros activados';
+            estado.style.color = '#667eea';
+        } else {
+            btn.textContent = '🔍 Activar Filtros';
+            btn.style.background = '#667eea';
+            icons.forEach(icon => icon.classList.remove('active'));
+            estado.textContent = '';
+            cerrarTodosDropdowns();
+            limpiarTodosFiltros();
+        }
+    }
+
+    function cerrarTodosDropdowns() {
+        document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+            dropdown.remove();
         });
     }
 
-    function limpiarFiltros() {
-        document.getElementById('filtroCliente').value = '';
-        document.getElementById('filtroOST').value = '';
-        document.getElementById('filtroEstado').value = '';
-        document.getElementById('filtroTipo').value = '';
-        document.getElementById('filtroMarca').value = '';
-        document.getElementById('filtroSerie').value = '';
-        aplicarFiltros();
+    function limpiarTodosFiltros() {
+        filtrosAplicados = {};
+        document.querySelectorAll('.data-row').forEach(row => {
+            row.style.display = 'flex';
+        });
+        actualizarEstadoFiltros();
     }
 
-    // Aplicar filtros en tiempo real
-    document.getElementById('filtroCliente')?.addEventListener('input', aplicarFiltros);
-    document.getElementById('filtroOST')?.addEventListener('input', aplicarFiltros);
-    document.getElementById('filtroEstado')?.addEventListener('input', aplicarFiltros);
-    document.getElementById('filtroTipo')?.addEventListener('input', aplicarFiltros);
-    document.getElementById('filtroMarca')?.addEventListener('input', aplicarFiltros);
-    document.getElementById('filtroSerie')?.addEventListener('input', aplicarFiltros);
+    function actualizarEstadoFiltros() {
+        const estado = document.getElementById('estadoFiltros');
+        const numFiltros = Object.keys(filtrosAplicados).length;
+        if (numFiltros > 0 && filtrosActivos) {
+            estado.textContent = `${numFiltros} filtro(s) aplicado(s)`;
+            estado.style.color = '#667eea';
+        } else if (filtrosActivos) {
+            estado.textContent = 'Filtros activados';
+            estado.style.color = '#667eea';
+        }
+    }
 
-});
+    // Agregar event listeners a los headers cuando cargue la página
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.col-header.filterable').forEach(header => {
+            header.addEventListener('click', function(e) {
+                if (!filtrosActivos) return;
+                
+                e.stopPropagation();
+                
+                // Cerrar otros dropdowns
+                document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+                    if (dropdown.parentElement !== this) {
+                        dropdown.remove();
+                    }
+                });
+                
+                // Toggle este dropdown
+                const existente = this.querySelector('.filter-dropdown');
+                if (existente) {
+                    existente.remove();
+                    return;
+                }
+                
+                const columna = this.getAttribute('data-column');
+                mostrarDropdownFiltro(this, columna);
+            });
+        });
+        
+        // Cerrar dropdowns al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.col-header.filterable')) {
+                cerrarTodosDropdowns();
+            }
+        });
+    });
+
+    function mostrarDropdownFiltro(header, columna) {
+        // Obtener valores únicos de la columna
+        const valores = new Set();
+        document.querySelectorAll(`.data-row [data-field="${columna}"]`).forEach(cell => {
+            const valor = cell.textContent.trim();
+            if (valor && valor !== 'N/A') {
+                valores.add(valor);
+            }
+        });
+        
+        const valoresArray = Array.from(valores).sort();
+        
+        // Crear dropdown
+        const dropdown = document.createElement('div');
+        dropdown.className = 'filter-dropdown active';
+        
+        let html = `
+            <input type="text" class="filter-search" placeholder="Buscar..." onkeyup="filtrarOpciones(this)">
+            <div class="filter-options">
+                <div class="filter-option" onclick="toggleTodosCheckboxes(this, '${columna}')">
+                    <input type="checkbox" checked id="selectAll_${columna}">
+                    <label>(Seleccionar todo)</label>
+                </div>
+        `;
+        
+        valoresArray.forEach(valor => {
+            const isChecked = !filtrosAplicados[columna] || filtrosAplicados[columna].includes(valor);
+            html += `
+                <div class="filter-option" data-value="${valor}">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} value="${valor}" data-column="${columna}">
+                    <label>${valor}</label>
+                </div>
+            `;
+        });
+        
+        html += `
+            </div>
+            <div class="filter-actions">
+                <button class="btn-limpiar" onclick="limpiarFiltroColumna('${columna}')">Limpiar</button>
+                <button class="btn-aplicar" onclick="aplicarFiltroColumna('${columna}')">Aplicar</button>
+            </div>
+        `;
+        
+        dropdown.innerHTML = html;
+        header.style.position = 'relative';
+        header.appendChild(dropdown);
+        
+        // Prevenir que el dropdown se cierre al hacer clic dentro
+        dropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
+    function filtrarOpciones(input) {
+        const filtro = input.value.toLowerCase();
+        const opciones = input.parentElement.querySelectorAll('.filter-option:not(:first-child)');
+        
+        opciones.forEach(opcion => {
+            const texto = opcion.textContent.toLowerCase();
+            opcion.style.display = texto.includes(filtro) ? 'flex' : 'none';
+        });
+    }
+
+    function toggleTodosCheckboxes(option, columna) {
+        const checkbox = option.querySelector('input');
+        const todasCheckboxes = option.parentElement.querySelectorAll('input[type="checkbox"]:not(#selectAll_' + columna + ')');
+        
+        todasCheckboxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+        });
+    }
+
+    function limpiarFiltroColumna(columna) {
+        delete filtrosAplicados[columna];
+        cerrarTodosDropdowns();
+        aplicarTodosFiltros();
+    }
+
+    function aplicarFiltroColumna(columna) {
+        const dropdown = document.querySelector('.filter-dropdown.active');
+        const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]:checked:not([id^="selectAll"])');
+        
+        const seleccionados = Array.from(checkboxes).map(cb => cb.value);
+        
+        if (seleccionados.length === 0) {
+            delete filtrosAplicados[columna];
+        } else {
+            filtrosAplicados[columna] = seleccionados;
+        }
+        
+        cerrarTodosDropdowns();
+        aplicarTodosFiltros();
+    }
+
+    function aplicarTodosFiltros() {
+        const filas = document.querySelectorAll('.data-row');
+        
+        filas.forEach(fila => {
+            let mostrar = true;
+            
+            for (const [columna, valores] of Object.entries(filtrosAplicados)) {
+                const cell = fila.querySelector(`[data-field="${columna}"]`);
+                if (cell) {
+                    const valorCelda = cell.textContent.trim();
+                    if (!valores.includes(valorCelda)) {
+                        mostrar = false;
+                        break;
+                    }
+                }
+            }
+            
+            fila.style.display = mostrar ? 'flex' : 'none';
+        });
+        
+        actualizarEstadoFiltros();
+    }
 </script>
 {% endblock %}
