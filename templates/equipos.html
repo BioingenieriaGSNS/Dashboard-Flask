@@ -183,9 +183,9 @@
 /* Fila de datos */
 .data-row {
     display: flex;
-    height: 60px;
+    height: 30px;
     min-width: min-content;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 0px solid #e0e0e0;
     flex-shrink: 0;
 }
 
@@ -211,7 +211,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    height: 60px;
+    height: 30px;
     flex-shrink: 0;
     background: inherit !important;
 }
@@ -292,32 +292,70 @@
 }
 
 .filter-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
+    position: fixed;
     background: white;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     z-index: 1000;
-    min-width: 200px;
-    max-width: 300px;
-    max-height: 400px;
-    overflow-y: auto;
+    min-width: 250px;
+    max-width: 350px;
+    max-height: 450px;
+    overflow: hidden;
     display: none;
 }
 
 .filter-dropdown.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-dropdown-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 15px;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    border-radius: 8px 8px 0 0;
+    user-select: none;
+}
+
+.filter-dropdown-header:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+}
+
+.filter-dropdown-close {
+    cursor: pointer;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0 5px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.filter-dropdown-close:hover {
+    opacity: 1;
+}
+
+.filter-dropdown-body {
+    overflow-y: auto;
+    flex: 1;
 }
 
 .filter-search {
     width: calc(100% - 20px);
     padding: 8px;
-    margin: 10px;
+    margin: 10px 10px 5px 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 0.85rem;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
 }
 
 .filter-options {
@@ -878,16 +916,16 @@
 {% block content %}
 <h2 style="margin-top: 0.5rem; margin-bottom: 1rem; color: #1e4d7b;">🖥️ Gestión de Equipos</h2>
 <!-- FILTROS -->
-<!-- BOTÓN DE FILTROS -->
-<div style="margin-bottom: 1rem;">
+
+<!-- BOTONES DE ACCIÓN -->
+<div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
     <button class="btn btn-primary" onclick="toggleFiltros()" id="btnFiltros" style="background: #667eea;">
         🔍 Activar Filtros
     </button>
-    <span id="estadoFiltros" style="margin-left: 1rem; color: #666; font-size: 0.9rem;"></span>
-</div>
-
-<div style="margin-bottom: 1.5rem;">
-    <button class="btn btn-primary" onclick="abrirModalAgregarEquipo()">➕ Agregar Nuevo Equipo</button>
+    <button class="btn btn-primary" onclick="abrirModalAgregarEquipo()">
+        ➕ Agregar Nuevo Equipo
+    </button>
+    <span id="estadoFiltros" style="color: #666; font-size: 0.9rem;"></span>
 </div>
 
 <div class="table-container">
@@ -904,8 +942,8 @@
                 <div class="col-header ch-cliente filterable" data-column="cliente">
                     Cliente <span class="filter-icon">▼</span>
                 </div>
-                <div class="col-header ch-ost filterable" data-column="ost">
-                    OST <span class="filter-icon">▼</span>
+                <div class="col-header ch-ost filterable" data-column="ost" onclick="toggleOrdenOST(event)">
+                    OST <span class="filter-icon">▼</span><span id="iconOrdenOST" style="margin-left: 3px;">↓</span>
                 </div>
                 <div class="col-header ch-estado filterable" data-column="estado">
                     Estado <span class="filter-icon">▼</span>
@@ -954,7 +992,9 @@
                 <div class="col-header ch-accesorios">Accesorios</div>
                 <div class="col-header ch-obs">Obs. Ingreso</div>
                 <div class="col-header ch-fotos">Fotos</div>
-                <div class="col-header ch-prioridad">Prioridad</div>
+                <div class="col-header ch-prioridad filterable" data-column="prioridad">
+                    Prioridad <span class="filter-icon">▼</span>
+                </div>
                 <div class="col-header ch-fecha-envio">Fecha Envío</div>
                 <div class="col-header ch-proveedor">Proveedor</div>
                 <div class="col-header ch-det-reparacion">Det. Reparación</div>
@@ -1760,21 +1800,27 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
                 
                 e.stopPropagation();
                 
-                // Cerrar otros dropdowns
+                const columna = this.getAttribute('data-column');
+                
+                // Si es OST, usar modal de búsqueda especial
+                if (columna === 'ost') {
+                    mostrarBusquedaOST(this);
+                    return;
+                }
+                
+                // Para otras columnas, comportamiento normal
                 document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
                     if (dropdown.parentElement !== this) {
                         dropdown.remove();
                     }
                 });
                 
-                // Toggle este dropdown
                 const existente = this.querySelector('.filter-dropdown');
                 if (existente) {
                     existente.remove();
                     return;
                 }
                 
-                const columna = this.getAttribute('data-column');
                 mostrarDropdownFiltro(this, columna);
             });
         });
@@ -1785,61 +1831,267 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
                 cerrarTodosDropdowns();
             }
         });
+
+        // Ordenar inicialmente por OST
+        ordenarPorOST();
     });
 
+  
     function mostrarDropdownFiltro(header, columna) {
-        // Obtener valores únicos de la columna
-        const valores = new Set();
-        document.querySelectorAll(`.data-row [data-field="${columna}"]`).forEach(cell => {
+    // Obtener valores únicos de la columna SOLO de las filas visibles
+    const valores = new Set();
+    
+    // Buscar en AMBAS secciones (fija y scrollable), pero solo filas visibles
+    document.querySelectorAll(`.data-row`).forEach(row => {
+        // Saltar filas ocultas por otros filtros
+        if (row.style.display === 'none') return;
+        const cell = row.querySelector(`[data-field="${columna}"]`);
+        if (cell) {
             const valor = cell.textContent.trim();
-            if (valor && valor !== 'N/A') {
+            if (valor && valor !== 'N/A' && valor !== '') {
                 valores.add(valor);
             }
-        });
-        
-        const valoresArray = Array.from(valores).sort();
-        
-        // Crear dropdown
-        const dropdown = document.createElement('div');
-        dropdown.className = 'filter-dropdown active';
-        
-        let html = `
+        }
+    });
+    
+    const valoresArray = Array.from(valores).sort();
+    
+    // Crear dropdown
+    const dropdown = document.createElement('div');
+    dropdown.className = 'filter-dropdown active';
+    
+    let html = `
+        <div class="filter-dropdown-header">
+            <span>🔍 Filtrar: ${columna.charAt(0).toUpperCase() + columna.slice(1).replace('_', ' ')}</span>
+            <span class="filter-dropdown-close" onclick="cerrarTodosDropdowns()">×</span>
+        </div>
+        <div class="filter-dropdown-body">
             <input type="text" class="filter-search" placeholder="Buscar..." onkeyup="filtrarOpciones(this)">
             <div class="filter-options">
                 <div class="filter-option" onclick="toggleTodosCheckboxes(this, '${columna}')">
                     <input type="checkbox" checked id="selectAll_${columna}">
                     <label>(Seleccionar todo)</label>
                 </div>
-        `;
-        
-        valoresArray.forEach(valor => {
-            const isChecked = !filtrosAplicados[columna] || filtrosAplicados[columna].includes(valor);
-            html += `
-                <div class="filter-option" data-value="${valor}">
-                    <input type="checkbox" ${isChecked ? 'checked' : ''} value="${valor}" data-column="${columna}">
-                    <label>${valor}</label>
-                </div>
-            `;
-        });
-        
+    `;
+    
+    valoresArray.forEach(valor => {
+        const isChecked = !filtrosAplicados[columna] || filtrosAplicados[columna].includes(valor);
         html += `
+            <div class="filter-option" data-value="${valor}" onclick="toggleCheckboxFiltro(event, this)">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} value="${valor}" data-column="${columna}" onclick="event.stopPropagation()">
+                <label>${valor}</label>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button class="btn-limpiar" onclick="limpiarFiltroColumna('${columna}')">Limpiar</button>
+            <button class="btn-aplicar" onclick="aplicarFiltroColumna('${columna}')">Aplicar</button>
+        </div>
+    `;
+    
+    dropdown.innerHTML = html;
+    document.body.appendChild(dropdown);
+    
+    // Posicionar el dropdown cerca del header
+    const rect = header.getBoundingClientRect();
+    let top = rect.bottom + 5;
+    let left = rect.left;
+    
+    // Ajustar posición inicial para que no se salga de la pantalla
+    dropdown.style.top = top + 'px';
+    dropdown.style.left = left + 'px';
+    
+    setTimeout(() => {
+        const dropdownRect = dropdown.getBoundingClientRect();
+        
+        // Ajustar horizontal si se sale
+        if (dropdownRect.right > window.innerWidth) {
+            left = window.innerWidth - dropdownRect.width - 10;
+            dropdown.style.left = left + 'px';
+        }
+        
+        // Ajustar vertical si se sale
+        if (dropdownRect.bottom > window.innerHeight) {
+            top = rect.top - dropdownRect.height - 5;
+            dropdown.style.top = Math.max(10, top) + 'px';
+        }
+    }, 10);
+    
+    // Hacer el dropdown arrastrable
+    hacerArrastrable(dropdown);
+    
+    // Prevenir que el dropdown se cierre al hacer clic dentro
+    dropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+}
+
+    function mostrarBusquedaOST(header) {
+        // Cerrar otros dropdowns
+        cerrarTodosDropdowns();
+        
+        const dropdown = document.createElement('div');
+        dropdown.className = 'filter-dropdown active';
+        
+        dropdown.innerHTML = `
+            <div class="filter-dropdown-header">
+                <span>🔍 Buscar OST</span>
+                <span class="filter-dropdown-close" onclick="cerrarTodosDropdowns()">×</span>
+            </div>
+            <div class="filter-dropdown-body">
+                <input type="text" class="filter-search" id="searchOST" placeholder="Escriba el número de OST..." style="margin-bottom: 10px;">
+                <div style="padding: 10px; color: #666; font-size: 0.85rem; text-align: center;">
+                    Presione Enter para buscar
+                </div>
             </div>
             <div class="filter-actions">
-                <button class="btn-limpiar" onclick="limpiarFiltroColumna('${columna}')">Limpiar</button>
-                <button class="btn-aplicar" onclick="aplicarFiltroColumna('${columna}')">Aplicar</button>
+                <button class="btn-limpiar" onclick="limpiarFiltroColumna('ost')">Limpiar</button>
+                <button class="btn-aplicar" onclick="aplicarBusquedaOST()">Buscar</button>
             </div>
         `;
         
-        dropdown.innerHTML = html;
-        header.style.position = 'relative';
-        header.appendChild(dropdown);
+        document.body.appendChild(dropdown);
         
-        // Prevenir que el dropdown se cierre al hacer clic dentro
+        // Posicionar el dropdown
+        const rect = header.getBoundingClientRect();
+        dropdown.style.top = rect.bottom + 5 + 'px';
+        dropdown.style.left = rect.left + 'px';
+        dropdown.style.minWidth = '300px';
+        
+        // Hacer arrastrable
+        hacerArrastrable(dropdown);
+        
+        // Prevenir cierre al hacer clic dentro
         dropdown.addEventListener('click', function(e) {
             e.stopPropagation();
         });
+        
+        // Focus en el input
+        setTimeout(() => {
+            const input = document.getElementById('searchOST');
+            input.focus();
+            
+            // Enter para buscar
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    aplicarBusquedaOST();
+                }
+            });
+        }, 100);
     }
 
+    function aplicarBusquedaOST() {
+        const input = document.getElementById('searchOST');
+        const valorBuscado = input.value.trim();
+        
+        if (!valorBuscado) {
+            alert('⚠️ Por favor ingrese un número de OST');
+            return;
+        }
+        
+        // Obtener todas las filas de AMBAS secciones
+        const filasScrollable = document.querySelectorAll('.scrollable-section .data-row');
+        const filasFijas = document.querySelectorAll('.fixed-section .data-row');
+        
+        // Procesar cada fila
+        for (let i = 0; i < filasFijas.length; i++) {
+            let mostrar = false;
+            
+            // Buscar la celda OST en la sección fija
+            const cellOST = filasFijas[i].querySelector('.ch-ost');
+            
+            if (cellOST) {
+                const valorOST = cellOST.textContent.trim();
+                // Buscar si el valor contiene el texto buscado (búsqueda parcial)
+                if (valorOST.toLowerCase().includes(valorBuscado.toLowerCase())) {
+                    mostrar = true;
+                }
+            }
+            
+            // Aplicar otros filtros existentes si los hay
+            for (const [columna, valores] of Object.entries(filtrosAplicados)) {
+                if (columna === 'ost') continue; // Saltar el filtro OST que acabamos de aplicar
+                
+                let cell = filasFijas[i].querySelector(`[data-field="${columna}"]`);
+                if (!cell && filasScrollable[i]) {
+                    cell = filasScrollable[i].querySelector(`[data-field="${columna}"]`);
+                }
+                
+                if (cell) {
+                    const valorCelda = cell.textContent.trim();
+                    if (!valores.includes(valorCelda)) {
+                        mostrar = false;
+                        break;
+                    }
+                }
+            }
+            
+            // Aplicar display a AMBAS filas (fija y scrollable)
+            if (filasFijas[i]) {
+                filasFijas[i].style.display = mostrar ? 'flex' : 'none';
+            }
+            if (filasScrollable[i]) {
+                filasScrollable[i].style.display = mostrar ? 'flex' : 'none';
+            }
+        }
+        
+        // Marcar que el filtro OST está aplicado
+        filtrosAplicados['ost'] = [valorBuscado];
+        cerrarTodosDropdowns();
+        actualizarEstadoFiltros();
+    }
+    // Función para hacer elementos arrastrables
+function hacerArrastrable(elemento) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    const header = elemento.querySelector('.filter-dropdown-header');
+    
+    if (header) {
+        header.onmousedown = arrastrarMouseDown;
+    }
+    
+    function arrastrarMouseDown(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = cerrarArrastre;
+        document.onmousemove = arrastrarElemento;
+    }
+    
+    function arrastrarElemento(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        let newTop = elemento.offsetTop - pos2;
+        let newLeft = elemento.offsetLeft - pos1;
+        
+        // Limitar para que no se salga de la pantalla
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - elemento.offsetHeight));
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - elemento.offsetWidth));
+        
+        elemento.style.top = newTop + "px";
+        elemento.style.left = newLeft + "px";
+    }
+    
+    function cerrarArrastre() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+function toggleCheckboxFiltro(event, option) {
+    // Si el clic fue directamente en el checkbox, no hacer nada (ya se maneja solo)
+    if (event.target.tagName === 'INPUT') return;
+    
+    const checkbox = option.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+}
     function filtrarOpciones(input) {
         const filtro = input.value.toLowerCase();
         const opciones = input.parentElement.querySelectorAll('.filter-option:not(:first-child)');
@@ -1882,13 +2134,24 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
     }
 
     function aplicarTodosFiltros() {
-        const filas = document.querySelectorAll('.data-row');
+        // Obtener todas las filas de AMBAS secciones
+        const filasScrollable = document.querySelectorAll('.scrollable-section .data-row');
+        const filasFijas = document.querySelectorAll('.fixed-section .data-row');
         
-        filas.forEach(fila => {
+        // Procesar cada fila
+        for (let i = 0; i < filasFijas.length; i++) {
             let mostrar = true;
             
+            // Verificar filtros contra AMBAS secciones
             for (const [columna, valores] of Object.entries(filtrosAplicados)) {
-                const cell = fila.querySelector(`[data-field="${columna}"]`);
+                // Buscar celda en sección fija
+                let cell = filasFijas[i].querySelector(`[data-field="${columna}"]`);
+                
+                // Si no está en fija, buscar en scrollable
+                if (!cell && filasScrollable[i]) {
+                    cell = filasScrollable[i].querySelector(`[data-field="${columna}"]`);
+                }
+                
                 if (cell) {
                     const valorCelda = cell.textContent.trim();
                     if (!valores.includes(valorCelda)) {
@@ -1898,10 +2161,64 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
                 }
             }
             
-            fila.style.display = mostrar ? 'flex' : 'none';
-        });
+            // Aplicar display a AMBAS filas (fija y scrollable)
+            if (filasFijas[i]) {
+                filasFijas[i].style.display = mostrar ? 'flex' : 'none';
+            }
+            if (filasScrollable[i]) {
+                filasScrollable[i].style.display = mostrar ? 'flex' : 'none';
+            }
+        }
         
         actualizarEstadoFiltros();
     }
+    let ordenOSTAscendente = false;
+
+    function toggleOrdenOST(event) {
+        if (!filtrosActivos) {
+            // Si los filtros no están activos, solo ordenar
+            ordenOSTAscendente = !ordenOSTAscendente;
+            ordenarPorOST();
+            actualizarIconoOrden();
+        }
+        // Si los filtros están activos, dejar que se abra el dropdown normalmente
+    }
+
+    function actualizarIconoOrden() {
+        const icono = document.getElementById('iconOrdenOST');
+        icono.textContent = ordenOSTAscendente ? '↓' : '↑';
+    }
+
+    function ordenarPorOST() {
+        const filasScrollable = Array.from(document.querySelectorAll('.scrollable-section .data-row'));
+        const filasFijas = Array.from(document.querySelectorAll('.fixed-section .data-row'));
+        
+        // Combinar ambas listas con sus índices
+        const filasConOST = filasScrollable.map((row, idx) => {
+            const ostText = filasFijas[idx].querySelector('.ch-ost').textContent.trim();
+            const ostNum = ostText === 'N/A' ? -1 : parseInt(ostText);
+            return { scrollable: row, fija: filasFijas[idx], ost: ostNum };
+        });
+        
+        // Ordenar
+        filasConOST.sort((a, b) => {
+            if (ordenOSTAscendente) {
+                return a.ost - b.ost;
+            } else {
+                return b.ost - a.ost;
+            }
+        });
+        
+        // Reordenar en el DOM
+        const containerScrollable = document.getElementById('scrollableRows');
+        const containerFija = document.getElementById('fixedRows');
+        
+        filasConOST.forEach(item => {
+            containerScrollable.appendChild(item.scrollable);
+            containerFija.appendChild(item.fija);
+        });
+    }
+
+
 </script>
 {% endblock %}
