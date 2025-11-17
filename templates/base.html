@@ -242,9 +242,22 @@
 </head>
 <body>
     <header>
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <h1>📊 Dashboard - Gestión de Solicitudes y Equipos</h1>
-            <img src="https://res.cloudinary.com/dfxjqvan0/image/upload/v1762453830/LOGO_SYEMED_MUX-removebg_df3gwy.png" alt="Logo" style="height: 50px; width: auto;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <h1>📊 Dashboard - Gestión de Solicitudes y Equipos</h1>
+                <img src="https://res.cloudinary.com/dfxjqvan0/image/upload/v1762453830/LOGO_SYEMED_MUX-removebg_df3gwy.png" alt="Logo" style="height: 50px; width: auto;">
+            </div>
+            {% if current_user.is_authenticated %}
+            <div style="display: flex; align-items: center; gap: 1rem; color: white;">
+                <div style="text-align: right;">
+                    <div style="font-size: 0.9rem; opacity: 0.9;">👤 {{ current_user.username }}</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">{{ current_user.get_role_name() }}</div>
+                </div>
+                <a href="{{ url_for('logout') }}" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 6px; color: white; text-decoration: none; font-weight: 500; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    🚪 Salir
+                </a>
+            </div>
+            {% endif %}
         </div>
     </header>
 
@@ -254,10 +267,23 @@
             <li><a href="{{ url_for('solicitudes') }}" {% if request.endpoint == 'solicitudes' %}class="active"{% endif %}>📋 Solicitudes</a></li>
             <li><a href="{{ url_for('equipos') }}" {% if request.endpoint == 'equipos' %}class="active"{% endif %}>🖥️ Equipos</a></li>
             <li><a href="{{ url_for('archivos') }}" {% if request.endpoint == 'archivos' %}class="active"{% endif %}>📎 Archivos</a></li>
+            {% if current_user.is_authenticated and current_user.has_permission('manage_users') %}
+            <li><a href="{{ url_for('usuarios') }}" {% if request.endpoint == 'usuarios' %}class="active"{% endif %}>👥 Usuarios</a></li>
+            {% endif %}
         </ul>
     </nav>
 
     <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
         {% block content %}{% endblock %}
     </div>
 

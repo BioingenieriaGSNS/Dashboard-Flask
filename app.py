@@ -1,14 +1,29 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import psycopg2
 import psycopg2.extras
 import os
 from dotenv import load_dotenv
 from datetime import datetime, date
 
+# Importar el sistema de autenticación
+from auth import (
+    login_manager, User, authenticate_user, create_user, 
+    permission_required, role_required, get_all_users,
+    toggle_user_status, update_user_role, update_user_password,
+    update_last_login
+)
+
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'tu_clave_secreta_aqui'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'cambiar-esta-clave-secreta-en-produccion')
+
+# Configurar Flask-Login
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = '⚠️ Por favor inicia sesión para acceder'
+login_manager.login_message_category = 'error'
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -22,7 +37,49 @@ def get_db_connection():
         print(f"Error de conexión: {e}")
         return None
 
+# ============================================
+# RUTAS DE AUTENTICACIÓN
+# ============================================
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Página de login"""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        user = authenticate_user(username, password)
+        
+        if user:
+            login_user(user)
+            update_last_login(user.id)
+            flash(f'✅ Bienvenido {user.username}!', 'success')
+            
+            # Redirigir a la página que intentaban acceder o al dashboard
+            next_page = request.args.get('next')
+            return redirect(next_page if next_page else url_for('index'))
+        else:
+            flash('❌ Usuario o contraseña incorrectos', 'error')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    """Cerrar sesión"""
+    logout_user()
+    flash('👋 Has cerrado sesión exitosamente', 'success')
+    return redirect(url_for('login'))
+
+# ============================================
+# RUTAS PRINCIPALES (REQUIEREN AUTENTICACIÓN)
+# ============================================
+
 @app.route('/')
+@login_required
 def index():
     """Página principal - Dashboard"""
     conn = get_db_connection()
@@ -72,6 +129,7 @@ def index():
                          categorias=categorias)
 
 @app.route('/solicitudes')
+@login_required
 def solicitudes():
     """Página de solicitudes"""
     conn = get_db_connection()
@@ -93,6 +151,7 @@ def solicitudes():
     return render_template('solicitudes.html', solicitudes=solicitudes)
 
 @app.route('/equipos')
+@login_required
 def equipos():
     """Página de equipos"""
     conn = get_db_connection()
@@ -132,6 +191,7 @@ def equipos():
     return render_template('equipos.html', equipos=equipos, archivos=archivos)
 
 @app.route('/archivos')
+@login_required
 def archivos():
     """Página de archivos adjuntos"""
     conn = get_db_connection()
@@ -154,9 +214,25 @@ def archivos():
     
     return render_template('archivos.html', archivos=archivos)
 
+# ============================================
+# GESTIÓN DE USUARIOS (SOLO ADMIN)
+# ============================================
+
+@app.route('/usuarios')
+@permission_required('manage_users')
+def usuarios():
+    """Página de gestión de usuarios (solo admin)"""
+    users = get_all_users()
+    return render_template('usuarios.html', users=users)
+
+# ============================================
+# API ENDPOINTS CON CONTROL DE PERMISOS
+# ============================================
+
 @app.route('/api/solicitud/<int:id>', methods=['PUT'])
+@permission_required('edit')
 def update_solicitud(id):
-    """API para actualizar solicitud"""
+    """API para actualizar solicitud (requiere permiso de edición)"""
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Error de conexión'}), 500
@@ -195,11 +271,8 @@ def update_solicitud(id):
         conn.close()
         return jsonify({'error': str(e)}), 500
 
-# ============================================
-# NUEVOS ENDPOINTS PARA EL FORMULARIO DE AGREGAR EQUIPO
-# ============================================
-
 @app.route('/api/proximo-ost', methods=['GET'])
+@login_required
 def obtener_proximo_ost():
     """Obtiene el próximo número OST disponible"""
     conn = get_db_connection()
@@ -225,7 +298,7 @@ def obtener_proximo_ost():
         
         return jsonify({
             'success': True,
-            'proximo_ost': str(proximo_ost)
+            'proximo_ost': proximo_ost
         })
     
     except Exception as e:
@@ -237,8 +310,9 @@ def obtener_proximo_ost():
         }), 500
 
 @app.route('/api/equipos', methods=['POST'])
+@permission_required('edit')
 def crear_equipo():
-    """API para crear un nuevo equipo (usado por el formulario de agregar)"""
+    """API para crear un nuevo equipo (requiere permiso de edición)"""
     conn = get_db_connection()
     if not conn:
         return jsonify({'success': False, 'error': 'Error de conexión'}), 500
@@ -262,7 +336,6 @@ def crear_equipo():
             except ValueError:
                 return jsonify({'success': False, 'error': 'Formato de fecha inválido'}), 400
         
-        # Insertar el equipo (el OST se autogenera por la secuencia PostgreSQL)
         # Convertir cadenas vacías a None para la base de datos
         def empty_to_none(value):
             return None if value == '' or value is None else value
@@ -307,53 +380,10 @@ def crear_equipo():
         conn.close()
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# ============================================
-# FIN DE NUEVOS ENDPOINTS
-# ============================================
-
-@app.route('/api/equipo/add', methods=['POST'])
-def add_equipo():
-    """API para agregar equipo (antiguo endpoint - mantener por compatibilidad)"""
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({'error': 'Error de conexión'}), 500
-    
-    data = request.json
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("""
-            INSERT INTO equipos (solicitud_id, numero_equipo, tipo_equipo, marca, modelo,
-                               numero_serie, cliente, accesorios, prioridad, 
-                               observacion_ingreso, fecha_ingreso, en_garantia)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE, false)
-            RETURNING id, ost
-        """, (
-            data.get('solicitud_id'),
-            data.get('numero_equipo'),
-            data.get('tipo_equipo'),
-            data.get('marca'),
-            data.get('modelo'),
-            data.get('numero_serie'),
-            data.get('cliente', 'Syemed'),
-            data.get('accesorios'),
-            data.get('prioridad', 'Media'),
-            data.get('observacion_ingreso')
-        ))
-        result = cursor.fetchone()
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return jsonify({'success': True, 'id': result['id'], 'ost': result['ost']})
-    except Exception as e:
-        conn.rollback()
-        cursor.close()
-        conn.close()
-        return jsonify({'error': str(e)}), 500
-
 @app.route('/api/equipo/<int:id>', methods=['PUT'])
+@permission_required('edit')
 def update_equipo(id):
-    """API para actualizar equipo"""
+    """API para actualizar equipo (requiere permiso de edición)"""
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Error de conexión'}), 500
@@ -455,6 +485,70 @@ def update_equipo(id):
         cursor.close()
         conn.close()
         return jsonify({'error': str(e)}), 500
+
+# ============================================
+# API ENDPOINTS PARA GESTIÓN DE USUARIOS (SOLO ADMIN)
+# ============================================
+
+@app.route('/api/users/create', methods=['POST'])
+@permission_required('manage_users')
+def api_create_user():
+    """API para crear usuario (solo admin)"""
+    try:
+        data = request.json
+        user_id = create_user(
+            username=data['username'],
+            email=data['email'],
+            password=data['password'],
+            role=data['role']
+        )
+        return jsonify({'success': True, 'user_id': user_id})
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/update-role', methods=['POST'])
+@permission_required('manage_users')
+def api_update_role():
+    """API para actualizar rol de usuario (solo admin)"""
+    try:
+        data = request.json
+        update_user_role(data['user_id'], data['role'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/update-password', methods=['POST'])
+@permission_required('manage_users')
+def api_update_password():
+    """API para actualizar contraseña de usuario (solo admin)"""
+    try:
+        data = request.json
+        update_user_password(data['user_id'], data['new_password'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/toggle-status', methods=['POST'])
+@permission_required('manage_users')
+def api_toggle_status():
+    """API para activar/desactivar usuario (solo admin)"""
+    try:
+        data = request.json
+        toggle_user_status(data['user_id'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ============================================
+# CONTEXT PROCESSOR PARA TEMPLATES
+# ============================================
+
+@app.context_processor
+def inject_user():
+    """Inyecta información del usuario actual en todos los templates"""
+    return dict(current_user=current_user)
 
 if __name__ == '__main__':
     app.run(debug=True)
