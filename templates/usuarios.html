@@ -126,8 +126,9 @@
     <strong>💡 Roles disponibles:</strong>
     <ul style="margin: 0.5rem 0 0 1.5rem; color: #666;">
         <li><strong>Visualizador:</strong> Solo puede ver información</li>
-        <li><strong>Editor:</strong> Puede ver y editar información</li>
-        <li><strong>Administrador:</strong> Acceso completo + gestión de usuarios</li>
+        <li><strong>Editor Simple:</strong> Puede ver y editar, pero NO eliminar</li>
+        <li><strong>Editor Full:</strong> Puede ver, editar y eliminar equipos</li>
+        <li><strong>Administrador:</strong> Acceso completo + gestión de usuarios + historial</li>
     </ul>
 </div>
 
@@ -154,7 +155,8 @@
                 <td>
                     <span class="role-badge role-{{ user.role }}">
                         {% if user.role == 'admin' %}👑 Administrador
-                        {% elif user.role == 'editor' %}✏️ Editor
+                        {% elif user.role == 'editor' %}✏️ Editor Full
+                        {% elif user.role == 'editor_v2' %}📝 Editor Simple
                         {% else %}👁️ Visualizador{% endif %}
                     </span>
                 </td>
@@ -208,7 +210,8 @@
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Rol:</label>
                 <select name="role" required style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 8px;">
                     <option value="viewer">👁️ Visualizador</option>
-                    <option value="editor">✏️ Editor</option>
+                    <option value="editor_v2">📝 Editor Simple</option>
+                    <option value="editor">✏️ Editor Full</option>
                     <option value="admin">👑 Administrador</option>
                 </select>
             </div>
@@ -231,7 +234,8 @@
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nuevo Rol:</label>
                 <select name="role" id="editRoleSelect" required style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 8px;">
                     <option value="viewer">👁️ Visualizador</option>
-                    <option value="editor">✏️ Editor</option>
+                    <option value="editor_v2">📝 Editor Simple</option>
+                    <option value="editor">✏️ Editor Full</option>
                     <option value="admin">👑 Administrador</option>
                 </select>
             </div>

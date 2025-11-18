@@ -37,6 +37,19 @@ def get_db_connection():
         print(f"Error de conexión: {e}")
         return None
 
+def registrar_auditoria(conn, equipo_id, usuario_id, usuario_nombre, campo, valor_anterior, valor_nuevo, accion='UPDATE'):
+    """Registra un cambio en la tabla de auditoría"""
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO equipos_auditoria 
+            (equipo_id, usuario_id, usuario_nombre, campo_modificado, valor_anterior, valor_nuevo, accion)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (equipo_id, usuario_id, usuario_nombre, campo, str(valor_anterior) if valor_anterior else '', str(valor_nuevo) if valor_nuevo else '', accion))
+        cursor.close()
+    except Exception as e:
+        print(f"Error al registrar auditoría: {e}")
+
 # ============================================
 # RUTAS DE AUTENTICACIÓN
 # ============================================
@@ -226,13 +239,53 @@ def usuarios():
     return render_template('usuarios.html', users=users)
 
 # ============================================
-# API ENDPOINTS CON CONTROL DE PERMISOS
+# AUDITORÍA (SOLO ADMIN)
+# ============================================
+
+@app.route('/auditoria')
+@permission_required('view_audit')
+def auditoria():
+    """Página de auditoría de cambios (solo admin)"""
+    conn = get_db_connection()
+    if not conn:
+        return "Error de conexión a la base de datos", 500
+    
+    cursor = conn.cursor()
+    
+    # Obtener el equipo_id si se filtra
+    equipo_id = request.args.get('equipo_id', type=int)
+    
+    if equipo_id:
+        cursor.execute("""
+            SELECT a.*, e.ost, e.cliente, e.tipo_equipo
+            FROM equipos_auditoria a
+            LEFT JOIN equipos e ON a.equipo_id = e.id
+            WHERE a.equipo_id = %s
+            ORDER BY a.fecha_cambio DESC
+        """, (equipo_id,))
+    else:
+        cursor.execute("""
+            SELECT a.*, e.ost, e.cliente, e.tipo_equipo
+            FROM equipos_auditoria a
+            LEFT JOIN equipos e ON a.equipo_id = e.id
+            ORDER BY a.fecha_cambio DESC
+            LIMIT 500
+        """)
+    
+    cambios = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    return render_template('auditoria.html', cambios=cambios, equipo_id=equipo_id)
+
+# ============================================
+# API ENDPOINTS
 # ============================================
 
 @app.route('/api/solicitud/<int:id>', methods=['PUT'])
 @permission_required('edit')
 def update_solicitud(id):
-    """API para actualizar solicitud (requiere permiso de edición)"""
+    """API para actualizar solicitud"""
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Error de conexión'}), 500
@@ -241,26 +294,28 @@ def update_solicitud(id):
     cursor = conn.cursor()
     
     try:
-        cursor.execute("""
-            UPDATE solicitudes SET 
-                email_solicitante = %s, quien_completa = %s,
-                area_solicitante = %s, solicitante = %s, nivel_urgencia = %s,
-                logistica_cargo = %s, comentarios_caso = %s, equipo_corresponde_a = %s,
-                motivo_solicitud = %s, estado = %s
-            WHERE id = %s
-        """, (
-            data.get('email_solicitante'),
-            data.get('quien_completa'),
-            data.get('area_solicitante'),
-            data.get('solicitante'),
-            data.get('nivel_urgencia'),
-            data.get('logistica_cargo'),
-            data.get('comentarios_caso'),
-            data.get('equipo_corresponde_a'),
-            data.get('motivo_solicitud'),
-            data.get('estado'),
-            id
-        ))
+        campos = []
+        valores = []
+        
+        # Lista de campos actualizables
+        campos_permitidos = [
+            'email_solicitante', 'quien_completa', 'area_solicitante',
+            'solicitante', 'nivel_urgencia', 'logistica_cargo',
+            'equipo_corresponde_a', 'motivo_solicitud', 'estado'
+        ]
+        
+        for campo in campos_permitidos:
+            if campo in data:
+                campos.append(f'{campo} = %s')
+                valores.append(data[campo])
+        
+        if not campos:
+            return jsonify({'error': 'No hay campos para actualizar'}), 400
+        
+        valores.append(id)
+        query = f"UPDATE solicitudes SET {', '.join(campos)} WHERE id = %s"
+        
+        cursor.execute(query, valores)
         conn.commit()
         cursor.close()
         conn.close()
@@ -271,64 +326,18 @@ def update_solicitud(id):
         conn.close()
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/proximo-ost', methods=['GET'])
-@login_required
-def obtener_proximo_ost():
-    """Obtiene el próximo número OST disponible"""
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({'success': False, 'error': 'Error de conexión'}), 500
-    
-    cursor = conn.cursor()
-    
-    try:
-        # Obtener el OST máximo actual
-        cursor.execute("SELECT MAX(ost) as ultimo_ost FROM equipos")
-        result = cursor.fetchone()
-        ultimo_ost = result['ultimo_ost']
-        
-        # Si no hay equipos, empezar desde 1
-        if ultimo_ost is None or ultimo_ost == 0:
-            proximo_ost = 1
-        else:
-            proximo_ost = ultimo_ost + 1
-        
-        cursor.close()
-        conn.close()
-        
-        return jsonify({
-            'success': True,
-            'proximo_ost': proximo_ost
-        })
-    
-    except Exception as e:
-        cursor.close()
-        conn.close()
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@app.route('/api/equipos', methods=['POST'])
+@app.route('/api/equipo/crear', methods=['POST'])
 @permission_required('edit')
 def crear_equipo():
-    """API para crear un nuevo equipo (requiere permiso de edición)"""
+    """API para crear nuevo equipo"""
     conn = get_db_connection()
     if not conn:
-        return jsonify({'success': False, 'error': 'Error de conexión'}), 500
+        return jsonify({'error': 'Error de conexión'}), 500
     
     data = request.json
     cursor = conn.cursor()
     
     try:
-        # Validar campos requeridos
-        if not data.get('cliente'):
-            return jsonify({'success': False, 'error': 'El campo "cliente" es requerido'}), 400
-        
-        if not data.get('tipo_equipo'):
-            return jsonify({'success': False, 'error': 'El campo "tipo_equipo" es requerido'}), 400
-        
-        # Convertir fecha de string a date si viene como string
         fecha_ingreso = data.get('fecha_ingreso')
         if isinstance(fecha_ingreso, str):
             try:
@@ -336,11 +345,9 @@ def crear_equipo():
             except ValueError:
                 return jsonify({'success': False, 'error': 'Formato de fecha inválido'}), 400
         
-        # Convertir cadenas vacías a None para la base de datos
         def empty_to_none(value):
             return None if value == '' or value is None else value
         
-        # Insertar el equipo (el OST se autogenera por la secuencia PostgreSQL)
         cursor.execute("""
             INSERT INTO equipos (
                 cliente, tipo_equipo, marca, modelo, numero_serie,
@@ -363,6 +370,19 @@ def crear_equipo():
             'Pendiente'
         ))
         result = cursor.fetchone()
+        
+        # Registrar en auditoría
+        registrar_auditoria(
+            conn, 
+            result['id'], 
+            current_user.id, 
+            current_user.username,
+            'CREACIÓN',
+            '',
+            f"OST: {result['ost']}, Cliente: {data.get('cliente')}",
+            'INSERT'
+        )
+        
         conn.commit()
         cursor.close()
         conn.close()
@@ -392,82 +412,67 @@ def update_equipo(id):
     cursor = conn.cursor()
     
     try:
+        # Primero obtener los valores actuales
+        cursor.execute("SELECT * FROM equipos WHERE id = %s", (id,))
+        equipo_actual = cursor.fetchone()
+        
+        if not equipo_actual:
+            return jsonify({'error': 'Equipo no encontrado'}), 404
+        
         # Construir la consulta dinámicamente solo con los campos que vienen
         campos = []
         valores = []
         
-        if 'cliente' in data:
-            campos.append('cliente = %s')
-            valores.append(data.get('cliente'))
-        if 'tipo_equipo' in data:
-            campos.append('tipo_equipo = %s')
-            valores.append(data.get('tipo_equipo'))
-        if 'marca' in data:
-            campos.append('marca = %s')
-            valores.append(data.get('marca'))
-        if 'modelo' in data:
-            campos.append('modelo = %s')
-            valores.append(data.get('modelo'))
-        if 'numero_serie' in data:
-            campos.append('numero_serie = %s')
-            valores.append(data.get('numero_serie'))
-        if 'accesorios' in data:
-            campos.append('accesorios = %s')
-            valores.append(data.get('accesorios'))
-        if 'prioridad' in data:
-            campos.append('prioridad = %s')
-            valores.append(data.get('prioridad'))
-        if 'remito' in data:
-            campos.append('remito = %s')
-            valores.append(data.get('remito'))
-        if 'observacion_ingreso' in data:
-            campos.append('observacion_ingreso = %s')
-            valores.append(data.get('observacion_ingreso'))
-        if 'detalle_reparacion' in data:
-            campos.append('detalles_reparacion = %s')
-            valores.append(data.get('detalle_reparacion'))
-        if 'horas_trabajo' in data:
-            campos.append('horas_trabajo = %s')
-            valores.append(data.get('horas_trabajo'))
-        if 'reingreso' in data:
-            campos.append('reingreso = %s')
-            valores.append(data.get('reingreso'))
-        if 'informe_tecnico' in data:
-            campos.append('informe = %s')
-            valores.append(data.get('informe_tecnico'))
-        if 'costo_reparacion' in data:
-            campos.append('costo = %s')
-            valores.append(data.get('costo_reparacion'))
-        if 'precio_cliente' in data:
-            campos.append('precio = %s')
-            valores.append(data.get('precio_cliente'))
-        if 'numero_ov' in data:
-            campos.append('ov = %s')
-            valores.append(data.get('numero_ov'))
-        if 'estado_ov' in data:
-            campos.append('estado_ov = %s')
-            valores.append(data.get('estado_ov'))
-        if 'fecha_ingreso' in data:
-            campos.append('fecha_ingreso = %s')
-            valores.append(data.get('fecha_ingreso'))
-        if 'fecha_envio_proveedor' in data:
-            campos.append('fecha_envio = %s')
-            valores.append(data.get('fecha_envio_proveedor'))
-        if 'fecha_entrega' in data:
-            campos.append('fecha_entrega = %s')
-            valores.append(data.get('fecha_entrega'))
-        if 'remito_entrega' in data:
-            campos.append('remito_entrega = %s')
-            valores.append(data.get('remito_entrega'))
-        if 'estado' in data:
-            campos.append('estado = %s')
-            valores.append(data.get('estado'))
-        if 'proveedor' in data:
-            campos.append('proveedor = %s')
-            valores.append(data.get('proveedor'))
+        # Mapeo de campos JSON a columnas DB
+        campo_map = {
+            'cliente': 'cliente',
+            'tipo_equipo': 'tipo_equipo',
+            'marca': 'marca',
+            'modelo': 'modelo',
+            'numero_serie': 'numero_serie',
+            'accesorios': 'accesorios',
+            'prioridad': 'prioridad',
+            'remito': 'remito',
+            'observacion_ingreso': 'observacion_ingreso',
+            'detalle_reparacion': 'detalles_reparacion',
+            'horas_trabajo': 'horas_trabajo',
+            'reingreso': 'reingreso',
+            'informe_tecnico': 'informe',
+            'costo_reparacion': 'costo',
+            'precio_cliente': 'precio',
+            'numero_ov': 'ov',
+            'estado_ov': 'estado_ov',
+            'fecha_ingreso': 'fecha_ingreso',
+            'fecha_envio_proveedor': 'fecha_envio',
+            'fecha_entrega': 'fecha_entrega',
+            'remito_entrega': 'remito_entrega',
+            'estado': 'estado',
+            'proveedor': 'proveedor'
+        }
+        
+        for campo_json, campo_db in campo_map.items():
+            if campo_json in data:
+                valor_anterior = equipo_actual.get(campo_db)
+                valor_nuevo = data.get(campo_json)
+                
+                # Solo actualizar si el valor cambió
+                if str(valor_anterior) != str(valor_nuevo):
+                    campos.append(f'{campo_db} = %s')
+                    valores.append(valor_nuevo)
+                    
+                    # Registrar en auditoría
+                    registrar_auditoria(
+                        conn,
+                        id,
+                        current_user.id,
+                        current_user.username,
+                        campo_db,
+                        valor_anterior,
+                        valor_nuevo
+                    )
         
         if not campos:
-            return jsonify({'error': 'No hay campos para actualizar'}), 400
+            return jsonify({'success': True, 'message': 'No hay cambios para guardar'})
         
         # Agregar el ID al final
         valores.append(id)
@@ -485,6 +490,50 @@ def update_equipo(id):
         cursor.close()
         conn.close()
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/equipo/<int:id>', methods=['DELETE'])
+@permission_required('delete')
+def delete_equipo(id):
+    """API para eliminar equipo (requiere permiso de eliminación)"""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Error de conexión'}), 500
+    
+    cursor = conn.cursor()
+    
+    try:
+        # Obtener datos del equipo antes de eliminar para auditoría
+        cursor.execute("SELECT * FROM equipos WHERE id = %s", (id,))
+        equipo = cursor.fetchone()
+        
+        if not equipo:
+            return jsonify({'success': False, 'error': 'Equipo no encontrado'}), 404
+        
+        # Registrar la eliminación en auditoría
+        registrar_auditoria(
+            conn, 
+            id, 
+            current_user.id, 
+            current_user.username,
+            'ELIMINACIÓN',
+            f"OST: {equipo['ost']}, Cliente: {equipo['cliente']}, Tipo: {equipo['tipo_equipo']}",
+            'EQUIPO ELIMINADO',
+            'DELETE'
+        )
+        
+        # Eliminar el equipo (CASCADE eliminará archivos relacionados)
+        cursor.execute("DELETE FROM equipos WHERE id = %s", (id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Equipo eliminado correctamente'})
+    except Exception as e:
+        print(f"Error al eliminar: {e}")
+        conn.rollback()
+        cursor.close()
+        conn.close()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # ============================================
 # API ENDPOINTS PARA GESTIÓN DE USUARIOS (SOLO ADMIN)

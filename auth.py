@@ -20,13 +20,17 @@ ROLES = {
         'name': 'Visualizador',
         'permissions': ['view']
     },
-    'editor': {
-        'name': 'Editor',
+    'editor_v2': {
+        'name': 'Editor Simple',
         'permissions': ['view', 'edit']
+    },
+    'editor': {
+        'name': 'Editor Full',
+        'permissions': ['view', 'edit', 'delete']
     },
     'admin': {
         'name': 'Administrador',
-        'permissions': ['view', 'edit', 'delete', 'manage_users']
+        'permissions': ['view', 'edit', 'delete', 'manage_users', 'view_audit']
     }
 }
 

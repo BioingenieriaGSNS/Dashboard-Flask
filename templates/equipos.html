@@ -724,6 +724,84 @@
     color: #666;
 }
 
+/* Botón de eliminar */
+.btn-delete {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+}
+
+.btn-delete:hover {
+    background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.5);
+}
+
+.btn-delete:active {
+    transform: scale(0.95);
+}
+
+/* Estilo general para botones de acción */
+.btn-action {
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    margin: 0 0.2rem;
+}
+
+/* Botón de guardar mejorado */
+.btn-save {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-save:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.5);
+}
+
+.btn-save:active {
+    transform: scale(0.95);
+}
+
+/* Fila modificada (cambios no guardados) */
+.data-row.modified {
+    border-left: 4px solid #ff9800 !important;
+}
+
+/* Indicador de cambios no guardados */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Celda no editable (viewer) */
+.cell.non-editable {
+    cursor: default !important;
+    background-color: #fafafa !important;
+}
+
+.cell.non-editable:hover {
+    background-color: #f5f5f5 !important;
+}
+
 /* RESPONSIVE - MÓVIL */
 @media (max-width: 768px) {
     .table-container {
@@ -954,9 +1032,22 @@
             <div class="rows-container" id="fixedRows">
                 {% for equipo in equipos %}
                 <div class="data-row" data-row="{{ loop.index }}" data-id="{{ equipo.id }}">
-                    <div class="cell ch-cliente editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="cliente">{{ equipo.cliente or '' }}</div>
+                    <!-- ✅ MODIFICADO: Cliente -->
+                    <div class="cell ch-cliente {% if current_user.has_permission('edit') %}editable{% endif %}" 
+                         {% if current_user.has_permission('edit') %}contenteditable="true"{% endif %}
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
+                         data-id="{{ equipo.id }}" 
+                         data-field="cliente">{{ equipo.cliente or '' }}</div>
+                    
+                    <!-- OST (no editable) -->
                     <div class="cell ch-ost">{{ equipo.ost or 'N/A' }}</div>
-                    <div class="cell ch-estado estado-cell editable-select" data-id="{{ equipo.id }}" data-field="estado" data-type="estado">
+                    
+                    <!-- ✅ MODIFICADO: Estado -->
+                    <div class="cell ch-estado estado-cell {% if current_user.has_permission('edit') %}editable-select{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="estado" 
+                         data-type="estado"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
                         {{ equipo.estado or 'Pendiente' }}
                     </div>
                 </div>
@@ -1014,32 +1105,201 @@
             <div class="rows-container" id="scrollableRows">
                 {% for equipo in equipos %}
                 <div class="data-row" data-row="{{ loop.index }}" data-id="{{ equipo.id }}">
-                    <div class="cell ch-fecha-ingreso editable-date" data-id="{{ equipo.id }}" data-field="fecha_ingreso">{{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}</div>
-                    <div class="cell ch-remito editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="remito">{{ equipo.remito or '' }}</div>
-                    <div class="cell ch-tipo editable-select" data-id="{{ equipo.id }}" data-field="tipo_equipo" data-type="tipo">{{ equipo.tipo_equipo or 'Seleccionar' }}</div>
-                    <div class="cell ch-marca editable-select" data-id="{{ equipo.id }}" data-field="marca" data-type="marca">{{ equipo.marca or 'Seleccionar' }}</div>
-                    <div class="cell ch-modelo editable-select" data-id="{{ equipo.id }}" data-field="modelo" data-type="modelo">{{ equipo.modelo or 'Seleccionar' }}</div>
-                    <div class="cell ch-serie editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="numero_serie">{{ equipo.numero_serie or '' }}</div>
-                    <div class="cell ch-accesorios editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="accesorios">{{ equipo.accesorios or '' }}</div>
-                    <div class="cell ch-obs obs-cell" data-id="{{ equipo.id }}" data-obs="{{ equipo.observacion_ingreso or '' }}">{{ (equipo.observacion_ingreso[:25] + '...') if equipo.observacion_ingreso and equipo.observacion_ingreso|length > 25 else (equipo.observacion_ingreso or '') }}</div>
+                    <!-- ✅ MODIFICADO: Fecha Ingreso -->
+                    <div class="cell ch-fecha-ingreso {% if current_user.has_permission('edit') %}editable-date{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="fecha_ingreso"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ equipo.fecha_ingreso.strftime('%d/%m/%Y') if equipo.fecha_ingreso else 'N/A' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Remito -->
+                    <div class="cell ch-remito {% if current_user.has_permission('edit') %}editable{% endif %}" 
+                         {% if current_user.has_permission('edit') %}contenteditable="true"{% endif %}
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
+                         data-id="{{ equipo.id }}" 
+                         data-field="remito">{{ equipo.remito or '' }}</div>
+                    
+                    <!-- ✅ MODIFICADO: Tipo -->
+                    <div class="cell ch-tipo {% if current_user.has_permission('edit') %}editable-select{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="tipo_equipo" 
+                         data-type="tipo"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ equipo.tipo_equipo or 'Seleccionar' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Marca -->
+                    <div class="cell ch-marca {% if current_user.has_permission('edit') %}editable-select{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="marca" 
+                         data-type="marca"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ equipo.marca or 'Seleccionar' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Modelo -->
+                    <div class="cell ch-modelo {% if current_user.has_permission('edit') %}editable-select{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="modelo" 
+                         data-type="modelo"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ equipo.modelo or 'Seleccionar' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Número de Serie -->
+                    <div class="cell ch-serie {% if current_user.has_permission('edit') %}editable{% endif %}" 
+                         {% if current_user.has_permission('edit') %}contenteditable="true"{% endif %}
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
+                         data-id="{{ equipo.id }}" 
+                         data-field="numero_serie">{{ equipo.numero_serie or '' }}</div>
+                    
+                    <!-- ✅ MODIFICADO: Accesorios -->
+                    <div class="cell ch-accesorios {% if current_user.has_permission('edit') %}editable{% endif %}" 
+                         {% if current_user.has_permission('edit') %}contenteditable="true"{% endif %}
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
+                         data-id="{{ equipo.id }}" 
+                         data-field="accesorios">{{ equipo.accesorios or '' }}</div>
+                    
+                    <!-- ✅ MODIFICADO: Observación (celda especial con modal) -->
+                    <div class="cell ch-obs obs-cell {% if not current_user.has_permission('edit') %}non-editable{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-obs="{{ equipo.observacion_ingreso or '' }}"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ (equipo.observacion_ingreso[:25] + '...') if equipo.observacion_ingreso and equipo.observacion_ingreso|length > 25 else (equipo.observacion_ingreso or '') }}
+                    </div>
+                    
+                    <!-- Fotos (no editable) -->
                     <div class="cell ch-fotos">
                         {% set fotos = archivos|selectattr('numero_serie', 'equalto', equipo.numero_serie)|selectattr('categoria', 'equalto', 'falla')|list %}
                         {% if fotos %}{% for foto in fotos %}<a href="{{ foto.url_cloudinary }}" target="_blank">🖼️</a>{% endfor %}{% else %}-{% endif %}
                     </div>
-                    <div class="cell ch-prioridad editable-select" data-id="{{ equipo.id }}" data-field="prioridad" data-type="prioridad">{{ equipo.prioridad or 'Seleccionar' }}</div>
-                    <div class="cell ch-fecha-envio editable-date" data-id="{{ equipo.id }}" data-field="fecha_envio_proveedor">{{ equipo.fecha_envio.strftime('%d/%m/%Y') if equipo.fecha_envio else 'N/A' }}</div>
-                    <div class="cell ch-proveedor editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="proveedor">{{ equipo.proveedor or '' }}</div>
-                    <div class="cell ch-det-reparacion editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="detalle_reparacion">{{ equipo.detalles_reparacion or '' }}</div>
-                    <div class="cell ch-hrs editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="horas_trabajo">{{ equipo.horas_trabajo or '' }}</div>
-                    <div class="cell ch-reingreso checkbox-cell"><input type="checkbox" data-id="{{ equipo.id }}" data-field="reingreso" {{ 'checked' if equipo.reingreso else '' }}></div>
-                    <div class="cell ch-informe checkbox-cell"><input type="checkbox" data-id="{{ equipo.id }}" data-field="informe_tecnico" {{ 'checked' if equipo.informe_tecnico else '' }}></div>
-                    <div class="cell ch-costo editable-money" data-id="{{ equipo.id }}" data-field="costo_reparacion">{{ ('$' + equipo.costo_reparacion|string) if equipo.costo_reparacion else 'N/A' }}</div>
-                    <div class="cell ch-precio editable-money" data-id="{{ equipo.id }}" data-field="precio_cliente">{{ ('$' + equipo.precio_cliente|string) if equipo.precio_cliente else 'N/A' }}</div>
-                    <div class="cell ch-ov editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="numero_ov">{{ equipo.numero_ov or '' }}</div>
-                    <div class="cell ch-estado-ov editable-select" data-id="{{ equipo.id }}" data-field="estado_ov" data-type="estado_ov">{{ equipo.estado_ov or 'Seleccionar' }}</div>
-                    <div class="cell ch-fecha-entrega editable-date" data-id="{{ equipo.id }}" data-field="fecha_entrega">{{ equipo.fecha_entrega.strftime('%d/%m/%Y') if equipo.fecha_entrega else 'N/A' }}</div>
-                    <div class="cell ch-remito-entrega editable" contenteditable="true" data-id="{{ equipo.id }}" data-field="remito_entrega">{{ equipo.remito_entrega or '' }}</div>
-                    <div class="cell ch-acciones"><button class="btn btn-save" onclick="guardar({{ equipo.id }})">💾</button></div>
+                    
+                    <!-- ✅ MODIFICADO: Prioridad -->
+                    <div class="cell ch-prioridad {% if current_user.has_permission('edit') %}editable-select{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="prioridad" 
+                         data-type="prioridad"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ equipo.prioridad or 'Seleccionar' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Fecha Envío -->
+                    <div class="cell ch-fecha-envio {% if current_user.has_permission('edit') %}editable-date{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="fecha_envio_proveedor"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ equipo.fecha_envio.strftime('%d/%m/%Y') if equipo.fecha_envio else 'N/A' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Proveedor -->
+                    <div class="cell ch-proveedor {% if current_user.has_permission('edit') %}editable{% endif %}" 
+                         {% if current_user.has_permission('edit') %}contenteditable="true"{% endif %}
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
+                         data-id="{{ equipo.id }}" 
+                         data-field="proveedor">{{ equipo.proveedor or '' }}</div>
+                    
+                    <!-- ✅ MODIFICADO: Detalle Reparación -->
+                    <div class="cell ch-det-reparacion {% if current_user.has_permission('edit') %}editable{% endif %}" 
+                         {% if current_user.has_permission('edit') %}contenteditable="true"{% endif %}
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
+                         data-id="{{ equipo.id }}" 
+                         data-field="detalle_reparacion">{{ equipo.detalles_reparacion or '' }}</div>
+                    
+                    <!-- ✅ MODIFICADO: Horas -->
+                    <div class="cell ch-hrs {% if current_user.has_permission('edit') %}editable{% endif %}" 
+                         {% if current_user.has_permission('edit') %}contenteditable="true"{% endif %}
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
+                         data-id="{{ equipo.id }}" 
+                         data-field="horas_trabajo">{{ equipo.horas_trabajo or '' }}</div>
+                    
+                    <!-- ✅ MODIFICADO: Reingreso (checkbox) -->
+                    <div class="cell ch-reingreso checkbox-cell">
+                        <input type="checkbox" 
+                               data-id="{{ equipo.id }}" 
+                               data-field="reingreso" 
+                               {{ 'checked' if equipo.reingreso else '' }}
+                               {% if not current_user.has_permission('edit') %}disabled{% endif %}>
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Informe (checkbox) -->
+                    <div class="cell ch-informe checkbox-cell">
+                        <input type="checkbox" 
+                               data-id="{{ equipo.id }}" 
+                               data-field="informe_tecnico" 
+                               {{ 'checked' if equipo.informe_tecnico else '' }}
+                               {% if not current_user.has_permission('edit') %}disabled{% endif %}>
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Costo -->
+                    <div class="cell ch-costo {% if current_user.has_permission('edit') %}editable-money{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="costo_reparacion"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ ('$' + equipo.costo_reparacion|string) if equipo.costo_reparacion else 'N/A' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Precio -->
+                    <div class="cell ch-precio {% if current_user.has_permission('edit') %}editable-money{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="precio_cliente"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ ('$' + equipo.precio_cliente|string) if equipo.precio_cliente else 'N/A' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: OV -->
+                    <div class="cell ch-ov {% if current_user.has_permission('edit') %}editable{% endif %}" 
+                         {% if current_user.has_permission('edit') %}contenteditable="true"{% endif %}
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
+                         data-id="{{ equipo.id }}" 
+                         data-field="numero_ov">{{ equipo.numero_ov or '' }}</div>
+                    
+                    <!-- ✅ MODIFICADO: Estado OV -->
+                    <div class="cell ch-estado-ov {% if current_user.has_permission('edit') %}editable-select{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="estado_ov" 
+                         data-type="estado_ov"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ equipo.estado_ov or 'Seleccionar' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Fecha Entrega -->
+                    <div class="cell ch-fecha-entrega {% if current_user.has_permission('edit') %}editable-date{% endif %}" 
+                         data-id="{{ equipo.id }}" 
+                         data-field="fecha_entrega"
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}>
+                        {{ equipo.fecha_entrega.strftime('%d/%m/%Y') if equipo.fecha_entrega else 'N/A' }}
+                    </div>
+                    
+                    <!-- ✅ MODIFICADO: Remito Entrega -->
+                    <div class="cell ch-remito-entrega {% if current_user.has_permission('edit') %}editable{% endif %}" 
+                         {% if current_user.has_permission('edit') %}contenteditable="true"{% endif %}
+                         {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
+                         data-id="{{ equipo.id }}" 
+                         data-field="remito_entrega">{{ equipo.remito_entrega or '' }}</div>
+                    
+                    <!-- ✅ COLUMNA DE ACCIONES (YA ESTABA CORRECTA) -->
+                    <div class="cell ch-acciones" style="justify-content: center; gap: 0.5rem; display: flex; align-items: center;">
+                        {% if current_user.has_permission('edit') %}
+                        <button class="btn-action btn-save" 
+                                onclick="guardarCambios({{ equipo.id }})" 
+                                title="Guardar cambios">
+                            💾
+                        </button>
+                        {% endif %}
+                        
+                        {% if current_user.has_permission('delete') %}
+                        <button class="btn-action btn-delete" 
+                                onclick="eliminarEquipo({{ equipo.id }}, '{{ equipo.ost }}')" 
+                                title="Eliminar equipo">
+                            🗑️
+                        </button>
+                        {% endif %}
+                        
+                        {% if not current_user.has_permission('edit') and not current_user.has_permission('delete') %}
+                        <span style="color: #999; font-size: 0.85rem;">👁️ Solo lectura</span>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -2219,6 +2479,160 @@ function toggleCheckboxFiltro(event, option) {
         });
     }
 
+    // ==================== CÓDIGO DE PERMISOS Y AUDITORÍA ====================
+
+    // 1. VARIABLES DE PERMISOS
+    const userPermissions = {
+        canEdit: {{ 'true' if current_user.has_permission('edit') else 'false' }},
+        canDelete: {{ 'true' if current_user.has_permission('delete') else 'false' }},
+        isViewer: {{ 'true' if current_user.role == 'viewer' else 'false' }}
+    };
+
+    console.log('🔐 Permisos del usuario:', userPermissions);
+
+    // 2. FUNCIÓN PARA ELIMINAR EQUIPO
+    async function eliminarEquipo(equipoId, ost) {
+        if (!userPermissions.canDelete) {
+            alert('⛔ No tienes permisos para eliminar equipos');
+            return;
+        }
+        
+        const confirmacion = confirm(
+            '⚠️ ¿Estás seguro de eliminar el equipo OST ' + ost + '?\n\n' +
+            'Esta acción NO se puede deshacer.\n' +
+            'Se eliminarán también todos los archivos adjuntos.'
+        );
+        
+        if (!confirmacion) return;
+        
+        const doubleCheck = confirm(
+            '🚨 ÚLTIMA CONFIRMACIÓN\n\n' +
+            '¿REALMENTE deseas eliminar OST ' + ost + '?'
+        );
+        
+        if (!doubleCheck) return;
+        
+        const finalCheck = prompt('Escribe "ELIMINAR" para confirmar:');
+        if (finalCheck !== 'ELIMINAR') {
+            alert('❌ Operación cancelada');
+            return;
+        }
+        
+        const loadingMsg = document.createElement('div');
+        loadingMsg.id = 'deleteLoadingMsg';
+        loadingMsg.style.cssText = 
+            'position: fixed; top: 50%; left: 50%;' +
+            'transform: translate(-50%, -50%);' +
+            'background: white; padding: 2rem;' +
+            'border-radius: 12px;' +
+            'box-shadow: 0 10px 40px rgba(0,0,0,0.3);' +
+            'z-index: 10000; text-align: center;';
+        loadingMsg.innerHTML = '<h3>🔄 Eliminando equipo...</h3><p>Por favor espera</p>';
+        document.body.appendChild(loadingMsg);
+        
+        try {
+            const response = await fetch('/api/equipo/' + equipoId, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'}
+            });
+            
+            const result = await response.json();
+            
+            const msg = document.getElementById('deleteLoadingMsg');
+            if (msg) document.body.removeChild(msg);
+            
+            if (result.success) {
+                alert('✅ Equipo eliminado correctamente\n\nLa página se recargará automáticamente.');
+                window.location.reload();
+            } else {
+                alert('❌ Error al eliminar: ' + (result.error || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            const msg = document.getElementById('deleteLoadingMsg');
+            if (msg) document.body.removeChild(msg);
+            alert('❌ Error de red al eliminar el equipo');
+        }
+    }
+
+    // 3. AUTO-GUARDADO (opcional)
+    let autoSaveTimeout;
+    const AUTO_SAVE_DELAY = 3000;
+
+    function setupAutoSave() {
+        if (!userPermissions.canEdit) return;
+        
+        document.querySelectorAll('.editable').forEach(function(cell) {
+            cell.addEventListener('input', function() {
+                const equipoId = this.getAttribute('data-id');
+                clearTimeout(autoSaveTimeout);
+                this.style.borderLeft = '3px solid #ffc107';
+                
+                autoSaveTimeout = setTimeout(function() {
+                    console.log('💾 Auto-guardando equipo', equipoId);
+                    guardarCambios(equipoId);
+                    cell.style.borderLeft = '';
+                }, AUTO_SAVE_DELAY);
+            });
+        });
+        
+        console.log('🤖 Auto-guardado activado (delay: ' + AUTO_SAVE_DELAY + 'ms)');
+    }
+
+    // 4. ATAJO Ctrl+S
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            
+            if (!userPermissions.canEdit) {
+                alert('⛔ No tienes permisos para guardar');
+                return;
+            }
+            
+            const activeCell = document.activeElement;
+            if (activeCell && activeCell.closest('.data-row')) {
+                const equipoId = activeCell.closest('.data-row').getAttribute('data-id');
+                if (equipoId) {
+                    console.log('⌨️ Guardando con Ctrl+S:', equipoId);
+                    guardarCambios(equipoId);
+                }
+            }
+        }
+    });
+
+    // 5. CONFIGURACIÓN AL CARGAR LA PÁGINA (DOMContentLoaded UNIFICADO)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Deshabilitar edición para viewers
+        if (userPermissions.isViewer) {
+            document.querySelectorAll('.editable').forEach(function(cell) {
+                cell.removeAttribute('contenteditable');
+                cell.style.cursor = 'default';
+                cell.classList.remove('editable');
+            });
+            
+            document.querySelectorAll('.editable-select, .editable-date, .editable-money').forEach(function(cell) {
+                cell.style.cursor = 'default';
+                cell.style.pointerEvents = 'none';
+            });
+            
+            document.querySelectorAll('.obs-cell').forEach(function(cell) {
+                cell.style.cursor = 'default';
+                cell.style.pointerEvents = 'none';
+            });
+            
+            document.querySelectorAll('.checkbox-cell input[type="checkbox"]').forEach(function(checkbox) {
+                checkbox.disabled = true;
+                checkbox.style.cursor = 'not-allowed';
+            });
+            
+            console.log('👁️ Modo solo lectura activado (Viewer)');
+        }
+        
+        // Activar auto-guardado
+        setupAutoSave();
+        
+        console.log('✅ Sistema de permisos y auditoría cargado correctamente');
+    });
 
 </script>
 {% endblock %}

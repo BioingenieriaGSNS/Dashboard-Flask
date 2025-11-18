@@ -270,6 +270,9 @@
             {% if current_user.is_authenticated and current_user.has_permission('manage_users') %}
             <li><a href="{{ url_for('usuarios') }}" {% if request.endpoint == 'usuarios' %}class="active"{% endif %}>👥 Usuarios</a></li>
             {% endif %}
+            {% if current_user.is_authenticated and current_user.has_permission('view_audit') %}
+            <li><a href="{{ url_for('auditoria') }}" {% if request.endpoint == 'auditoria' %}class="active"{% endif %}>📊 Auditoría</a></li>
+            {% endif %}
         </ul>
     </nav>
 
