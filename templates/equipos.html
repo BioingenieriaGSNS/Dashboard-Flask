@@ -988,6 +988,73 @@
         max-height: calc(60vh - 86px);
     }
 }
+
+/* Botón flotante de guardado general */
+.save-all-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999;
+    display: none; /* Oculto por defecto */
+    animation: slideInRight 0.3s;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.btn-save-all {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 1rem 1.5rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.btn-save-all:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(76, 175, 80, 0.6);
+}
+
+.btn-save-all:active {
+    transform: translateY(-1px);
+}
+
+.changes-badge {
+    background: white;
+    color: #4caf50;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    min-width: 25px;
+    text-align: center;
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
 </style>
 {% endblock %}
 
@@ -1435,6 +1502,15 @@
         </form>
     </div>
 </div>
+
+{% if current_user.has_permission('edit') %}
+<div class="save-all-container" id="saveAllContainer">
+    <button class="btn-save-all pulse" onclick="guardarTodosLosCambios()">
+        💾 Guardar Todos los Cambios
+        <span class="changes-badge" id="changesBadge">0</span>
+    </button>
+</div>
+{% endif %}
 
 {% endblock %}
 
@@ -1968,11 +2044,33 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
     
-    // Validar que se haya seleccionado al menos el tipo de equipo
-    if(!data.tipo_equipo) {
-        alert('⚠️ Debe seleccionar un tipo de equipo');
+    // Validar campos requeridos
+    if(!data.cliente || !data.cliente.trim()) {
+        alert('⚠️ El campo Cliente es obligatorio');
         return;
     }
+    
+    if(!data.fecha_ingreso) {
+        alert('⚠️ La Fecha de Ingreso es obligatoria');
+        return;
+    }
+    
+    if(!data.tipo_equipo) {
+        alert('⚠️ Debe seleccionar un Tipo de Equipo');
+        return;
+    }
+    
+    // Mostrar mensaje de carga
+    const loadingMsg = document.createElement('div');
+    loadingMsg.id = 'loadingMsg';
+    loadingMsg.style.cssText = 
+        'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);' +
+        'background: white; padding: 2rem; border-radius: 12px;' +
+        'box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000; text-align: center;';
+    loadingMsg.innerHTML = '<h3>💾 Guardando equipo...</h3><p>Por favor espera</p>';
+    document.body.appendChild(loadingMsg);
+    
+    console.log('📤 Enviando datos:', data);
     
     fetch('/api/equipos', {
         method: 'POST',
@@ -1981,25 +2079,41 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('📥 Respuesta recibida:', response.status);
+        
+        // Si la respuesta no es JSON, mostrar el contenido
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`Error ${response.status}: ${text.substring(0, 200)}`);
+            });
+        }
+        
+        return response.json();
+    })
     .then(result => {
+        console.log('✅ Resultado:', result);
+        
+        const msg = document.getElementById('loadingMsg');
+        if (msg) document.body.removeChild(msg);
+        
         if (result.success) {
-            alert('✅ Equipo agregado correctamente');
+            alert('✅ Equipo agregado correctamente con OST: ' + result.ost);
             cerrarModalAgregarEquipo();
-            location.reload(); // Recargar la página para mostrar el nuevo equipo
+            location.reload();
         } else {
             alert('❌ Error al agregar equipo: ' + (result.error || 'Error desconocido'));
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('❌ Error de red: ' + error);
+        console.error('❌ Error completo:', error);
+        
+        const msg = document.getElementById('loadingMsg');
+        if (msg) document.body.removeChild(msg);
+        
+        alert('❌ Error al agregar equipo:\n\n' + error.message);
     });
-    
-    // Sistema de filtros estilo Google Sheets
-
 });
-
     // Sistema de filtros estilo Google Sheets (FUERA del addEventListener)
     let filtrosActivos = false;
     let filtrosAplicados = {};
@@ -2479,6 +2593,215 @@ function toggleCheckboxFiltro(event, option) {
         });
     }
 
+    
+
+    // ==================== SISTEMA DE GUARDADO GENERAL ====================
+
+    // Objeto para rastrear cambios pendientes por equipo
+    const cambiosPendientes = new Map();
+
+    // Función para registrar un cambio
+    function registrarCambio(equipoId, campo, nuevoValor) {
+        if (!cambiosPendientes.has(equipoId)) {
+            cambiosPendientes.set(equipoId, {});
+        }
+        
+        cambiosPendientes.get(equipoId)[campo] = nuevoValor;
+        
+        // Marcar la fila como modificada
+        const filas = document.querySelectorAll(`[data-id="${equipoId}"]`).forEach(fila => {
+            const row = fila.closest('.data-row');
+            if (row) row.classList.add('modified');
+        });
+        
+        actualizarBotonGuardado();
+    }
+
+    // Función para actualizar el botón de guardado
+    function actualizarBotonGuardado() {
+        const container = document.getElementById('saveAllContainer');
+        const badge = document.getElementById('changesBadge');
+        
+        if (!container || !badge) return;
+        
+        const numCambios = cambiosPendientes.size;
+        
+        if (numCambios > 0) {
+            container.style.display = 'block';
+            badge.textContent = numCambios;
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    // Función para guardar todos los cambios
+    async function guardarTodosLosCambios() {
+        if (cambiosPendientes.size === 0) {
+            alert('✅ No hay cambios pendientes');
+            return;
+        }
+        
+        const equiposAGuardar = Array.from(cambiosPendientes.entries());
+        const totalEquipos = equiposAGuardar.length;
+        
+        if (!confirm(`¿Deseas guardar los cambios de ${totalEquipos} equipo(s)?`)) {
+            return;
+        }
+        
+        // Mostrar indicador de progreso
+        const progressMsg = document.createElement('div');
+        progressMsg.id = 'saveProgressMsg';
+        progressMsg.style.cssText = 
+            'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);' +
+            'background: white; padding: 2rem; border-radius: 12px;' +
+            'box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000; text-align: center; min-width: 300px;';
+        progressMsg.innerHTML = `
+            <h3>💾 Guardando cambios...</h3>
+            <p id="progressText">0 de ${totalEquipos} equipos guardados</p>
+            <div style="background: #e0e0e0; height: 10px; border-radius: 5px; margin-top: 1rem; overflow: hidden;">
+                <div id="progressBar" style="background: #4caf50; height: 100%; width: 0%; transition: width 0.3s;"></div>
+            </div>
+        `;
+        document.body.appendChild(progressMsg);
+        
+        let guardados = 0;
+        let errores = 0;
+        
+        // Guardar cada equipo
+        for (const [equipoId, cambios] of equiposAGuardar) {
+            try {
+                const response = await fetch(`/api/equipo/${equipoId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(cambios)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    guardados++;
+                    
+                    // Quitar marca de modificado
+                    document.querySelectorAll(`[data-id="${equipoId}"]`).forEach(celda => {
+                        const row = celda.closest('.data-row');
+                        if (row) row.classList.remove('modified');
+                    });
+                } else {
+                    errores++;
+                    console.error(`Error en equipo ${equipoId}:`, result.error);
+                }
+            } catch (error) {
+                errores++;
+                console.error(`Error de red en equipo ${equipoId}:`, error);
+            }
+            
+            // Actualizar progreso
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            if (progressText) progressText.textContent = `${guardados + errores} de ${totalEquipos} equipos procesados`;
+            if (progressBar) progressBar.style.width = `${((guardados + errores) / totalEquipos) * 100}%`;
+        }
+        
+        // Limpiar cambios pendientes
+        cambiosPendientes.clear();
+        actualizarBotonGuardado();
+        
+        // Remover indicador de progreso
+        const msg = document.getElementById('saveProgressMsg');
+        if (msg) document.body.removeChild(msg);
+        
+        // Mostrar resultado
+        if (errores > 0) {
+            alert(`⚠️ Guardado completado con errores:\n\n✅ ${guardados} equipos guardados correctamente\n❌ ${errores} equipos con error`);
+        } else {
+            alert(`✅ Todos los cambios se guardaron correctamente\n\n${guardados} equipo(s) actualizado(s)`);
+        }
+    }
+
+    // Modificar las funciones existentes para usar el sistema de cambios pendientes
+
+    // Actualizar celdas editables para registrar cambios
+    document.querySelectorAll('.editable').forEach(cell => {
+        let original = cell.textContent.trim();
+        
+        cell.addEventListener('focus', () => { 
+            original = cell.textContent.trim(); 
+        });
+        
+        cell.addEventListener('blur', function() {
+            const nuevo = this.textContent.trim();
+            if(nuevo !== original) {
+                const id = parseInt(this.getAttribute('data-id'));
+                const field = this.getAttribute('data-field');
+                registrarCambio(id, field, nuevo);
+            }
+        });
+    });
+
+    // Actualizar checkboxes para registrar cambios
+    document.querySelectorAll('.checkbox-cell input').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            const field = this.getAttribute('data-field');
+            registrarCambio(id, field, this.checked);
+        });
+    });
+
+    // Actualizar selectores para registrar cambios
+    const seleccionarOriginal = window.seleccionar;
+    window.seleccionar = function(valor) {
+        if (!isFormSelector && selCell) {
+            const id = parseInt(selCell.getAttribute('data-id'));
+            const field = selCell.getAttribute('data-field');
+            selCell.textContent = valor;
+            registrarCambio(id, field, valor);
+            cerrarSelector();
+        } else {
+            seleccionarOriginal(valor);
+        }
+    };
+
+    // Actualizar fechas para registrar cambios
+    document.querySelectorAll('.editable-date').forEach(cell => {
+        const originalClick = cell.onclick;
+        cell.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            const field = this.getAttribute('data-field');
+            
+            // Guardar referencia para usar en los botones del modal
+            this.dataset.equipoId = id;
+            this.dataset.fieldName = field;
+        });
+    });
+
+    // Actualizar dinero para registrar cambios  
+    document.querySelectorAll('.editable-money').forEach(cell => {
+        const originalClick = cell.onclick;
+        cell.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            const field = this.getAttribute('data-field');
+            
+            this.dataset.equipoId = id;
+            this.dataset.fieldName = field;
+        });
+    });
+
+    // Atajo de teclado Ctrl+Shift+S para guardar todo
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'S') {
+            e.preventDefault();
+            
+            if (!userPermissions.canEdit) {
+                alert('⛔ No tienes permisos para guardar');
+                return;
+            }
+            
+            guardarTodosLosCambios();
+        }
+    });
+
+    console.log('💾 Sistema de guardado general activado (Ctrl+Shift+S para guardar todo)');
+
     // ==================== CÓDIGO DE PERMISOS Y AUDITORÍA ====================
 
     // 1. VARIABLES DE PERMISOS
@@ -2489,6 +2812,15 @@ function toggleCheckboxFiltro(event, option) {
     };
 
     console.log('🔐 Permisos del usuario:', userPermissions);
+
+    // Después de la definición de userPermissions, agrega:
+    if (userPermissions.isViewer) {
+        // Ocultar botón de agregar equipo para viewers
+        const btnAgregar = document.querySelector('button[onclick="abrirModalAgregarEquipo()"]');
+        if (btnAgregar) {
+            btnAgregar.style.display = 'none';
+        }
+    }
 
     // 2. FUNCIÓN PARA ELIMINAR EQUIPO
     async function eliminarEquipo(equipoId, ost) {

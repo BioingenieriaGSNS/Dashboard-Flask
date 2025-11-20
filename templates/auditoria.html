@@ -34,6 +34,37 @@
     margin-bottom: 1.5rem;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
+
+.btn-restore {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+}
+
+.btn-restore:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.btn-restore:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.deleted-row {
+    background-color: #fff5f5 !important;
+}
+
+.deleted-row:hover {
+    background-color: #ffe5e5 !important;
+}
 </style>
 {% endblock %}
 
@@ -47,6 +78,9 @@
 
 <div style="margin-bottom: 1.5rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
     <strong>ℹ️ Información:</strong> Se muestran los últimos {% if equipo_id %}todos los cambios de este equipo{% else %}500 cambios{% endif %}.
+    {% if current_user.has_permission('delete') %}
+    <br><strong>🔄 Restauración:</strong> Los equipos eliminados pueden ser restaurados haciendo clic en el botón "♻️ Restaurar".
+    {% endif %}
 </div>
 
 {% if equipo_id %}
@@ -68,11 +102,14 @@
                 <th>Valor Anterior</th>
                 <th>Valor Nuevo</th>
                 <th>Acción</th>
+                {% if current_user.has_permission('delete') %}
+                <th>Restaurar</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for cambio in cambios %}
-            <tr>
+            <tr class="{% if cambio.accion == 'DELETE' %}deleted-row{% endif %}">
                 <td>{{ cambio.fecha_cambio.strftime('%d/%m/%Y %H:%M:%S') if cambio.fecha_cambio else 'N/A' }}</td>
                 <td><strong>{{ cambio.ost or 'N/A' }}</strong></td>
                 <td>{{ cambio.cliente or 'N/A' }}</td>
@@ -82,7 +119,15 @@
                     <div style="font-size: 0.8rem; color: #666;">ID: {{ cambio.usuario_id }}</div>
                 </td>
                 <td style="font-weight: 600; color: #333;">{{ cambio.campo_modificado }}</td>
-                <td style="background: #ffebee; color: #333;">{{ cambio.valor_anterior or '-' }}</td>
+                <td style="background: #ffebee; color: #333;">
+                    {% if cambio.accion == 'DELETE' and cambio.campo_modificado == 'ELIMINACIÓN' %}
+                        <div style="font-size: 0.85rem; max-width: 300px; word-wrap: break-word;">
+                            {{ cambio.valor_anterior }}
+                        </div>
+                    {% else %}
+                        {{ cambio.valor_anterior or '-' }}
+                    {% endif %}
+                </td>
                 <td style="background: #e8f5e9; color: #333;">{{ cambio.valor_nuevo or '-' }}</td>
                 <td>
                     {% if cambio.accion == 'UPDATE' %}
@@ -93,6 +138,19 @@
                         <span class="change-badge change-insert">➕ Creación</span>
                     {% endif %}
                 </td>
+                {% if current_user.has_permission('delete') %}
+                <td>
+                    {% if cambio.accion == 'DELETE' %}
+                        <button class="btn-restore" 
+                                onclick="restaurarEquipo({{ cambio.equipo_id }}, '{{ cambio.ost }}', '{{ cambio.cliente }}')"
+                                title="Restaurar este equipo">
+                            ♻️ Restaurar
+                        </button>
+                    {% else %}
+                        <span style="color: #999; font-size: 0.85rem;">-</span>
+                    {% endif %}
+                </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
@@ -150,5 +208,53 @@ document.querySelectorAll('#auditoriaTable tbody tr').forEach(row => {
         this.style.transform = 'scale(1)';
     });
 });
+
+// Función para restaurar equipo eliminado
+async function restaurarEquipo(equipoId, ost, cliente) {
+    const confirmacion = confirm(
+        `🔄 ¿Deseas RESTAURAR el equipo?\n\n` +
+        `OST: ${ost}\n` +
+        `Cliente: ${cliente}\n\n` +
+        `NOTA: El equipo se creará como nuevo con el mismo OST.`
+    );
+    
+    if (!confirmacion) return;
+    
+    // Mostrar mensaje de carga
+    const loadingMsg = document.createElement('div');
+    loadingMsg.id = 'restoreLoadingMsg';
+    loadingMsg.style.cssText = 
+        'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);' +
+        'background: white; padding: 2rem; border-radius: 12px;' +
+        'box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000; text-align: center;';
+    loadingMsg.innerHTML = '<h3>♻️ Restaurando equipo...</h3><p>Por favor espera</p>';
+    document.body.appendChild(loadingMsg);
+    
+    try {
+        const response = await fetch(`/api/equipo/${equipoId}/restaurar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        const msg = document.getElementById('restoreLoadingMsg');
+        if (msg) document.body.removeChild(msg);
+        
+        if (result.success) {
+            alert(`✅ Equipo restaurado correctamente\n\nOST: ${result.ost}\n\nLa página se recargará automáticamente.`);
+            location.reload();
+        } else {
+            alert('❌ Error al restaurar: ' + (result.error || 'Error desconocido'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        const msg = document.getElementById('restoreLoadingMsg');
+        if (msg) document.body.removeChild(msg);
+        alert('❌ Error de red al restaurar el equipo');
+    }
+}
 </script>
 {% endblock %}

@@ -7,13 +7,13 @@ from dotenv import load_dotenv
 from datetime import datetime, date
 
 # Importar el sistema de autenticación
+
 from auth import (
     login_manager, User, authenticate_user, create_user, 
     permission_required, role_required, get_all_users,
     toggle_user_status, update_user_role, update_user_password,
-    update_last_login
+    update_last_login, update_own_password, get_user_profile  # 👈 Nuevos
 )
-
 load_dotenv()
 
 app = Flask(__name__)
@@ -163,17 +163,18 @@ def solicitudes():
     
     return render_template('solicitudes.html', solicitudes=solicitudes)
 
+
 @app.route('/equipos')
 @login_required
 def equipos():
-    """Página de equipos"""
+    """Página de equipos (solo muestra equipos NO eliminados)"""
     conn = get_db_connection()
     if not conn:
         return "Error de conexión a la base de datos", 500
     
     cursor = conn.cursor()
     
-    # Obtener equipos
+    # Obtener equipos NO eliminados
     cursor.execute("""
         SELECT id, cliente, ost, estado, fecha_ingreso, remito,
                tipo_equipo, marca, modelo, numero_serie, accesorios,
@@ -185,16 +186,18 @@ def equipos():
                ov AS numero_ov, 
                estado_ov, fecha_entrega, remito_entrega
         FROM equipos
+        WHERE eliminado = FALSE  -- 👈 CLAVE: Solo equipos NO eliminados
         ORDER BY fecha_ingreso DESC
     """)
     equipos = cursor.fetchall()
     
-    # Obtener archivos para las fotos (hacer JOIN con equipos para obtener numero_serie)
+    # Obtener archivos para las fotos (hacer JOIN con equipos NO eliminados)
     cursor.execute("""
         SELECT e.numero_serie, a.categoria, a.url_cloudinary
         FROM archivos_adjuntos a
         INNER JOIN equipos e ON a.equipo_id = e.id
-        WHERE e.numero_serie IS NOT NULL
+        WHERE e.numero_serie IS NOT NULL 
+        AND e.eliminado = FALSE  -- 👈 Solo archivos de equipos activos
     """)
     archivos = cursor.fetchall()
     
@@ -238,9 +241,36 @@ def usuarios():
     users = get_all_users()
     return render_template('usuarios.html', users=users)
 
+@app.route('/perfil')
+@login_required
+def perfil():
+    """Página de perfil del usuario"""
+    from auth import get_user_profile
+    user_data = get_user_profile(current_user.id)
+    return render_template('perfil.html', user_data=user_data)
+
+@app.route('/api/perfil/cambiar-password', methods=['POST'])
+@login_required
+def cambiar_mi_password():
+    """API para que un usuario cambie su propia contraseña"""
+    from auth import update_own_password
+    try:
+        data = request.json
+        update_own_password(
+            current_user.id,
+            data['current_password'],
+            data['new_password']
+        )
+        return jsonify({'success': True, 'message': 'Contraseña actualizada correctamente'})
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # ============================================
 # AUDITORÍA (SOLO ADMIN)
 # ============================================
+
 
 @app.route('/auditoria')
 @permission_required('view_audit')
@@ -257,15 +287,16 @@ def auditoria():
     
     if equipo_id:
         cursor.execute("""
-            SELECT a.*, e.ost, e.cliente, e.tipo_equipo
+            SELECT a.*, e.ost, e.cliente, e.tipo_equipo, e.eliminado
             FROM equipos_auditoria a
             LEFT JOIN equipos e ON a.equipo_id = e.id
             WHERE a.equipo_id = %s
             ORDER BY a.fecha_cambio DESC
         """, (equipo_id,))
     else:
+        # 👇 CLAVE: No filtramos por eliminado, mostramos TODO
         cursor.execute("""
-            SELECT a.*, e.ost, e.cliente, e.tipo_equipo
+            SELECT a.*, e.ost, e.cliente, e.tipo_equipo, e.eliminado
             FROM equipos_auditoria a
             LEFT JOIN equipos e ON a.equipo_id = e.id
             ORDER BY a.fecha_cambio DESC
@@ -277,7 +308,6 @@ def auditoria():
     conn.close()
     
     return render_template('auditoria.html', cambios=cambios, equipo_id=equipo_id)
-
 # ============================================
 # API ENDPOINTS
 # ============================================
@@ -326,6 +356,36 @@ def update_solicitud(id):
         conn.close()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/proximo-ost', methods=['GET'])
+@login_required
+def obtener_proximo_ost():
+    """API para obtener el próximo número OST disponible"""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Error de conexión'}), 500
+    
+    cursor = conn.cursor()
+    
+    try:
+        # Obtener el último OST
+        cursor.execute("SELECT MAX(ost) as max_ost FROM equipos")
+        result = cursor.fetchone()
+        max_ost = result['max_ost'] if result and result['max_ost'] else 0
+        proximo_ost = max_ost + 1
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'proximo_ost': proximo_ost
+        })
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/equipos', methods=['POST'])
 @app.route('/api/equipo/crear', methods=['POST'])
 @permission_required('edit')
 def crear_equipo():
@@ -491,10 +551,12 @@ def update_equipo(id):
         conn.close()
         return jsonify({'error': str(e)}), 500
 
+# REEMPLAZA los endpoints de DELETE y RESTAURAR en app.py con estos:
+
 @app.route('/api/equipo/<int:id>', methods=['DELETE'])
 @permission_required('delete')
 def delete_equipo(id):
-    """API para eliminar equipo (requiere permiso de eliminación)"""
+    """API para eliminar equipo (Soft Delete - requiere permiso de eliminación)"""
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Error de conexión'}), 500
@@ -502,12 +564,19 @@ def delete_equipo(id):
     cursor = conn.cursor()
     
     try:
-        # Obtener datos del equipo antes de eliminar para auditoría
-        cursor.execute("SELECT * FROM equipos WHERE id = %s", (id,))
+        # Obtener datos del equipo antes de "eliminar"
+        cursor.execute("SELECT * FROM equipos WHERE id = %s AND eliminado = FALSE", (id,))
         equipo = cursor.fetchone()
         
         if not equipo:
-            return jsonify({'success': False, 'error': 'Equipo no encontrado'}), 404
+            return jsonify({'success': False, 'error': 'Equipo no encontrado o ya está eliminado'}), 404
+        
+        # Marcar como eliminado (Soft Delete)
+        cursor.execute("""
+            UPDATE equipos 
+            SET eliminado = TRUE, fecha_eliminacion = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (id,))
         
         # Registrar la eliminación en auditoría
         registrar_auditoria(
@@ -517,12 +586,10 @@ def delete_equipo(id):
             current_user.username,
             'ELIMINACIÓN',
             f"OST: {equipo['ost']}, Cliente: {equipo['cliente']}, Tipo: {equipo['tipo_equipo']}",
-            'EQUIPO ELIMINADO',
+            'EQUIPO ELIMINADO (SOFT DELETE)',
             'DELETE'
         )
         
-        # Eliminar el equipo (CASCADE eliminará archivos relacionados)
-        cursor.execute("DELETE FROM equipos WHERE id = %s", (id,))
         conn.commit()
         cursor.close()
         conn.close()
@@ -535,6 +602,69 @@ def delete_equipo(id):
         conn.close()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+@app.route('/api/equipo/<int:id>/restaurar', methods=['POST'])
+@permission_required('delete')
+def restaurar_equipo(id):
+    """API para restaurar un equipo eliminado (requiere permiso de eliminación)"""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Error de conexión'}), 500
+    
+    cursor = conn.cursor()
+    
+    try:
+        # Buscar el equipo eliminado
+        cursor.execute("""
+            SELECT * FROM equipos 
+            WHERE id = %s AND eliminado = TRUE
+        """, (id,))
+        
+        equipo = cursor.fetchone()
+        
+        if not equipo:
+            return jsonify({
+                'success': False, 
+                'error': 'No se encontró el equipo eliminado'
+            }), 404
+        
+        # Restaurar el equipo (marcar eliminado = FALSE)
+        cursor.execute("""
+            UPDATE equipos 
+            SET eliminado = FALSE, fecha_eliminacion = NULL
+            WHERE id = %s
+        """, (id,))
+        
+        # Registrar la restauración en auditoría
+        registrar_auditoria(
+            conn,
+            id,
+            current_user.id,
+            current_user.username,
+            'RESTAURACIÓN',
+            f'Equipo eliminado - OST: {equipo["ost"]}, Cliente: {equipo["cliente"]}',
+            f'Equipo restaurado con OST: {equipo["ost"]}',
+            'INSERT'
+        )
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'id': equipo['id'],
+            'ost': equipo['ost'],
+            'message': 'Equipo restaurado exitosamente'
+        })
+    
+    except Exception as e:
+        print(f"Error al restaurar: {e}")
+        conn.rollback()
+        cursor.close()
+        conn.close()
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
 # ============================================
 # API ENDPOINTS PARA GESTIÓN DE USUARIOS (SOLO ADMIN)
 # ============================================

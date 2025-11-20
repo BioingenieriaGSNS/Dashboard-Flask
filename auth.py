@@ -75,11 +75,18 @@ def load_user(user_id):
     return None
 
 
-def authenticate_user(username, password):
-    """Autentica un usuario con username y password"""
+def authenticate_user(username_or_email, password):
+    """Autentica un usuario con username O email y password"""
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, username, email, role, password_hash FROM usuarios WHERE username = %s AND activo = true", (username,))
+    
+    # Buscar por username O email
+    cur.execute("""
+        SELECT id, username, email, role, password_hash 
+        FROM usuarios 
+        WHERE (username = %s OR email = %s) AND activo = true
+    """, (username_or_email, username_or_email))
+    
     user_data = cur.fetchone()
     cur.close()
     conn.close()
@@ -87,7 +94,6 @@ def authenticate_user(username, password):
     if user_data and check_password_hash(user_data['password_hash'], password):
         return User(user_data['id'], user_data['username'], user_data['email'], user_data['role'])
     return None
-
 
 def create_user(username, email, password, role='viewer'):
     """Crea un nuevo usuario en la base de datos"""
@@ -203,3 +209,45 @@ def update_last_login(user_id):
     conn.commit()
     cur.close()
     conn.close()
+
+def update_own_password(user_id, current_password, new_password):
+    """Permite a un usuario actualizar su propia contraseña (requiere contraseña actual)"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Verificar contraseña actual
+    cur.execute("SELECT password_hash FROM usuarios WHERE id = %s", (user_id,))
+    user_data = cur.fetchone()
+    
+    if not user_data:
+        cur.close()
+        conn.close()
+        raise ValueError("Usuario no encontrado")
+    
+    if not check_password_hash(user_data['password_hash'], current_password):
+        cur.close()
+        conn.close()
+        raise ValueError("Contraseña actual incorrecta")
+    
+    # Actualizar contraseña
+    password_hash = generate_password_hash(new_password)
+    cur.execute("UPDATE usuarios SET password_hash = %s WHERE id = %s", (password_hash, user_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return True
+
+
+def get_user_profile(user_id):
+    """Obtiene el perfil completo de un usuario"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, username, email, role, activo, created_at, last_login
+        FROM usuarios
+        WHERE id = %s
+    """, (user_id,))
+    user_data = cur.fetchone()
+    cur.close()
+    conn.close()
+    return user_data
