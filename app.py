@@ -251,6 +251,11 @@ def perfil():
 
 @app.route('/api/perfil/cambiar-password', methods=['POST'])
 @login_required
+def cambiar_password_perfil():
+   
+    if not current_user.has_permission('edit'):
+        return jsonify({'success': False, 'error': 'No tienes permiso para cambiar tu contraseña'}), 403
+
 def cambiar_mi_password():
     """API para que un usuario cambie su propia contraseña"""
     from auth import update_own_password
