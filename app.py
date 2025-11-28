@@ -151,12 +151,27 @@ def solicitudes():
     
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT id, fecha_solicitud, email_solicitante, quien_completa, 
-               area_solicitante, solicitante, nivel_urgencia, logistica_cargo,
-               comentarios_caso, equipo_corresponde_a, motivo_solicitud, estado
-        FROM solicitudes
-        ORDER BY fecha_solicitud DESC
-    """)
+    SELECT 
+        s.id,
+        s.fecha_solicitud,
+        s.email_solicitante,
+        s.quien_completa,
+        s.area_solicitante,
+        s.solicitante,
+        s.nivel_urgencia,
+        s.logistica_cargo,
+        s.equipo_corresponde_a,
+        s.motivo_solicitud,
+        s.estado,
+        s.ost,
+        s.pdf_url,
+        -- Obtener OSTs de equipos vinculados (separados por comas)
+        (SELECT STRING_AGG(DISTINCT e.ost::TEXT, ', ' ORDER BY e.ost::TEXT)
+         FROM equipos e 
+         WHERE e.solicitud_id = s.id AND e.eliminado = FALSE) as osts_vinculadas 
+    FROM solicitudes s
+    ORDER BY s.fecha_solicitud DESC
+""")
     solicitudes = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -254,8 +269,7 @@ def perfil():
 def cambiar_password_perfil():
    
     if not current_user.has_permission('edit'):
-        return jsonify({'success': False, 'error': 'No tienes permiso para cambiar tu contraseña'}), 403
-
+        return jsonify({'success': False, 'error': 'No tienes permiso para cambiar tu contraseña'}), 403    
 def cambiar_mi_password():
     """API para que un usuario cambie su propia contraseña"""
     from auth import update_own_password
