@@ -1249,7 +1249,18 @@
                     <!-- Fotos (no editable) -->
                     <div class="cell ch-fotos">
                         {% set fotos = archivos|selectattr('numero_serie', 'equalto', equipo.numero_serie)|selectattr('categoria', 'equalto', 'falla')|list %}
-                        {% if fotos %}{% for foto in fotos %}<a href="{{ foto.url_cloudinary }}" target="_blank">🖼️</a>{% endfor %}{% else %}-{% endif %}
+                        {% set facturas = archivos|selectattr('numero_serie', 'equalto', equipo.numero_serie)|selectattr('categoria', 'equalto', 'factura')|list %}
+                        {% if fotos %}
+                            {% for foto in fotos %}
+                                <a href="{{ foto.url_cloudinary }}" target="_blank" title="Foto de falla">🖼️</a>
+                            {% endfor %}
+                        {% endif %}
+                        {% if facturas %}
+                            {% for factura in facturas %}
+                                <a href="{{ factura.url_cloudinary }}" target="_blank" title="Factura" style="color: #2e7d32;">📄</a>
+                            {% endfor %}
+                        {% endif %}
+                        {% if not fotos and not facturas %}-{% endif %}
                     </div>
                     
                     <!-- ✅ MODIFICADO: Prioridad -->
