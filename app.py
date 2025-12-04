@@ -191,18 +191,21 @@ def equipos():
     
     # Obtener equipos NO eliminados
     cursor.execute("""
-        SELECT id, cliente, ost, estado, fecha_ingreso, remito,
-               tipo_equipo, marca, modelo, numero_serie, accesorios,
-               observacion_ingreso, prioridad, fecha_envio, proveedor,
-               detalles_reparacion, horas_trabajo, reingreso, 
-               informe AS informe_tecnico,
-               costo AS costo_reparacion, 
-               precio AS precio_cliente, 
-               ov AS numero_ov, 
-               estado_ov, fecha_entrega, remito_entrega
-        FROM equipos
-        WHERE eliminado = FALSE  -- 👈 CLAVE: Solo equipos NO eliminados
-        ORDER BY fecha_ingreso DESC
+        SELECT e.id, e.cliente, e.ost, e.estado, e.fecha_ingreso, e.remito,
+            e.tipo_equipo, e.marca, e.modelo, e.numero_serie, e.accesorios,
+            s.categoria,
+            e.observacion_ingreso, e.prioridad, e.fecha_envio, e.proveedor,
+            e.detalles_reparacion, e.horas_trabajo, e.reingreso, 
+            e.informe AS informe_tecnico,
+            e.costo AS costo_reparacion, 
+            e.precio AS precio_cliente, 
+            e.ov AS numero_ov, 
+            e.estado_ov, e.fecha_entrega, e.remito_entrega,
+            e.solicitud_id
+        FROM equipos e
+        LEFT JOIN solicitudes s ON e.solicitud_id = s.id
+        WHERE e.eliminado = FALSE
+        ORDER BY e.fecha_ingreso DESC
     """)
     equipos = cursor.fetchall()
     
