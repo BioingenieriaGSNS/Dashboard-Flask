@@ -154,18 +154,33 @@ def solicitudes():
     SELECT 
         s.id,
         s.fecha_solicitud,
+        s.estado,
+        s.categoria,
+        s.pdf_url,
         s.email_solicitante,
         s.quien_completa,
+        s.nivel_urgencia,
+        s.motivo_solicitud,
+        s.comercial_syemed,
+        -- Colaborador Syemed
         s.area_solicitante,
         s.solicitante,
-        s.nivel_urgencia,
         s.logistica_cargo,
+        s.comentarios_caso,
         s.equipo_corresponde_a,
-        s.motivo_solicitud,
-        s.estado,
-        s.ost,
-        s.pdf_url,
-        -- Obtener OSTs de equipos vinculados (separados por comas)
+        -- Distribuidor / Institución
+        s.nombre_fantasia,
+        s.razon_social,
+        s.cuit,
+        s.contacto_nombre,
+        s.contacto_telefono,
+        s.contacto_tecnico,
+        s.equipo_propiedad,
+        -- Paciente Particular
+        s.nombre_apellido_paciente,
+        s.telefono_paciente,
+        s.equipo_origen,
+        -- OSTs vinculadas
         (SELECT STRING_AGG(DISTINCT e.ost::TEXT, ', ' ORDER BY e.ost::TEXT)
          FROM equipos e 
          WHERE e.solicitud_id = s.id AND e.eliminado = FALSE) as osts_vinculadas 
@@ -349,11 +364,20 @@ def update_solicitud(id):
         campos = []
         valores = []
         
-        # Lista de campos actualizables
+        # Lista de campos actualizables (ahora incluye todos los campos)
         campos_permitidos = [
-            'email_solicitante', 'quien_completa', 'area_solicitante',
-            'solicitante', 'nivel_urgencia', 'logistica_cargo',
-            'equipo_corresponde_a', 'motivo_solicitud', 'estado'
+            # Datos de Ingreso
+            'categoria', 'email_solicitante', 'quien_completa', 
+            'nivel_urgencia', 'motivo_solicitud', 'comercial_cargo', 'estado',
+            # Colaborador Syemed
+            'area_solicitante', 'solicitante', 'logistica_cargo',
+            'comentarios_caso', 'equipo_corresponde_a',
+            # Distribuidor / Institución
+            'nombre_fantasia', 'razon_social', 'cuit', 
+            'nombre_contacto', 'contacto_telefono', 'contacto_tecnico',
+            'equipo_propiedad',
+            # Paciente Particular
+            'nombre_apellido_paciente', 'telefono_paciente', 'equipo_origen'
         ]
         
         for campo in campos_permitidos:
