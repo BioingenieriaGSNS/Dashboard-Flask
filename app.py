@@ -138,7 +138,6 @@ def index():
                 WHEN 'Listo para entregar' THEN 7
                 WHEN 'Repuestos' THEN 8
                 WHEN 'Tercerizado' THEN 9
-                WHEN 'L/E - Faltantes' THEN 10
                 ELSE 11
             END
     """)
