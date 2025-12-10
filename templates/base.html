@@ -272,6 +272,13 @@
             <li><a href="{{ url_for('solicitudes') }}" {% if request.endpoint == 'solicitudes' %}class="active"{% endif %}>📋 Solicitudes</a></li>
             <li><a href="{{ url_for('equipos') }}" {% if request.endpoint == 'equipos' %}class="active"{% endif %}>🖥️ Equipos</a></li>
             <li><a href="{{ url_for('archivos') }}" {% if request.endpoint == 'archivos' %}class="active"{% endif %}>📎 Archivos</a></li>
+            {% if current_user.role != 'viewer' %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('equipos_priorizados') }}">
+                    📊 Equipos Priorizados
+                </a>
+            </li>
+            {% endif %}
             {% if current_user.is_authenticated and current_user.has_permission('manage_users') %}
             <li><a href="{{ url_for('usuarios') }}" {% if request.endpoint == 'usuarios' %}class="active"{% endif %}>👥 Usuarios</a></li>
             {% endif %}

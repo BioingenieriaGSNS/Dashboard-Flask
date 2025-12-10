@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Equipos Priorizados - Syemed{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <!-- Header compacto -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-1">📊 Equipos Pendientes - Priorizados</h3>
+            <small class="text-muted">Sistema automático de priorización</small>
+        </div>
+    </div>
+
+    <!-- Estadísticas ultra compactas -->
+    <div class="priority-stats-compact mb-3">
+        <div class="stat-item stat-total">
+            <span class="stat-num">{{ stats.total }}</span>
+            <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-item stat-critica">
+            <span class="stat-num">{{ stats.critica }}</span>
+            <span class="stat-label">🔴 Crítica (≥30)</span>
+        </div>
+        <div class="stat-item stat-alta">
+            <span class="stat-num">{{ stats.alta }}</span>
+            <span class="stat-label">🟧 Alta (20-29)</span>
+        </div>
+        <div class="stat-item stat-media">
+            <span class="stat-num">{{ stats.media }}</span>
+            <span class="stat-label">🟨 Media (15-19)</span>
+        </div>
+        <div class="stat-item stat-baja">
+            <span class="stat-num">{{ stats.baja }}</span>
+            <span class="stat-label">🟩 Baja (<15)</span>
+        </div>
+    </div>
+
+    <!-- Tabla compacta -->
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0" style="font-size: 0.875rem;">
+                <thead style="background-color: #1e4d7b; color: white; position: sticky; top: 0; z-index: 10;">
+                    <tr>
+                        <th style="padding: 12px 10px;">OST</th>
+                        <th style="padding: 12px 10px;">CLIENTE</th>
+                        <th style="padding: 12px 10px;">TIPO EQUIPO</th>
+                        <th style="padding: 12px 10px;">MARCA/MODELO</th>
+                        <th style="padding: 12px 10px;">FECHA INGRESO</th>
+                        <th style="padding: 12px 10px;">ESTADO</th>
+                        <th style="padding: 12px 10px;">CATEGORÍA</th>
+                        <th style="padding: 12px 10px; text-align: center;">URGENCIA</th>
+                        <th style="padding: 12px 10px; text-align: center;">PRIORIDAD ST</th>
+                        <th style="padding: 12px 10px; text-align: center;">DÍAS</th>
+                        <th style="padding: 12px 10px; text-align: center; background-color: #0d2240;">PUNTOS<br>TOTAL</th>
+                        <th style="padding: 12px 10px;">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nivel in ['Critica', 'Alta', 'Media', 'Baja'] %}
+                        {% for equipo in equipos_agrupados[nivel] %}
+                        <tr class="equipo-row" data-nivel="{{ nivel }}">
+                            <td style="padding: 8px 10px;"><strong>{{ equipo.ost }}</strong></td>
+                            <td style="padding: 8px 10px;">{{ equipo.cliente }}</td>
+                            <td style="padding: 8px 10px;">{{ equipo.tipo_equipo or '-' }}</td>
+                            <td style="padding: 8px 10px;">
+                                <strong>{{ equipo.marca or '-' }}</strong><br>
+                                <small class="text-muted">{{ equipo.modelo or '-' }}</small>
+                            </td>
+                            <td style="padding: 8px 10px;">
+                                {% if equipo.fecha_ingreso %}
+                                    {{ equipo.fecha_ingreso.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td style="padding: 8px 10px;">{{ equipo.estado }}</td>
+                            <td style="padding: 8px 10px;">
+                                <small>{{ equipo.categoria if equipo.categoria else 'Sin categoría' }}</small>
+                            </td>
+                            <td style="padding: 8px 10px; text-align: center;">
+                                <strong style="font-size: 1.1rem;">{{ equipo.nivel_urgencia if equipo.nivel_urgencia is not none else '3' }}</strong>
+                            </td>
+                            <td style="padding: 8px 10px; text-align: center;">{{ equipo.prioridad or 'Normal' }}</td>
+                            <td style="padding: 8px 10px; text-align: center;">
+                                <span class="badge" style="background-color: {% if equipo.dias_sin_cambios > 30 %}#dc3545{% elif equipo.dias_sin_cambios > 14 %}#fd7e14{% elif equipo.dias_sin_cambios > 7 %}#ffc107{% else %}#6c757d{% endif %}; font-size: 0.9rem;">
+                                    {{ equipo.dias_sin_cambios }}
+                                </span>
+                            </td>
+                            <td style="padding: 8px 10px; text-align: center; background-color: {% if nivel == 'Critica' %}#dc3545{% elif nivel == 'Alta' %}#fd7e14{% elif nivel == 'Media' %}#ffc107{% else %}#28a745{% endif %};">
+                                <strong style="font-size: 1.4rem; color: white;">{{ equipo.prioridad_final }}</strong>
+                            </td>
+                            <td style="padding: 8px 10px;">
+                                <a href="{{ url_for('equipos') }}?ost={{ equipo.ost }}" class="btn btn-sm" style="background-color: #6c63ff; color: white; padding: 4px 12px;">
+                                    Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if stats.total == 0 %}
+    <div class="alert alert-success text-center mt-3">
+        <h5>✅ ¡Excelente!</h5>
+        <p class="mb-0">No hay equipos pendientes en este momento.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Estadísticas ultra compactas */
+    .priority-stats-compact {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        flex: 1;
+        min-width: 120px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-left: 3px solid;
+    }
+
+    .stat-num {
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+        opacity: 0.9;
+        line-height: 1.2;
+    }
+
+    .stat-total {
+        background: #f8f9fa;
+        border-left-color: #6c757d;
+        color: #6c757d;
+    }
+
+    .stat-critica {
+        background: #ffebee;
+        border-left-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .stat-alta {
+        background: #fff3e0;
+        border-left-color: #fd7e14;
+        color: #fd7e14;
+    }
+
+    .stat-media {
+        background: #fffde7;
+        border-left-color: #ffc107;
+        color: #ffc107;
+    }
+
+    .stat-baja {
+        background: #e8f5e9;
+        border-left-color: #28a745;
+        color: #28a745;
+    }
+
+    /* Tabla con colores por fila */
+    .equipo-row[data-nivel="Critica"] {
+        background-color: #ffebee !important;
+    }
+    .equipo-row[data-nivel="Alta"] {
+        background-color: #fff3e0 !important;
+    }
+    .equipo-row[data-nivel="Media"] {
+        background-color: #fffde7 !important;
+    }
+    .equipo-row[data-nivel="Baja"] {
+        background-color: #e8f5e9 !important;
+    }
+
+    .equipo-row:hover {
+        opacity: 0.9;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Headers de tabla */
+    thead th {
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border: 1px solid #0d2240 !important;
+    }
+
+    /* Celdas de tabla */
+    tbody td {
+        border: 1px solid #dee2e6;
+    }
+
+    /* Espaciado general más compacto */
+    .g-2 {
+        --bs-gutter-y: 0.5rem;
+        --bs-gutter-x: 0.5rem;
+    }
+</style>
+{% endblock %}

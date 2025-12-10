@@ -101,32 +101,66 @@ def index():
     
     cursor = conn.cursor()
     
-    # Métricas
+    # Métricas totales
     cursor.execute("SELECT COUNT(*) as total FROM solicitudes")
     total_solicitudes = cursor.fetchone()['total']
     
-    cursor.execute("SELECT COUNT(*) as total FROM equipos")
+    cursor.execute("SELECT COUNT(*) as total FROM equipos WHERE eliminado = FALSE")
     total_equipos = cursor.fetchone()['total']
     
-    cursor.execute("SELECT COUNT(*) as total FROM solicitudes WHERE estado = 'Pendiente'")
+    # Métricas de estados específicos para las tarjetas superiores
+    cursor.execute("SELECT COUNT(*) as total FROM equipos WHERE estado = 'Pendiente' AND eliminado = FALSE")
     pendientes = cursor.fetchone()['total']
     
-    cursor.execute("SELECT COUNT(*) as total FROM equipos WHERE en_garantia = true")
-    en_garantia = cursor.fetchone()['total']
+    cursor.execute("SELECT COUNT(*) as total FROM equipos WHERE estado = 'Finalizado' AND eliminado = FALSE")
+    finalizados = cursor.fetchone()['total']
     
-    # Estados de solicitudes
+    cursor.execute("SELECT COUNT(*) as total FROM equipos WHERE estado = 'En curso' AND eliminado = FALSE")
+    en_curso = cursor.fetchone()['total']
+    
+    cursor.execute("SELECT COUNT(*) as total FROM equipos WHERE estado = 'A presupuestar' AND eliminado = FALSE")
+    a_presupuestar = cursor.fetchone()['total']
+    
+    # Estados de solicitudes (todos los estados)
     cursor.execute("""
         SELECT estado, COUNT(*) as cantidad 
-        FROM solicitudes 
+        FROM equipos 
+        WHERE eliminado = FALSE
         GROUP BY estado
+        ORDER BY 
+            CASE estado
+                WHEN 'Pendiente' THEN 1
+                WHEN 'Aprobación pendiente' THEN 2
+                WHEN 'A presupuestar' THEN 3
+                WHEN 'Baja técnica' THEN 4
+                WHEN 'En curso' THEN 5
+                WHEN 'Finalizado' THEN 6
+                WHEN 'Listo para entregar' THEN 7
+                WHEN 'Repuestos' THEN 8
+                WHEN 'Tercerizado' THEN 9
+                WHEN 'L/E - Faltantes' THEN 10
+                ELSE 11
+            END
     """)
     estados = cursor.fetchall()
     
-    # Categorías de archivos
+    # Categorías de equipos basadas en la columna categoria de solicitudes
     cursor.execute("""
-        SELECT categoria, COUNT(*) as cantidad 
-        FROM archivos_adjuntos 
-        GROUP BY categoria
+        SELECT 
+            CASE 
+                WHEN s.categoria LIKE '%R%' THEN 'Reparación'
+                WHEN s.categoria LIKE '%G%' THEN 'Garantía'
+                WHEN s.categoria LIKE '%BA%' THEN 'Baja de Alquiler'
+                WHEN s.categoria LIKE '%CA%' THEN 'Cambio de Alquiler'
+                WHEN s.categoria LIKE '%FC%' THEN 'Cambio por Falla Crítica'
+                ELSE 'Otra'
+            END as categoria_nombre,
+            COUNT(*) as cantidad
+        FROM equipos e
+        LEFT JOIN solicitudes s ON e.solicitud_id = s.id
+        WHERE e.eliminado = FALSE
+        GROUP BY categoria_nombre
+        ORDER BY cantidad DESC
     """)
     categorias = cursor.fetchall()
     
@@ -137,7 +171,9 @@ def index():
                          total_solicitudes=total_solicitudes,
                          total_equipos=total_equipos,
                          pendientes=pendientes,
-                         en_garantia=en_garantia,
+                         finalizados=finalizados,
+                         en_curso=en_curso,
+                         a_presupuestar=a_presupuestar,
                          estados=estados,
                          categorias=categorias)
 
@@ -765,6 +801,56 @@ def api_toggle_status():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+    
+@app.route('/equipos-priorizados')
+@login_required
+@permission_required('view')
+def equipos_priorizados():
+    """Muestra equipos priorizados - disponible para todos menos viewer"""
+    if current_user.role == 'viewer':
+        flash('⛔ No tienes permiso para ver los equipos priorizados', 'error')
+        return redirect(url_for('index'))
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    try:
+        # Obtener equipos priorizados
+        cur.execute("SELECT * FROM equipos_priorizados")
+        
+        equipos = cur.fetchall()
+        
+        # Agrupar por nivel de prioridad
+        equipos_agrupados = {
+            'Critica': [],
+            'Alta': [],
+            'Media': [],
+            'Baja': []
+        }
+        
+        for equipo in equipos:
+            nivel = equipo['nivel_prioridad']
+            equipos_agrupados[nivel].append(equipo)
+        
+        # Estadísticas
+        stats = {
+            'total': len(equipos),
+            'critica': len(equipos_agrupados['Critica']),
+            'alta': len(equipos_agrupados['Alta']),
+            'media': len(equipos_agrupados['Media']),
+            'baja': len(equipos_agrupados['Baja'])
+        }
+        
+        return render_template('equipos_priorizados.html', 
+                             equipos_agrupados=equipos_agrupados,
+                             stats=stats)
+    
+    except Exception as e:
+        flash(f'Error al cargar equipos priorizados: {str(e)}', 'error')
+        return redirect(url_for('index'))
+    finally:
+        cur.close()
+        conn.close()
 
 # ============================================
 # CONTEXT PROCESSOR PARA TEMPLATES
