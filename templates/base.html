@@ -285,6 +285,16 @@
         /* =====================================================
            RESPONSIVE - MÓVILES
            ===================================================== */
+        
+        /* Ocultar elementos móviles en desktop por defecto */
+        .mobile-user-info {
+            display: none;
+        }
+        
+        .mobile-menu-actions {
+            display: none;
+        }
+        
         @media (max-width: 768px) {
             /* Header responsive */
             .header-left h1 {
@@ -303,6 +313,15 @@
             /* Ocultar user info en móviles */
             .user-info {
                 display: none;
+            }
+            
+            /* Mostrar elementos móviles solo en móviles */
+            .mobile-user-info {
+                display: block !important;
+            }
+            
+            .mobile-menu-actions {
+                display: flex !important;
             }
 
             /* Navigation móvil - Menú lateral */
