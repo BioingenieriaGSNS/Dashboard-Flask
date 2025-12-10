@@ -22,27 +22,99 @@
         header {
             background: linear-gradient(135deg, #3e4c87 0%, #20b6ba  100%);
             color: white;
-            padding: 1.5rem 2rem;
+            padding: 1rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
         }
 
-        header h1 {
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .header-left h1 {
             font-size: 1.8rem;
             font-weight: 600;
+        }
+
+        .header-left img {
+            height: 50px;
+            width: auto;
+        }
+
+        /* Menú hamburguesa (solo móvil) */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1001;
+        }
+
+        /* User info en header */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .user-details .username {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .user-details .role {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .header-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s;
+            white-space: nowrap;
+        }
+
+        .header-btn:hover {
+            background: rgba(255,255,255,0.3);
         }
 
         /* Navigation */
         nav {
             background-color: #fff;
-            padding: 0;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             margin-bottom: 0.5rem;
+            position: relative;
         }
 
         nav ul {
             list-style: none;
             display: flex;
             justify-content: center;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         nav li {
@@ -210,31 +282,164 @@
             border: 1px solid #f5c6cb;
         }
 
-        /* Responsive */
+        /* =====================================================
+           RESPONSIVE - MÓVILES
+           ===================================================== */
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
+            /* Header responsive */
+            .header-left h1 {
+                font-size: 1.2rem;
             }
 
-            table {
-                font-size: 0.8rem;
+            .header-left img {
+                height: 35px;
             }
 
-            thead th, tbody td {
-                padding: 8px;
+            /* Mostrar menú hamburguesa */
+            .menu-toggle {
+                display: block;
+            }
+
+            /* Ocultar user info en móviles */
+            .user-info {
+                display: none;
+            }
+
+            /* Navigation móvil - Menú lateral */
+            nav {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                background-color: #fff;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+                z-index: 1000;
+                transition: left 0.3s ease;
+                overflow-y: auto;
+            }
+
+            nav.active {
+                left: 0;
             }
 
             nav ul {
                 flex-direction: column;
+                padding: 1rem 0;
+                margin-top: 4rem;
+            }
+
+            nav li {
+                width: 100%;
             }
 
             nav a {
+                padding: 1rem 1.5rem;
                 border-bottom: none;
-                border-left: 3px solid transparent;
+                border-left: 4px solid transparent;
+                font-size: 1rem;
             }
 
             nav a:hover, nav a.active {
                 border-left-color: #667eea;
+                border-bottom-color: transparent;
+            }
+
+            /* User info dentro del menú lateral */
+            .mobile-user-info {
+                display: block;
+                padding: 1.5rem;
+                background: linear-gradient(135deg, #3e4c87 0%, #20b6ba 100%);
+                color: white;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+            }
+
+            .mobile-user-info .username {
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin-bottom: 0.25rem;
+            }
+
+            .mobile-user-info .role {
+                font-size: 0.9rem;
+                opacity: 0.9;
+            }
+
+            .mobile-menu-actions {
+                padding: 1rem;
+                border-top: 1px solid #e0e0e0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .mobile-menu-actions a {
+                display: block;
+                padding: 0.75rem;
+                background: #f8f9fa;
+                border-radius: 6px;
+                text-align: center;
+                color: #333;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            /* Overlay para cerrar menú */
+            .nav-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+
+            .nav-overlay.active {
+                display: block;
+            }
+
+            /* Container con menos padding */
+            .container {
+                padding: 1rem;
+            }
+
+            /* Tablas responsive */
+            table {
+                font-size: 0.75rem;
+            }
+
+            thead th, tbody td {
+                padding: 8px 6px;
+            }
+
+            /* Métricas en móvil */
+            .metrics {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .metric-card {
+                padding: 1.5rem;
+            }
+
+            .metric-value {
+                font-size: 2rem;
+            }
+        }
+
+        /* Tablets */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            nav a {
+                padding: 1rem 1.5rem;
+            }
+
+            .header-left h1 {
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -242,23 +447,29 @@
 </head>
 <body>
     <header>
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="header-content">
+            <!-- Botón hamburguesa (solo móvil) -->
+            <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">
+                ☰
+            </button>
+
+            <div class="header-left">
                 <h1>📊 Dashboard - Gestión de Solicitudes y Equipos</h1>
-                <img src="https://res.cloudinary.com/dfxjqvan0/image/upload/v1762453830/LOGO_SYEMED_MUX-removebg_df3gwy.png" alt="Logo" style="height: 50px; width: auto;">
+                <img src="https://res.cloudinary.com/dfxjqvan0/image/upload/v1762453830/LOGO_SYEMED_MUX-removebg_df3gwy.png" alt="Logo">
             </div>
+            
             {% if current_user.is_authenticated %}
-            <div style="display: flex; align-items: center; gap: 1rem; color: white;">
-                <div style="text-align: right;">
-                    <div style="font-size: 0.9rem; opacity: 0.9;">{{ current_user.username }}</div>
-                    <div style="font-size: 0.8rem; opacity: 0.7;">{{ current_user.get_role_name() }}</div>
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="username">{{ current_user.username }}</div>
+                    <div class="role">{{ current_user.get_role_name() }}</div>
                 </div>
                
-                <a href="{{ url_for('perfil') }}" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 6px; color: white; text-decoration: none; font-weight: 500; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                <a href="{{ url_for('perfil') }}" class="header-btn">
                     👤 Mi Perfil
                 </a>
                 
-                <a href="{{ url_for('logout') }}" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 6px; color: white; text-decoration: none; font-weight: 500; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                <a href="{{ url_for('logout') }}" class="header-btn">
                     🚪 Salir
                 </a>
             </div>
@@ -266,18 +477,25 @@
         </div>
     </header>
 
-    <nav>
+    <!-- Overlay para cerrar menú en móvil -->
+    <div class="nav-overlay" id="navOverlay" onclick="toggleMenu()"></div>
+
+    <nav id="mainNav">
+        <!-- User info en menú móvil -->
+        {% if current_user.is_authenticated %}
+        <div class="mobile-user-info">
+            <div class="username">{{ current_user.username }}</div>
+            <div class="role">{{ current_user.get_role_name() }}</div>
+        </div>
+        {% endif %}
+
         <ul>
             <li><a href="{{ url_for('index') }}" {% if request.endpoint == 'index' %}class="active"{% endif %}>📈 Dashboard</a></li>
             <li><a href="{{ url_for('solicitudes') }}" {% if request.endpoint == 'solicitudes' %}class="active"{% endif %}>📋 Solicitudes</a></li>
             <li><a href="{{ url_for('equipos') }}" {% if request.endpoint == 'equipos' %}class="active"{% endif %}>🖥️ Equipos</a></li>
             <li><a href="{{ url_for('archivos') }}" {% if request.endpoint == 'archivos' %}class="active"{% endif %}>📎 Archivos</a></li>
             {% if current_user.role != 'viewer' %}
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('equipos_priorizados') }}">
-                    📊 Equipos Priorizados
-                </a>
-            </li>
+            <li><a href="{{ url_for('equipos_priorizados') }}" {% if request.endpoint == 'equipos_priorizados' %}class="active"{% endif %}>📊 Equipos Priorizados</a></li>
             {% endif %}
             {% if current_user.is_authenticated and current_user.has_permission('manage_users') %}
             <li><a href="{{ url_for('usuarios') }}" {% if request.endpoint == 'usuarios' %}class="active"{% endif %}>👥 Usuarios</a></li>
@@ -286,6 +504,14 @@
             <li><a href="{{ url_for('auditoria') }}" {% if request.endpoint == 'auditoria' %}class="active"{% endif %}>📊 Auditoría</a></li>
             {% endif %}
         </ul>
+
+        <!-- Acciones en menú móvil -->
+        {% if current_user.is_authenticated %}
+        <div class="mobile-menu-actions">
+            <a href="{{ url_for('perfil') }}">👤 Mi Perfil</a>
+            <a href="{{ url_for('logout') }}">🚪 Cerrar Sesión</a>
+        </div>
+        {% endif %}
     </nav>
 
     <div class="container">
@@ -301,6 +527,42 @@
         
         {% block content %}{% endblock %}
     </div>
+
+    <script>
+        // Toggle menú móvil
+        function toggleMenu() {
+            const nav = document.getElementById('mainNav');
+            const overlay = document.getElementById('navOverlay');
+            
+            nav.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Prevenir scroll del body cuando el menú está abierto
+            if (nav.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Cerrar menú al hacer clic en un enlace (solo en móvil)
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('nav a').forEach(link => {
+                link.addEventListener('click', function() {
+                    toggleMenu();
+                });
+            });
+        }
+
+        // Cerrar menú al cambiar de orientación o redimensionar
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('mainNav').classList.remove('active');
+                document.getElementById('navOverlay').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>
