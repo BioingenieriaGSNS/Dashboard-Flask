@@ -36,11 +36,11 @@
         </div>
     </div>
 
-    <!-- Tabla compacta -->
+    <!-- Tabla compacta con contenedor para scroll -->
     <div class="card shadow-sm">
-        <div class="table-responsive">
+        <div class="table-container">
             <table class="table table-sm table-hover mb-0" style="font-size: 0.875rem;">
-                <thead style="background-color: #1e4d7b; color: white; position: sticky; top: 0; z-index: 10;">
+                <thead>
                     <tr>
                         <th style="padding: 12px 10px;">OST</th>
                         <th style="padding: 12px 10px;">CLIENTE</th>
@@ -112,6 +112,34 @@
 </div>
 
 <style>
+    /* Contenedor de tabla con scroll y header fijo */
+    .table-container {
+        max-height: calc(100vh - 350px);
+        overflow-y: auto;
+        overflow-x: auto;
+        position: relative;
+    }
+
+    /* Table layout para que sticky funcione */
+    .table-container table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    /* Header fijo */
+    .table-container thead th {
+        position: sticky;
+        top: 0;
+        background-color: #1e4d7b;
+        color: white;
+        z-index: 10;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border: 1px solid #0d2240;
+        box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+    }
+
     /* Estadísticas ultra compactas */
     .priority-stats-compact {
         display: flex;
@@ -192,14 +220,6 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    /* Headers de tabla */
-    thead th {
-        font-weight: 600;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-        border: 1px solid #0d2240 !important;
-    }
-
     /* Celdas de tabla */
     tbody td {
         border: 1px solid #dee2e6;
@@ -209,6 +229,26 @@
     .g-2 {
         --bs-gutter-y: 0.5rem;
         --bs-gutter-x: 0.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .table-container {
+            max-height: calc(100vh - 400px);
+        }
+        
+        .stat-item {
+            min-width: 100px;
+            padding: 6px 10px;
+        }
+        
+        .stat-num {
+            font-size: 1.2rem;
+        }
+        
+        .stat-label {
+            font-size: 0.65rem;
+        }
     }
 </style>
 {% endblock %}

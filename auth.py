@@ -53,10 +53,18 @@ class User(UserMixin):
 
 def get_db_connection():
     """Obtiene conexión a la base de datos"""
-    # Opción 1: Usar os.getenv (recomendado)
     DATABASE_URL = os.getenv('DATABASE_URL')
+    
+    # Limpiar la URL
     db_url_clean = DATABASE_URL.replace('&channel_binding=require', '')
-    conn = psycopg2.connect(db_url_clean, cursor_factory=RealDictCursor)
+    
+    # Agregar parámetros SSL para Neon
+    conn = psycopg2.connect(
+        db_url_clean,
+        cursor_factory=RealDictCursor,
+        sslmode='require',
+        connect_timeout=10
+    )
     return conn
 
 
