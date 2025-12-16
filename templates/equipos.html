@@ -27,7 +27,7 @@
 
 /* Sección fija (izquierda) */
 .fixed-section {
-    width: 380px;
+    width: 460px;
     flex-shrink: 0;
     background: white;
     overflow: hidden;
@@ -94,8 +94,8 @@
     flex-shrink: 0;
 }
 
-.gh-dominio { background: #fff9c4; color: #333; width: 380px; }
-.gh-ingreso { background: #b3e5fc; color: #333; width: 1820px; }
+.gh-dominio { background: #fff9c4; color: #333; width: 460px; }
+.gh-ingreso { background: #b3e5fc; color: #333; width: 1970px; }
 .gh-observacion { background: #fff9c4; color: #333; width: 320px; }
 .gh-tecnico { background: #fff; color: #333; width: 700px; border: 1px solid #ddd; }
 .gh-comercial { background: #80deea; color: #333; width: 740px; }
@@ -136,7 +136,8 @@
 /* Headers específicos de columnas fijas */
 .fixed-section .col-header:nth-child(1),
 .fixed-section .col-header:nth-child(2),
-.fixed-section .col-header:nth-child(3) {
+.fixed-section .col-header:nth-child(3),
+.fixed-section .col-header:nth-child(4) {
     background: #fff9c4;
     color: #333;
     border: 1px solid #ddd;
@@ -146,9 +147,11 @@
 .ch-cliente { width: 180px; }
 .ch-ost { width: 80px; }
 .ch-estado { width: 120px; }
+.ch-id { width: 80px; }
 
 /* Anchos de columnas scrollables */
 .ch-fecha-ingreso { width: 130px; }
+.ch-comercial { width: 150px; }
 .ch-remito { width: 130px; }
 .ch-tipo { width: 220px; }
 .ch-marca { width: 160px; }
@@ -810,16 +813,17 @@
     }
     
     .fixed-section {
-        width: 320px;
+        width: 380px;
     }
     
     .gh-dominio {
-        width: 320px;
+        width: 380px;
     }
     
     .ch-cliente { width: 150px; }
+    .ch-id { width: 70px; }
     .ch-ost { width: 70px; }
-    .ch-estado { width: 100px; }
+    .ch-estado { width: 90px; }
     
     .col-header {
         padding: 10px 8px;
@@ -870,7 +874,7 @@
     .ch-remito-entrega { width: 130px; }
     .ch-acciones { width: 90px; }
     
-    .gh-ingreso { width: 1480px; }
+    .gh-ingreso { width: 1630px; } /* 1480px + 150px comercial */
     .gh-observacion { width: 280px; }
     .gh-tecnico { width: 620px; }
     .gh-comercial { width: 660px; }
@@ -939,16 +943,17 @@
     }
     
     .fixed-section {
-        width: 260px;
+        width: 320px;
     }
     
     .gh-dominio {
-        width: 260px;
+        width: 320px;
     }
     
-    .ch-cliente { width: 120px; }
+    .ch-cliente { width: 130px; }
+    .ch-id { width: 60px; }
     .ch-ost { width: 60px; }
-    .ch-estado { width: 80px; }
+    .ch-estado { width: 70px; }
     
     .cell {
         height: 45px;
@@ -1088,6 +1093,9 @@
                 <div class="col-header ch-cliente filterable" data-column="cliente">
                     Cliente <span class="filter-icon">▼</span>
                 </div>
+                <div class="col-header ch-id filterable" data-column="id">
+                    ID <span class="filter-icon">▼</span>
+                </div>
                 <div class="col-header ch-ost filterable" data-column="ost" onclick="toggleOrdenOST(event)">
                     OST <span class="filter-icon">▼</span><span id="iconOrdenOST" style="margin-left: 3px;">↓</span>
                 </div>
@@ -1106,7 +1114,9 @@
                          {% if not current_user.has_permission('edit') %}style="cursor: default; background-color: #fafafa;"{% endif %}
                          data-id="{{ equipo.id }}" 
                          data-field="cliente">{{ equipo.cliente or '' }}</div>
-                    
+
+                     <!-- ID (no editable, con data-field para filtros) -->
+                     <div class="cell ch-id" data-field="id">{{ equipo.id }}</div>
                     <!-- OST (no editable) -->
                    
                     <div class="cell ch-ost">
@@ -1144,6 +1154,9 @@
             
             <!-- Headers de columnas scrollables -->
             <div class="column-headers">
+                 <div class="col-header ch-comercial filterable" data-column="comercial_cargo">
+                    Comercial <span class="filter-icon">▼</span>
+                </div>
                 <div class="col-header ch-fecha-ingreso">Fecha Ingreso</div>
                 <div class="col-header ch-remito">Remito</div>
                 <div class="col-header ch-tipo filterable" data-column="tipo_equipo">
@@ -1182,6 +1195,8 @@
             <div class="rows-container" id="scrollableRows">
                 {% for equipo in equipos %}
                 <div class="data-row" data-row="{{ loop.index }}" data-id="{{ equipo.id }}">
+                     <!-- Comercial a Cargo (no editable, con data-field para filtros) -->
+                     <div class="cell ch-comercial" data-field="comercial_cargo">{{ equipo.comercial_cargo or '-' }}</div>
                     <!-- ✅ MODIFICADO: Fecha Ingreso -->
                     <div class="cell ch-fecha-ingreso {% if current_user.has_permission('edit') %}editable-date{% endif %}" 
                          data-id="{{ equipo.id }}" 
@@ -2197,9 +2212,14 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
                 
                 const columna = this.getAttribute('data-column');
                 
-                // Si es OST, usar modal de búsqueda especial
+                // Si es OST o ID, usar modal de búsqueda especial
                 if (columna === 'ost') {
                     mostrarBusquedaOST(this);
+                    return;
+                }
+                
+                if (columna === 'id') {
+                    mostrarBusquedaID(this);
                     return;
                 }
                 
@@ -2436,6 +2456,122 @@ document.getElementById('formAgregarEquipo').addEventListener('submit', function
         
         // Marcar que el filtro OST está aplicado
         filtrosAplicados['ost'] = [valorBuscado];
+        cerrarTodosDropdowns();
+        actualizarEstadoFiltros();
+    }
+
+    // Funciones de búsqueda para ID (similar a OST)
+    function mostrarBusquedaID(header) {
+        // Cerrar otros dropdowns
+        cerrarTodosDropdowns();
+        
+        const dropdown = document.createElement('div');
+        dropdown.className = 'filter-dropdown active';
+        
+        dropdown.innerHTML = `
+            <div class="filter-dropdown-header">
+                <span>🔍 Buscar ID</span>
+                <span class="filter-dropdown-close" onclick="cerrarTodosDropdowns()">×</span>
+            </div>
+            <div class="filter-dropdown-body">
+                <input type="text" class="filter-search" id="searchID" placeholder="Escriba el número de ID..." style="margin-bottom: 10px;">
+                <div style="padding: 10px; color: #666; font-size: 0.85rem; text-align: center;">
+                    Presione Enter para buscar
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn-limpiar" onclick="limpiarFiltroColumna('id')">Limpiar</button>
+                <button class="btn-aplicar" onclick="aplicarBusquedaID()">Buscar</button>
+            </div>
+        `;
+        
+        document.body.appendChild(dropdown);
+        
+        // Posicionar el dropdown
+        const rect = header.getBoundingClientRect();
+        dropdown.style.top = rect.bottom + 5 + 'px';
+        dropdown.style.left = rect.left + 'px';
+        dropdown.style.minWidth = '300px';
+        
+        // Hacer arrastrable
+        hacerArrastrable(dropdown);
+        
+        // Prevenir cierre al hacer clic dentro
+        dropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+        
+        // Focus en el input
+        setTimeout(() => {
+            const input = document.getElementById('searchID');
+            input.focus();
+            
+            // Enter para buscar
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    aplicarBusquedaID();
+                }
+            });
+        }, 100);
+    }
+
+    function aplicarBusquedaID() {
+        const input = document.getElementById('searchID');
+        const valorBuscado = input.value.trim();
+        
+        if (!valorBuscado) {
+            alert('⚠️ Por favor ingrese un número de ID');
+            return;
+        }
+        
+        // Obtener todas las filas de AMBAS secciones
+        const filasScrollable = document.querySelectorAll('.scrollable-section .data-row');
+        const filasFijas = document.querySelectorAll('.fixed-section .data-row');
+        
+        // Procesar cada fila
+        for (let i = 0; i < filasFijas.length; i++) {
+            let mostrar = false;
+            
+            // Buscar la celda ID en la sección fija
+            const cellID = filasFijas[i].querySelector('.ch-id');
+            
+            if (cellID) {
+                const valorID = cellID.textContent.trim();
+                // Búsqueda exacta o parcial
+                if (valorID.toLowerCase().includes(valorBuscado.toLowerCase())) {
+                    mostrar = true;
+                }
+            }
+            
+            // Aplicar también otros filtros activos
+            for (const [columna, valores] of Object.entries(filtrosAplicados)) {
+                if (columna === 'id') continue; // Saltar el filtro ID que acabamos de aplicar
+                
+                let cell = filasFijas[i].querySelector(`[data-field="${columna}"]`);
+                if (!cell && filasScrollable[i]) {
+                    cell = filasScrollable[i].querySelector(`[data-field="${columna}"]`);
+                }
+                
+                if (cell) {
+                    const valorCelda = cell.textContent.trim();
+                    if (!valores.includes(valorCelda)) {
+                        mostrar = false;
+                        break;
+                    }
+                }
+            }
+            
+            // Aplicar display a AMBAS filas (fija y scrollable)
+            if (filasFijas[i]) {
+                filasFijas[i].style.display = mostrar ? 'flex' : 'none';
+            }
+            if (filasScrollable[i]) {
+                filasScrollable[i].style.display = mostrar ? 'flex' : 'none';
+            }
+        }
+        
+        // Marcar que el filtro ID está aplicado
+        filtrosAplicados['id'] = [valorBuscado];
         cerrarTodosDropdowns();
         actualizarEstadoFiltros();
     }

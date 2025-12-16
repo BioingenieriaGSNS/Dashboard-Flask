@@ -244,6 +244,7 @@ def equipos():
         SELECT e.id, e.cliente, e.ost, e.estado, e.fecha_ingreso, e.remito,
             e.tipo_equipo, e.marca, e.modelo, e.numero_serie, e.accesorios,
             s.categoria,
+            COALESCE(s.comercial_syemed, s.solicitante) as comercial_cargo,
             e.observacion_ingreso, e.prioridad, e.fecha_envio, e.proveedor,
             e.detalles_reparacion, e.horas_trabajo, e.reingreso, 
             e.informe AS informe_tecnico,

@@ -459,7 +459,9 @@ thead .sticky-col {
                 <th class="header-ingreso-light" style="width: 150px;">QUIEN COMPLETA</th>
                 <th class="header-ingreso-light" style="width: 120px;">URGENCIA</th>
                 <th class="header-ingreso-light" style="width: 250px;">MOTIVO</th>
-                <th class="header-ingreso-light" style="width: 150px;">COMERCIAL A CARGO</th>
+                <th class="header-ingreso-light filterable" data-column="comercial_cargo" style="width: 150px;">
+                    COMERCIAL A CARGO <span class="filter-icon"> ▼ </span>
+                </th>
                 <!-- Colaborador Syemed -->
                 <th class="header-syemed-light" style="width: 150px;">AREA SOLICITANTE</th>
                 <th class="header-syemed-light" style="width: 150px;">SOLICITANTE</th>
@@ -555,9 +557,9 @@ thead .sticky-col {
                     {{ (sol.motivo_solicitud[:40] + '...') if sol.motivo_solicitud and sol.motivo_solicitud|length > 40 else (sol.motivo_solicitud or '-') }}
                 </td>
                 
-                <!-- Comercial a Cargo -->
-                <td class="cell-ingreso" title="{{ sol.comercial_cargo or '' }}">
-                    {{ sol.comercial_cargo or '-' }}
+                <!-- Comercial a Cargo - combina comercial_syemed y solicitante -->
+                <td class="cell-ingreso" title="{{ sol.comercial_syemed or sol.solicitante or '' }}">
+                    {{ sol.comercial_syemed or sol.solicitante or '-' }}
                 </td>
                 
                 <!-- ========== COLABORADOR DE SYEMED ========== -->
