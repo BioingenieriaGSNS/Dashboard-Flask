@@ -264,6 +264,151 @@
     background-color: #b3e5fc !important;
 }
 
+/* ========== FILTROS ESTILO GOOGLE SHEETS ========== */
+.filter-icon {
+    display: none;
+    margin-left: 5px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.filter-icon:hover {
+    opacity: 1;
+}
+
+.filter-icon.active {
+    display: inline;
+    color: white;
+    opacity: 1;
+}
+
+th.filterable {
+    cursor: pointer;
+    position: relative;
+}
+
+th.filterable:hover {
+    background: #2c6ba8 !important;
+}
+
+.filter-dropdown {
+    position: fixed;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 1000;
+    min-width: 250px;
+    max-width: 350px;
+    max-height: 450px;
+    overflow: hidden;
+    display: none;
+}
+
+.filter-dropdown.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-dropdown-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 15px;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    border-radius: 8px 8px 0 0;
+    user-select: none;
+}
+
+.filter-dropdown-header:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+}
+
+.filter-dropdown-close {
+    cursor: pointer;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0 5px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.filter-dropdown-close:hover {
+    opacity: 1;
+}
+
+.filter-dropdown-body {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.filter-search {
+    width: calc(100% - 20px);
+    padding: 8px;
+    margin: 10px 10px 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+}
+
+.filter-options {
+    padding: 5px;
+}
+
+.filter-option {
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.filter-option:hover {
+    background: #f0f0f0;
+}
+
+.filter-option input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.filter-actions {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    gap: 5px;
+    justify-content: space-between;
+}
+
+.filter-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.filter-actions .btn-aplicar {
+    background: #667eea;
+    color: white;
+}
+
+.filter-actions .btn-limpiar {
+    background: #f0f0f0;
+    color: #333;
+}
+
 /* Mantener sticky en primera columna */
 .sticky-col {
     position: sticky;
@@ -442,8 +587,8 @@ thead .sticky-col {
         <thead>
             <!-- Header superior con categorías -->
             <tr class="header-category">
-                <th colspan="10" class="header-ingreso">Datos de Ingreso</th>
-                <th colspan="5" class="header-syemed">Colaborador de Syemed</th>
+                <th colspan="11" class="header-ingreso">Datos de Ingreso</th>
+                <th colspan="4" class="header-syemed">Colaborador de Syemed</th>
                 <th colspan="7" class="header-distribuidor">Distribuidor / Institución</th>
                 <th colspan="3" class="header-paciente">Paciente / Particular</th>
             </tr>
@@ -452,6 +597,9 @@ thead .sticky-col {
                 <!-- Datos de Ingreso -->
                 <th class="sticky-col header-ingreso-light" style="width: 50px;">ID</th>
                 <th class="header-ingreso-light" style="width: 180px;">OSTS VINCULADAS</th>
+                <th class="header-ingreso-light filterable" data-column="comercial_cargo" style="width: 150px;">
+                    COMERCIAL A CARGO <span class="filter-icon">▼</span>
+                </th>
                 <th class="header-ingreso-light" style="width: 110px;">FECHA</th>
                 <th class="header-ingreso-light" style="width: 120px;">CATEGORIA</th>
                 <th class="header-ingreso-light" style="width: 80px;">PDF</th>
@@ -459,9 +607,6 @@ thead .sticky-col {
                 <th class="header-ingreso-light" style="width: 150px;">QUIEN COMPLETA</th>
                 <th class="header-ingreso-light" style="width: 120px;">URGENCIA</th>
                 <th class="header-ingreso-light" style="width: 250px;">MOTIVO</th>
-                <th class="header-ingreso-light filterable" data-column="comercial_cargo" style="width: 150px;">
-                    COMERCIAL A CARGO <span class="filter-icon"> ▼ </span>
-                </th>
                 <!-- Colaborador Syemed -->
                 <th class="header-syemed-light" style="width: 150px;">AREA SOLICITANTE</th>
                 <th class="header-syemed-light" style="width: 150px;">SOLICITANTE</th>
@@ -513,6 +658,11 @@ thead .sticky-col {
                     {% endif %}
                 </td>
                 
+                <!-- Comercial a Cargo - combina comercial_syemed y solicitante -->
+                <td class="cell-ingreso" data-field="comercial_cargo" title="{{ sol.comercial_syemed or sol.solicitante or '' }}">
+                    {{ sol.comercial_syemed or sol.solicitante or '-' }}
+                </td>
+                
                 <!-- Fecha -->
                 <td class="cell-ingreso">{{ sol.fecha_solicitud.strftime('%d/%m/%Y') if sol.fecha_solicitud else 'N/A' }}</td>
                 
@@ -555,11 +705,6 @@ thead .sticky-col {
                     onclick="mostrarModal('Motivo de Solicitud', '{{ sol.motivo_solicitud or '' }}')"
                     title="Haz clic para ver completo">
                     {{ (sol.motivo_solicitud[:40] + '...') if sol.motivo_solicitud and sol.motivo_solicitud|length > 40 else (sol.motivo_solicitud or '-') }}
-                </td>
-                
-                <!-- Comercial a Cargo - combina comercial_syemed y solicitante -->
-                <td class="cell-ingreso" title="{{ sol.comercial_syemed or sol.solicitante or '' }}">
-                    {{ sol.comercial_syemed or sol.solicitante or '-' }}
                 </td>
                 
                 <!-- ========== COLABORADOR DE SYEMED ========== -->
@@ -721,6 +866,278 @@ function aplicarColoresUrgencia() {
 document.addEventListener('DOMContentLoaded', aplicarColoresUrgencia);
 
 
+// ==================== SISTEMA DE FILTROS ====================
+
+let filtrosActivos = false;
+let filtrosAplicados = {};
+
+// Activar/Desactivar filtros
+function toggleFiltros() {
+    filtrosActivos = !filtrosActivos;
+    
+    const icons = document.querySelectorAll('.filter-icon');
+    
+    if (filtrosActivos) {
+        icons.forEach(icon => icon.classList.add('active'));
+        console.log('🔍 Filtros activados');
+    } else {
+        icons.forEach(icon => icon.classList.remove('active'));
+        cerrarTodosDropdowns();
+        limpiarTodosFiltros();
+        console.log('❌ Filtros desactivados');
+    }
+}
+
+function cerrarTodosDropdowns() {
+    document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+        dropdown.remove();
+    });
+}
+
+function limpiarTodosFiltros() {
+    filtrosAplicados = {};
+    document.querySelectorAll('#solicitudesTable tbody tr').forEach(row => {
+        row.style.display = '';
+    });
+}
+
+// Agregar event listeners a los headers cuando cargue la página
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('th.filterable').forEach(header => {
+        header.addEventListener('click', function(e) {
+            if (!filtrosActivos) {
+                filtrosActivos = true;
+                document.querySelectorAll('.filter-icon').forEach(icon => icon.classList.add('active'));
+            }
+            
+            e.stopPropagation();
+            
+            const columna = this.getAttribute('data-column');
+            
+            // Cerrar otros dropdowns
+            document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+                if (dropdown.parentElement !== this) {
+                    dropdown.remove();
+                }
+            });
+            
+            const existente = this.querySelector('.filter-dropdown');
+            if (existente) {
+                existente.remove();
+                return;
+            }
+            
+            mostrarDropdownFiltro(this, columna);
+        });
+    });
+    
+    // Cerrar dropdowns al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('th.filterable')) {
+            cerrarTodosDropdowns();
+        }
+    });
+});
+
+function mostrarDropdownFiltro(header, columna) {
+    // Obtener valores únicos de la columna SOLO de las filas visibles
+    const valores = new Set();
+    
+    document.querySelectorAll('#solicitudesTable tbody tr').forEach(row => {
+        // Saltar filas ocultas por otros filtros
+        if (row.style.display === 'none') return;
+        
+        const cell = row.querySelector(`td[data-field="${columna}"]`);
+        if (cell) {
+            const valor = cell.textContent.trim();
+            if (valor && valor !== 'N/A' && valor !== '' && valor !== '-') {
+                valores.add(valor);
+            }
+        }
+    });
+    
+    const valoresArray = Array.from(valores).sort();
+    
+    // Crear dropdown
+    const dropdown = document.createElement('div');
+    dropdown.className = 'filter-dropdown active';
+    
+    let html = `
+        <div class="filter-dropdown-header">
+            <span>🔍 Filtrar: ${columna.charAt(0).toUpperCase() + columna.slice(1).replace('_', ' ')}</span>
+            <span class="filter-dropdown-close" onclick="cerrarTodosDropdowns()">×</span>
+        </div>
+        <div class="filter-dropdown-body">
+            <input type="text" class="filter-search" placeholder="Buscar..." onkeyup="filtrarOpciones(this)">
+            <div class="filter-options">
+                <div class="filter-option" onclick="toggleTodosCheckboxes(this, '${columna}')">
+                    <input type="checkbox" checked id="selectAll_${columna}">
+                    <label>(Seleccionar todo)</label>
+                </div>
+    `;
+    
+    valoresArray.forEach(valor => {
+        const isChecked = !filtrosAplicados[columna] || filtrosAplicados[columna].includes(valor);
+        html += `
+            <div class="filter-option" data-value="${valor}" onclick="toggleCheckboxFiltro(event, this)">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} value="${valor}" data-column="${columna}" onclick="event.stopPropagation()">
+                <label>${valor}</label>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button class="btn-limpiar" onclick="limpiarFiltroColumna('${columna}')">Limpiar</button>
+            <button class="btn-aplicar" onclick="aplicarFiltroColumna('${columna}')">Aplicar</button>
+        </div>
+    `;
+    
+    dropdown.innerHTML = html;
+    document.body.appendChild(dropdown);
+    
+    // Posicionar el dropdown cerca del header
+    const rect = header.getBoundingClientRect();
+    let top = rect.bottom + 5;
+    let left = rect.left;
+    
+    dropdown.style.top = top + 'px';
+    dropdown.style.left = left + 'px';
+    
+    setTimeout(() => {
+        const dropdownRect = dropdown.getBoundingClientRect();
+        
+        // Ajustar horizontal si se sale
+        if (dropdownRect.right > window.innerWidth) {
+            left = window.innerWidth - dropdownRect.width - 10;
+            dropdown.style.left = left + 'px';
+        }
+        
+        // Ajustar vertical si se sale
+        if (dropdownRect.bottom > window.innerHeight) {
+            top = rect.top - dropdownRect.height - 5;
+            dropdown.style.top = Math.max(10, top) + 'px';
+        }
+    }, 10);
+    
+    // Hacer el dropdown arrastrable
+    hacerArrastrable(dropdown);
+    
+    // Prevenir que el dropdown se cierre al hacer clic dentro
+    dropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+}
+
+function hacerArrastrable(elemento) {
+    const header = elemento.querySelector('.filter-dropdown-header');
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    
+    header.onmousedown = dragMouseDown;
+    
+    function dragMouseDown(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+    
+    function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        elemento.style.top = (elemento.offsetTop - pos2) + "px";
+        elemento.style.left = (elemento.offsetLeft - pos1) + "px";
+    }
+    
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+function filtrarOpciones(input) {
+    const texto = input.value.toLowerCase();
+    const opciones = input.parentElement.querySelectorAll('.filter-option');
+    
+    opciones.forEach(opcion => {
+        const label = opcion.querySelector('label').textContent.toLowerCase();
+        if (label.includes('seleccionar todo') || label.includes(texto)) {
+            opcion.style.display = 'flex';
+        } else {
+            opcion.style.display = 'none';
+        }
+    });
+}
+
+function toggleCheckboxFiltro(event, opcion) {
+    const checkbox = opcion.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    event.stopPropagation();
+}
+
+function toggleTodosCheckboxes(opcion, columna) {
+    const checkbox = opcion.querySelector('input[type="checkbox"]');
+    const nuevoEstado = !checkbox.checked;
+    checkbox.checked = nuevoEstado;
+    
+    const dropdown = opcion.closest('.filter-dropdown');
+    dropdown.querySelectorAll('.filter-option input[type="checkbox"]').forEach(cb => {
+        if (cb.id !== `selectAll_${columna}`) {
+            cb.checked = nuevoEstado;
+        }
+    });
+}
+
+function aplicarFiltroColumna(columna) {
+    const checkboxes = document.querySelectorAll(`.filter-dropdown input[type="checkbox"][data-column="${columna}"]`);
+    const valoresSeleccionados = [];
+    
+    checkboxes.forEach(cb => {
+        if (cb.checked) {
+            valoresSeleccionados.push(cb.value);
+        }
+    });
+    
+    if (valoresSeleccionados.length === 0) {
+        alert('⚠️ Debe seleccionar al menos un valor');
+        return;
+    }
+    
+    filtrosAplicados[columna] = valoresSeleccionados;
+    aplicarTodosFiltros();
+    cerrarTodosDropdowns();
+}
+
+function limpiarFiltroColumna(columna) {
+    delete filtrosAplicados[columna];
+    aplicarTodosFiltros();
+    cerrarTodosDropdowns();
+}
+
+function aplicarTodosFiltros() {
+    document.querySelectorAll('#solicitudesTable tbody tr').forEach(row => {
+        let mostrar = true;
+        
+        for (const [columna, valores] of Object.entries(filtrosAplicados)) {
+            const cell = row.querySelector(`td[data-field="${columna}"]`);
+            if (cell) {
+                const valorCelda = cell.textContent.trim();
+                if (!valores.includes(valorCelda)) {
+                    mostrar = false;
+                    break;
+                }
+            }
+        }
+        
+        row.style.display = mostrar ? '' : 'none';
+    });
+}
 
 
 </script>
