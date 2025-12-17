@@ -587,7 +587,7 @@ thead .sticky-col {
         <thead>
             <!-- Header superior con categorías -->
             <tr class="header-category">
-                <th colspan="11" class="header-ingreso">Datos de Ingreso</th>
+                <th colspan="12" class="header-ingreso">Datos de Ingreso</th>
                 <th colspan="4" class="header-syemed">Colaborador de Syemed</th>
                 <th colspan="7" class="header-distribuidor">Distribuidor / Institución</th>
                 <th colspan="3" class="header-paciente">Paciente / Particular</th>
@@ -606,6 +606,7 @@ thead .sticky-col {
                 <th class="header-ingreso-light" style="width: 200px;">EMAIL</th>
                 <th class="header-ingreso-light" style="width: 150px;">QUIEN COMPLETA</th>
                 <th class="header-ingreso-light" style="width: 120px;">URGENCIA</th>
+                <th class="header-ingreso-light" style="width: 120px;">GARANTÍA</th>
                 <th class="header-ingreso-light" style="width: 250px;">MOTIVO</th>
                 <!-- Colaborador Syemed -->
                 <th class="header-syemed-light" style="width: 150px;">AREA SOLICITANTE</th>
@@ -700,6 +701,11 @@ thead .sticky-col {
                     </span>
                 </td>
                 
+                <!-- Garantía -->
+                <td class="cell-ingreso" title="{{ sol.garantia or '' }}">
+                    {{ sol.garantia or '-' }}
+                </td>
+                
                 <!-- Motivo (con modal si es largo) -->
                 <td class="cell-ingreso clickable-cell" 
                     onclick="mostrarModal('Motivo de Solicitud', '{{ sol.motivo_solicitud or '' }}')"
@@ -719,9 +725,11 @@ thead .sticky-col {
                     {{ sol.solicitante or '-' }}
                 </td>
                 
-                <!-- Logística a Cargo -->
-                <td class="cell-syemed" title="{{ sol.logistica_cargo or '' }}">
-                    {{ sol.logistica_cargo or '-' }}
+                <!-- Logística a Cargo (con modal si es largo) -->
+                <td class="cell-syemed clickable-cell" 
+                    onclick="mostrarModal('Logística a Cargo', '{{ sol.logistica_cargo or '' }}')"
+                    title="Haz clic para ver completo">
+                    {{ (sol.logistica_cargo[:40] + '...') if sol.logistica_cargo and sol.logistica_cargo|length > 40 else (sol.logistica_cargo or '-') }}
                 </td>
                 
                 <!-- Comentarios del Caso (con modal si es largo) -->

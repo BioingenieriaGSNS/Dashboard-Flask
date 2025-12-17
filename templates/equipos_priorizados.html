@@ -91,9 +91,9 @@
                                 <strong style="font-size: 1.4rem; color: white;">{{ equipo.prioridad_final }}</strong>
                             </td>
                             <td style="padding: 8px 10px;">
-                                <a href="{{ url_for('equipos') }}?ost={{ equipo.ost }}" class="btn btn-sm" style="background-color: #6c63ff; color: white; padding: 4px 12px;">
+                                <button onclick="verDetalleEquipo('{{ equipo.ost }}')" class="btn btn-sm" style="background-color: #6c63ff; color: white; padding: 4px 12px; border: none; cursor: pointer;">
                                     Ver
-                                </a>
+                                </button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -250,5 +250,375 @@
             font-size: 0.65rem;
         }
     }
+    
+    /* Modal de detalle de equipo */
+    .modal-detalle {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        align-items: center;
+        justify-content: center;
+        overflow-y: auto;
+    }
+    
+    .modal-detalle-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 900px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        margin: 20px;
+    }
+    
+    .modal-detalle-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-detalle-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    
+    .modal-detalle-close {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        font-size: 1.8rem;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+    
+    .modal-detalle-close:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    
+    .modal-detalle-body {
+        padding: 2rem;
+    }
+    
+    .detalle-section {
+        margin-bottom: 2rem;
+    }
+    
+    .detalle-section-title {
+        background: linear-gradient(135deg, #1e4d7b 0%, #2c6ba8 100%);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .detalle-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .detalle-item {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 3px solid #667eea;
+    }
+    
+    .detalle-label {
+        font-weight: 600;
+        color: #1e4d7b;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .detalle-value {
+        font-size: 1rem;
+        color: #333;
+        word-wrap: break-word;
+    }
+    
+    .detalle-value.empty {
+        color: #999;
+        font-style: italic;
+    }
+    
+    .modal-detalle-footer {
+        padding: 1rem 2rem;
+        border-top: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        border-radius: 0 0 12px 12px;
+    }
+    
+    @media (max-width: 768px) {
+        .modal-detalle-content {
+            width: 95%;
+            margin: 10px;
+        }
+        
+        .detalle-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
+
+<!-- Modal de Detalle de Equipo -->
+<div id="modalDetalleEquipo" class="modal-detalle">
+    <div class="modal-detalle-content">
+        <div class="modal-detalle-header">
+            <h3 id="modalTitulo">🖥️ Detalle del Equipo</h3>
+            <button class="modal-detalle-close" onclick="cerrarModalDetalle()">×</button>
+        </div>
+        <div class="modal-detalle-body" id="modalContenido">
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p>Cargando información del equipo...</p>
+            </div>
+        </div>
+        <div class="modal-detalle-footer">
+            <a href="#" id="modalVerEnTabla" class="btn btn-sm" style="background-color: #667eea; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px;">
+                📋 Ver en Tabla de Equipos
+            </a>
+            <button onclick="cerrarModalDetalle()" class="btn btn-sm" style="background-color: #6c757d; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función para ver detalle del equipo
+async function verDetalleEquipo(ost) {
+    const modal = document.getElementById('modalDetalleEquipo');
+    const contenido = document.getElementById('modalContenido');
+    const titulo = document.getElementById('modalTitulo');
+    const linkTabla = document.getElementById('modalVerEnTabla');
+    
+    // Mostrar modal con loading
+    modal.style.display = 'flex';
+    contenido.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p style="margin-top: 1rem;">Cargando información del equipo...</p>
+        </div>
+    `;
+    
+    try {
+        // Hacer petición al API
+        const response = await fetch(`/api/equipo/detalle/${ost}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            contenido.innerHTML = `
+                <div class="alert alert-danger">
+                    <strong>❌ Error:</strong> ${data.error || 'No se pudo cargar la información del equipo'}
+                </div>
+            `;
+            return;
+        }
+        
+        const equipo = data.equipo;
+        
+        // Actualizar título
+        titulo.textContent = `🖥️ OST ${ost} - ${equipo.cliente || 'Sin cliente'}`;
+        
+        // Actualizar link
+        linkTabla.href = `/equipos?ost=${ost}`;
+        
+        // Construir contenido del modal
+        contenido.innerHTML = `
+            <!-- Datos de Dominio -->
+            <div class="detalle-section">
+                <div class="detalle-section-title">📋 Datos de Dominio</div>
+                <div class="detalle-grid">
+                    <div class="detalle-item">
+                        <div class="detalle-label">Cliente</div>
+                        <div class="detalle-value">${equipo.cliente || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">OST</div>
+                        <div class="detalle-value"><strong>${equipo.ost || '-'}</strong></div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Estado</div>
+                        <div class="detalle-value"><strong>${equipo.estado || '-'}</strong></div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">ID Caso</div>
+                        <div class="detalle-value">${equipo.solicitud_id || '-'}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detalles de Ingreso -->
+            <div class="detalle-section">
+                <div class="detalle-section-title">📥 Detalles de Ingreso</div>
+                <div class="detalle-grid">
+                    <div class="detalle-item">
+                        <div class="detalle-label">Fecha de Ingreso</div>
+                        <div class="detalle-value">${equipo.fecha_ingreso || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Comercial/A Cargo</div>
+                        <div class="detalle-value">${equipo.comercial_cargo || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Remito</div>
+                        <div class="detalle-value">${equipo.remito || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Tipo de Equipo</div>
+                        <div class="detalle-value">${equipo.tipo_equipo || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Marca</div>
+                        <div class="detalle-value">${equipo.marca || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Modelo</div>
+                        <div class="detalle-value">${equipo.modelo || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Número de Serie</div>
+                        <div class="detalle-value">${equipo.numero_serie || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Accesorios</div>
+                        <div class="detalle-value">${equipo.accesorios || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Categoría</div>
+                        <div class="detalle-value">${equipo.categoria || '-'}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Observación de Ingreso -->
+            ${equipo.observacion_ingreso ? `
+            <div class="detalle-section">
+                <div class="detalle-section-title">📝 Observación de Ingreso</div>
+                <div class="detalle-item">
+                    <div class="detalle-value" style="white-space: pre-wrap;">${equipo.observacion_ingreso}</div>
+                </div>
+            </div>
+            ` : ''}
+            
+            <!-- Detalles Técnicos -->
+            <div class="detalle-section">
+                <div class="detalle-section-title">🔧 Detalles Técnicos y Seguimiento</div>
+                <div class="detalle-grid">
+                    <div class="detalle-item">
+                        <div class="detalle-label">Prioridad ST</div>
+                        <div class="detalle-value">${equipo.prioridad || 'Normal'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Nivel de Urgencia</div>
+                        <div class="detalle-value">${equipo.nivel_urgencia !== null && equipo.nivel_urgencia !== undefined ? equipo.nivel_urgencia : '3'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Fecha de Envío</div>
+                        <div class="detalle-value">${equipo.fecha_envio || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Proveedor</div>
+                        <div class="detalle-value">${equipo.proveedor || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Horas de Trabajo</div>
+                        <div class="detalle-value">${equipo.horas_trabajo || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Reingreso</div>
+                        <div class="detalle-value">${equipo.reingreso ? 'Sí ✓' : 'No'}</div>
+                    </div>
+                </div>
+                ${equipo.detalles_reparacion ? `
+                <div class="detalle-item" style="margin-top: 1rem;">
+                    <div class="detalle-label">Detalles de Reparación</div>
+                    <div class="detalle-value" style="white-space: pre-wrap;">${equipo.detalles_reparacion}</div>
+                </div>
+                ` : ''}
+            </div>
+            
+            <!-- Detalles Comerciales -->
+            <div class="detalle-section">
+                <div class="detalle-section-title">💰 Detalles Comerciales</div>
+                <div class="detalle-grid">
+                    <div class="detalle-item">
+                        <div class="detalle-label">Costo de Reparación</div>
+                        <div class="detalle-value">${equipo.costo_reparacion || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Precio al Cliente</div>
+                        <div class="detalle-value">${equipo.precio_cliente || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Número de OV</div>
+                        <div class="detalle-value">${equipo.numero_ov || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Estado OV</div>
+                        <div class="detalle-value">${equipo.estado_ov || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Fecha de Entrega</div>
+                        <div class="detalle-value">${equipo.fecha_entrega || '-'}</div>
+                    </div>
+                    <div class="detalle-item">
+                        <div class="detalle-label">Remito de Entrega</div>
+                        <div class="detalle-value">${equipo.remito_entrega || '-'}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error al cargar equipo:', error);
+        contenido.innerHTML = `
+            <div class="alert alert-danger">
+                <strong>❌ Error:</strong> No se pudo conectar con el servidor
+            </div>
+        `;
+    }
+}
+
+function cerrarModalDetalle() {
+    document.getElementById('modalDetalleEquipo').style.display = 'none';
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modalDetalleEquipo')?.addEventListener('click', function(e) {
+    if (e.target.id === 'modalDetalleEquipo') {
+        cerrarModalDetalle();
+    }
+});
+</script>
 {% endblock %}

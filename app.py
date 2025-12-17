@@ -197,6 +197,7 @@ def solicitudes():
         s.nivel_urgencia,
         s.motivo_solicitud,
         s.comercial_syemed,
+        CASE WHEN s.categoria LIKE '%G%' THEN 'Sí' ELSE 'No' END as garantia,
         -- Colaborador Syemed
         s.area_solicitante,
         s.solicitante,
@@ -252,7 +253,8 @@ def equipos():
             e.precio AS precio_cliente, 
             e.ov AS numero_ov, 
             e.estado_ov, e.fecha_entrega, e.remito_entrega,
-            e.solicitud_id
+            e.solicitud_id,
+            s.nivel_urgencia
         FROM equipos e
         LEFT JOIN solicitudes s ON e.solicitud_id = s.id
         WHERE e.eliminado = FALSE
@@ -851,6 +853,67 @@ def equipos_priorizados():
     finally:
         cur.close()
         conn.close()
+
+@app.route('/api/equipo/detalle/<ost>')
+@login_required
+def api_equipo_detalle(ost):
+    """API para obtener detalles completos de un equipo por OST"""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'error': 'Error de conexión'}), 500
+    
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                e.id, e.cliente, e.ost, e.estado, e.fecha_ingreso, e.remito,
+                e.tipo_equipo, e.marca, e.modelo, e.numero_serie, e.accesorios,
+                s.categoria,
+                COALESCE(s.comercial_syemed, s.solicitante) as comercial_cargo,
+                e.observacion_ingreso, e.prioridad, e.fecha_envio, e.proveedor,
+                e.detalles_reparacion, e.horas_trabajo, e.reingreso, 
+                e.informe AS informe_tecnico,
+                e.costo AS costo_reparacion, 
+                e.precio AS precio_cliente, 
+                e.ov AS numero_ov, 
+                e.estado_ov, e.fecha_entrega, e.remito_entrega,
+                e.solicitud_id,
+                s.nivel_urgencia
+            FROM equipos e
+            LEFT JOIN solicitudes s ON e.solicitud_id = s.id
+            WHERE e.ost = %s AND e.eliminado = FALSE
+            LIMIT 1
+        """, (ost,))
+        
+        equipo = cursor.fetchone()
+        
+        if not equipo:
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'error': 'Equipo no encontrado'}), 404
+        
+        # Convertir RealDictRow a dict normal y formatear fechas
+        equipo_dict = dict(equipo)
+        
+        # Formatear fechas
+        if equipo_dict.get('fecha_ingreso'):
+            equipo_dict['fecha_ingreso'] = equipo_dict['fecha_ingreso'].strftime('%d/%m/%Y')
+        if equipo_dict.get('fecha_envio'):
+            equipo_dict['fecha_envio'] = equipo_dict['fecha_envio'].strftime('%d/%m/%Y')
+        if equipo_dict.get('fecha_entrega'):
+            equipo_dict['fecha_entrega'] = equipo_dict['fecha_entrega'].strftime('%d/%m/%Y')
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'equipo': equipo_dict})
+    
+    except Exception as e:
+        print(f"Error al obtener equipo: {e}")
+        cursor.close()
+        conn.close()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # ============================================
 # CONTEXT PROCESSOR PARA TEMPLATES

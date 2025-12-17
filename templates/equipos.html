@@ -1093,8 +1093,8 @@
                 <div class="col-header ch-cliente filterable" data-column="cliente">
                     Cliente <span class="filter-icon">▼</span>
                 </div>
-                <div class="col-header ch-id filterable" data-column="id">
-                    ID <span class="filter-icon">▼</span>
+                <div class="col-header ch-id filterable" data-column="solicitud_id">
+                    ID CASO <span class="filter-icon">▼</span>
                 </div>
                 <div class="col-header ch-ost filterable" data-column="ost" onclick="toggleOrdenOST(event)">
                     OST <span class="filter-icon">▼</span><span id="iconOrdenOST" style="margin-left: 3px;">↓</span>
@@ -1115,8 +1115,8 @@
                          data-id="{{ equipo.id }}" 
                          data-field="cliente">{{ equipo.cliente or '' }}</div>
 
-                     <!-- ID (no editable, con data-field para filtros) -->
-                     <div class="cell ch-id" data-field="id">{{ equipo.id }}</div>
+                     <!-- ID CASO (solicitud_id, no editable, con data-field para filtros) -->
+                     <div class="cell ch-id" data-field="solicitud_id">{{ equipo.solicitud_id or '-' }}</div>
                     <!-- OST (no editable) -->
                    
                     <div class="cell ch-ost">
