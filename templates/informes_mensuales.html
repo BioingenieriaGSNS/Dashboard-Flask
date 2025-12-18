@@ -1,0 +1,562 @@
+{% extends "base.html" %}
+
+{% block title %}Informes Mensuales - Syemed{% endblock %}
+
+{% block extra_css %}
+<style>
+.informe-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.filtros-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.filtros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filtro-item label {
+    display: block;
+    font-weight: 600;
+    color: #1e4d7b;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filtro-item select,
+.filtro-item input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.btn-generar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.btn-generar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-exportar {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    margin-left: 1rem;
+}
+
+.btn-exportar:hover {
+    background: #218838;
+}
+
+.estadisticas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-left: 4px solid;
+}
+
+.stat-card.total { border-left-color: #667eea; }
+.stat-card.ingresados { border-left-color: #4caf50; }
+.stat-card.finalizados { border-left-color: #2196f3; }
+.stat-card.pendientes { border-left-color: #ff9800; }
+
+.stat-card-title {
+    font-size: 0.85rem;
+    color: #666;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e4d7b;
+    line-height: 1;
+}
+
+.tabla-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.tabla-section h3 {
+    color: #1e4d7b;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.tabla-informe {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-informe thead {
+    background: #1e4d7b;
+    color: white;
+}
+
+.tabla-informe th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.tabla-informe tbody tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.tabla-informe tbody tr:hover {
+    background: #e3f2fd;
+}
+
+.tabla-informe td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.mes-row {
+    background: #e3f2fd !important;
+    font-weight: 600;
+    color: #1e4d7b;
+}
+
+.total-row {
+    background: #1e4d7b !important;
+    color: white;
+    font-weight: 700;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.badge-success { background: #d4edda; color: #155724; }
+.badge-warning { background: #fff3cd; color: #856404; }
+.badge-info { background: #d1ecf1; color: #0c5460; }
+
+@media print {
+    .filtros-section,
+    .btn-generar,
+    .btn-exportar,
+    nav {
+        display: none !important;
+    }
+    
+    body {
+        background: white;
+    }
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: none;
+    text-align: center;
+    padding: 3rem;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="informe-container">
+    <h2 style="color: #1e4d7b; margin-bottom: 1.5rem;">📊 Informes Mensuales</h2>
+    
+    <!-- Filtros -->
+    <div class="filtros-section">
+        <div class="filtros-grid">
+            <div class="filtro-item">
+                <label>Año</label>
+                <select id="filtroAnio">
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+            
+            <div class="filtro-item">
+                <label>Mes (opcional)</label>
+                <select id="filtroMes">
+                    <option value="">Todos los meses</option>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+            
+            <div class="filtro-item">
+                <label>Categoría (opcional)</label>
+                <select id="filtroCategoria">
+                    <option value="">Todas</option>
+                    <option value="R">Reparación</option>
+                    <option value="G">Garantía</option>
+                    <option value="BA">Baja de Alquiler</option>
+                    <option value="CA">Cambio de Alquiler</option>
+                    <option value="FC">Cambio por Falla Crítica</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="margin-top: 1rem;">
+            <button class="btn-generar" onclick="generarInforme()">🔄 Generar Informe</button>
+            
+            <button class="btn-exportar" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+    </div>
+    
+    <!-- Loading -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <p>Generando informe...</p>
+    </div>
+    
+    <!-- Estadísticas Resumen -->
+    <div id="estadisticasResumen" style="display: none;">
+        <div class="estadisticas-grid">
+            <div class="stat-card total">
+                <div class="stat-card-title">Total de Equipos</div>
+                <div class="stat-card-value" id="statTotal">0</div>
+            </div>
+            
+            <div class="stat-card ingresados">
+                <div class="stat-card-title">Equipos Ingresados</div>
+                <div class="stat-card-value" id="statIngresados">0</div>
+            </div>
+            
+            <div class="stat-card finalizados">
+                <div class="stat-card-title">Finalizados</div>
+                <div class="stat-card-value" id="statFinalizados">0</div>
+            </div>
+            
+            <div class="stat-card pendientes">
+                <div class="stat-card-title">Pendientes</div>
+                <div class="stat-card-value" id="statPendientes">0</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabla de Equipos por Mes -->
+    <div class="tabla-section" id="tablaIngresosPorMes" style="display: none;">
+        <h3>📅 Equipos Ingresados por Mes</h3>
+        <table class="tabla-informe">
+            <thead>
+                <tr>
+                    <th>Mes</th>
+                    <th>Ingresados</th>
+                    <th>Finalizados</th>
+                    <th>En Curso</th>
+                    <th>Pendientes</th>
+                    <th>Otros</th>
+                </tr>
+            </thead>
+            <tbody id="tablaIngresosMesBody">
+                <!-- Datos dinámicos -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Tabla de Cambios de Estado -->
+    <div class="tabla-section" id="tablaCambiosEstado" style="display: none;">
+        <h3>🔄 Cambios de Estado</h3>
+        <table class="tabla-informe">
+            <thead>
+                <tr>
+                    <th>Estado</th>
+                    <th>Cantidad de Equipos</th>
+                    <th>Porcentaje</th>
+                </tr>
+            </thead>
+            <tbody id="tablaCambiosEstadoBody">
+                <!-- Datos dinámicos -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Detalle por Categoría -->
+    <div class="tabla-section" id="tablaCategoria" style="display: none;">
+        <h3>📁 Detalle por Categoría</h3>
+        <table class="tabla-informe">
+            <thead>
+                <tr>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Porcentaje</th>
+                </tr>
+            </thead>
+            <tbody id="tablaCategoriaBody">
+                <!-- Datos dinámicos -->
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function generarInforme() {
+    const anio = document.getElementById('filtroAnio').value;
+    const mes = document.getElementById('filtroMes').value;
+    const categoria = document.getElementById('filtroCategoria').value;
+    
+    // Mostrar loading
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('estadisticasResumen').style.display = 'none';
+    document.getElementById('tablaIngresosPorMes').style.display = 'none';
+    document.getElementById('tablaCambiosEstado').style.display = 'none';
+    document.getElementById('tablaCategoria').style.display = 'none';
+    
+    try {
+        const params = new URLSearchParams({
+            anio: anio,
+            ...(mes && { mes: mes }),
+            ...(categoria && { categoria: categoria })
+        });
+        
+        const response = await fetch(`/api/informe-mensual?${params}`);
+        const data = await response.json();
+        
+        console.log('Respuesta del API:', data); // Debug
+        
+        if (!data.success) {
+            alert('Error al generar informe: ' + (data.error || 'Error desconocido'));
+            return;
+        }
+        
+        // Validar que los datos existan
+        if (!data.ingresos_por_mes) {
+            data.ingresos_por_mes = [];
+        }
+        if (!data.estados) {
+            data.estados = [];
+        }
+        if (!data.categorias) {
+            data.categorias = [];
+        }
+        
+        console.log('Ingresos por mes:', data.ingresos_por_mes); // Debug
+        
+        // Ocultar loading
+        document.getElementById('loadingSpinner').style.display = 'none';
+        
+        // Mostrar estadísticas resumen
+        mostrarEstadisticas(data);
+        
+        // Mostrar tabla de ingresos por mes
+        mostrarIngresosPorMes(data.ingresos_por_mes);
+        
+        // Mostrar cambios de estado
+        mostrarCambiosEstado(data.estados);
+        
+        // Mostrar categorías
+        mostrarCategorias(data.categorias);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('loadingSpinner').style.display = 'none';
+        alert('Error al conectar con el servidor');
+    }
+}
+
+function mostrarEstadisticas(data) {
+    document.getElementById('estadisticasResumen').style.display = 'block';
+    document.getElementById('statTotal').textContent = data.total || 0;
+    document.getElementById('statIngresados').textContent = data.total_ingresados || 0;
+    document.getElementById('statFinalizados').textContent = data.total_finalizados || 0;
+    document.getElementById('statPendientes').textContent = data.total_pendientes || 0;
+}
+
+function mostrarIngresosPorMes(datos) {
+    const tbody = document.getElementById('tablaIngresosMesBody');
+    tbody.innerHTML = '';
+    
+    try {
+        if (!datos || datos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #999;">No hay datos para mostrar</td></tr>';
+            document.getElementById('tablaIngresosPorMes').style.display = 'block';
+            return;
+        }
+        
+        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        
+        let totalIngresados = 0;
+        let totalFinalizados = 0;
+        let totalEnCurso = 0;
+        let totalPendientes = 0;
+        let totalOtros = 0;
+        
+        datos.forEach((row, index) => {
+            console.log(`Procesando fila ${index}:`, row); // Debug
+            
+            const tr = document.createElement('tr');
+            // Validar que el mes esté en rango 1-12
+            const mesIdx = (row.mes && row.mes >= 1 && row.mes <= 12) ? row.mes - 1 : 0;
+            const mesNombre = meses[mesIdx];
+            
+            tr.innerHTML = `
+                <td><strong>${mesNombre} ${row.anio || ''}</strong></td>
+                <td>${row.ingresados || 0}</td>
+                <td>${row.finalizados || 0}</td>
+                <td>${row.en_curso || 0}</td>
+                <td>${row.pendientes || 0}</td>
+                <td>${row.otros || 0}</td>
+            `;
+            tbody.appendChild(tr);
+            
+            totalIngresados += row.ingresados || 0;
+            totalFinalizados += row.finalizados || 0;
+            totalEnCurso += row.en_curso || 0;
+            totalPendientes += row.pendientes || 0;
+            totalOtros += row.otros || 0;
+        });
+        
+        // Agregar fila de totales
+        const trTotal = document.createElement('tr');
+        trTotal.className = 'total-row';
+        trTotal.innerHTML = `
+            <td><strong>TOTAL</strong></td>
+            <td><strong>${totalIngresados}</strong></td>
+            <td><strong>${totalFinalizados}</strong></td>
+            <td><strong>${totalEnCurso}</strong></td>
+            <td><strong>${totalPendientes}</strong></td>
+            <td><strong>${totalOtros}</strong></td>
+        `;
+        tbody.appendChild(trTotal);
+        
+        document.getElementById('tablaIngresosPorMes').style.display = 'block';
+    } catch (error) {
+        console.error('Error en mostrarIngresosPorMes:', error);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #f44336;">Error al mostrar datos: ' + error.message + '</td></tr>';
+        document.getElementById('tablaIngresosPorMes').style.display = 'block';
+    }
+}
+
+function mostrarCambiosEstado(estados) {
+    const tbody = document.getElementById('tablaCambiosEstadoBody');
+    tbody.innerHTML = '';
+    
+    if (!estados || estados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: #999;">No hay datos para mostrar</td></tr>';
+        document.getElementById('tablaCambiosEstado').style.display = 'block';
+        return;
+    }
+    
+    const total = estados.reduce((sum, e) => sum + e.cantidad, 0);
+    
+    estados.forEach(estado => {
+        const porcentaje = ((estado.cantidad / total) * 100).toFixed(1);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${estado.estado}</td>
+            <td>${estado.cantidad}</td>
+            <td>${porcentaje}%</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    document.getElementById('tablaCambiosEstado').style.display = 'block';
+}
+
+function mostrarCategorias(categorias) {
+    const tbody = document.getElementById('tablaCategoriaBody');
+    tbody.innerHTML = '';
+    
+    if (!categorias || categorias.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: #999;">No hay datos para mostrar</td></tr>';
+        document.getElementById('tablaCategoria').style.display = 'block';
+        return;
+    }
+    
+    const total = categorias.reduce((sum, c) => sum + c.cantidad, 0);
+    
+    categorias.forEach(cat => {
+        const porcentaje = ((cat.cantidad / total) * 100).toFixed(1);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${cat.categoria}</td>
+            <td>${cat.cantidad}</td>
+            <td>${porcentaje}%</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    document.getElementById('tablaCategoria').style.display = 'block';
+}
+
+
+// Generar informe automáticamente al cargar
+document.addEventListener('DOMContentLoaded', function() {
+    // Establecer año actual por defecto
+    document.getElementById('filtroAnio').value = new Date().getFullYear();
+    
+    // Generar informe con el año actual
+    generarInforme();
+});
+</script>
+{% endblock %}

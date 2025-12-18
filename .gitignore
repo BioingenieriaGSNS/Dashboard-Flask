@@ -7,3 +7,4 @@ __pycache__/
 .DS_Store
 credencialesPrueba.json
 README_INSTALACION.md
+test_informe.py

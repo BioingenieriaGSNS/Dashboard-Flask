@@ -854,6 +854,12 @@ def equipos_priorizados():
         cur.close()
         conn.close()
 
+@app.route('/informes-mensuales')
+@login_required
+def informes_mensuales():
+    """Página de informes mensuales"""
+    return render_template('informes_mensuales.html')
+
 @app.route('/api/equipo/detalle/<ost>')
 @login_required
 def api_equipo_detalle(ost):
@@ -914,6 +920,304 @@ def api_equipo_detalle(ost):
         cursor.close()
         conn.close()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/informe-mensual')
+@login_required
+def api_informe_mensual():
+    """API para generar informe mensual de equipos"""
+    anio = request.args.get('anio', type=int)
+    mes = request.args.get('mes', type=int)
+    categoria = request.args.get('categoria', '')
+    
+    if not anio:
+        return jsonify({'success': False, 'error': 'Año requerido'}), 400
+    
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'error': 'Error de conexión'}), 500
+    
+    cursor = conn.cursor()
+    
+    try:
+        # Construir filtros
+        filtro_fecha = "EXTRACT(YEAR FROM e.fecha_ingreso) = %s"
+        params = [anio]
+        
+        if mes:
+            filtro_fecha += " AND EXTRACT(MONTH FROM e.fecha_ingreso) = %s"
+            params.append(mes)
+        
+        filtro_categoria = ""
+        if categoria:
+            filtro_categoria = " AND s.categoria LIKE %s"
+            params.append(f'%{categoria}%')
+        
+        # 1. Estadísticas generales
+        cursor.execute(f"""
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN e.estado = 'Finalizado' THEN 1 ELSE 0 END) as finalizados,
+                SUM(CASE WHEN e.estado = 'Pendiente' THEN 1 ELSE 0 END) as pendientes
+            FROM equipos e
+            LEFT JOIN solicitudes s ON e.solicitud_id = s.id
+            WHERE {filtro_fecha} {filtro_categoria}
+            AND e.eliminado = FALSE
+        """, params.copy())
+        
+        stats = cursor.fetchone()
+        print(f"DEBUG - Stats: {dict(stats) if stats else None}")
+        
+        # 2. Ingresos por mes
+        cursor.execute(f"""
+            SELECT 
+                EXTRACT(YEAR FROM e.fecha_ingreso)::integer as anio,
+                EXTRACT(MONTH FROM e.fecha_ingreso)::integer as mes,
+                COUNT(*) as ingresados,
+                SUM(CASE WHEN e.estado = 'Finalizado' THEN 1 ELSE 0 END) as finalizados,
+                SUM(CASE WHEN e.estado = 'En curso' THEN 1 ELSE 0 END) as en_curso,
+                SUM(CASE WHEN e.estado = 'Pendiente' THEN 1 ELSE 0 END) as pendientes,
+                SUM(CASE WHEN e.estado NOT IN ('Finalizado', 'En curso', 'Pendiente') THEN 1 ELSE 0 END) as otros
+            FROM equipos e
+            LEFT JOIN solicitudes s ON e.solicitud_id = s.id
+            WHERE {filtro_fecha} {filtro_categoria}
+            AND e.eliminado = FALSE
+            AND e.fecha_ingreso IS NOT NULL
+            GROUP BY EXTRACT(YEAR FROM e.fecha_ingreso), EXTRACT(MONTH FROM e.fecha_ingreso)
+            ORDER BY anio, mes
+        """, params.copy())
+        
+        ingresos_por_mes = cursor.fetchall()
+        print(f"DEBUG - Ingresos por mes ({len(ingresos_por_mes)} filas):")
+        for i, row in enumerate(ingresos_por_mes[:3]):  # Solo primeras 3 filas
+            print(f"  Fila {i}: {dict(row)}")
+        
+        # 3. Estados
+        cursor.execute(f"""
+            SELECT 
+                e.estado,
+                COUNT(*) as cantidad
+            FROM equipos e
+            LEFT JOIN solicitudes s ON e.solicitud_id = s.id
+            WHERE {filtro_fecha} {filtro_categoria}
+            AND e.eliminado = FALSE
+            GROUP BY e.estado
+            ORDER BY cantidad DESC
+        """, params.copy())
+        
+        estados = cursor.fetchall()
+        print(f"DEBUG - Estados ({len(estados)} filas)")
+        
+        # 4. Categorías
+        cursor.execute(f"""
+            SELECT 
+                CASE 
+                    WHEN s.categoria LIKE '%%R%%' THEN 'Reparación'
+                    WHEN s.categoria LIKE '%%G%%' THEN 'Garantía'
+                    WHEN s.categoria LIKE '%%BA%%' THEN 'Baja de Alquiler'
+                    WHEN s.categoria LIKE '%%CA%%' THEN 'Cambio de Alquiler'
+                    WHEN s.categoria LIKE '%%FC%%' THEN 'Cambio por Falla Crítica'
+                    ELSE 'Otra'
+                END as categoria,
+                COUNT(*) as cantidad
+            FROM equipos e
+            LEFT JOIN solicitudes s ON e.solicitud_id = s.id
+            WHERE {filtro_fecha} {filtro_categoria}
+            AND e.eliminado = FALSE
+            GROUP BY categoria
+            ORDER BY cantidad DESC
+        """, params.copy())
+        
+        categorias = cursor.fetchall()
+        print(f"DEBUG - Categorías ({len(categorias)} filas)")
+        
+        cursor.close()
+        conn.close()
+        
+        # Convertir los datos a formato JSON-serializable
+        ingresos_list = []
+        for i, row in enumerate(ingresos_por_mes):
+            try:
+                # Usar .get() en lugar de [] para evitar KeyError
+                ingresos_list.append({
+                    'anio': int(row.get('anio', anio)) if row.get('anio') else anio,
+                    'mes': int(row.get('mes', 1)) if row.get('mes') else 1,
+                    'ingresados': int(row.get('ingresados', 0)) if row.get('ingresados') else 0,
+                    'finalizados': int(row.get('finalizados', 0)) if row.get('finalizados') else 0,
+                    'en_curso': int(row.get('en_curso', 0)) if row.get('en_curso') else 0,
+                    'pendientes': int(row.get('pendientes', 0)) if row.get('pendientes') else 0,
+                    'otros': int(row.get('otros', 0)) if row.get('otros') else 0
+                })
+            except Exception as e:
+                print(f"Error procesando fila {i} de ingresos_por_mes: {e}")
+                print(f"Datos de la fila: {dict(row)}")
+                raise
+        
+        estados_list = []
+        for i, row in enumerate(estados):
+            try:
+                estados_list.append({
+                    'estado': str(row.get('estado', 'Sin estado')) if row.get('estado') else 'Sin estado',
+                    'cantidad': int(row.get('cantidad', 0)) if row.get('cantidad') else 0
+                })
+            except Exception as e:
+                print(f"Error procesando fila {i} de estados: {e}")
+                print(f"Datos de la fila: {dict(row)}")
+                raise
+        
+        categorias_list = []
+        for i, row in enumerate(categorias):
+            try:
+                categorias_list.append({
+                    'categoria': str(row.get('categoria', 'Otra')) if row.get('categoria') else 'Otra',
+                    'cantidad': int(row.get('cantidad', 0)) if row.get('cantidad') else 0
+                })
+            except Exception as e:
+                print(f"Error procesando fila {i} de categorias: {e}")
+                print(f"Datos de la fila: {dict(row)}")
+                raise
+        
+        return jsonify({
+            'success': True,
+            'total': int(stats.get('total', 0)) if stats and stats.get('total') else 0,
+            'total_ingresados': int(stats.get('total', 0)) if stats and stats.get('total') else 0,
+            'total_finalizados': int(stats.get('finalizados', 0)) if stats and stats.get('finalizados') else 0,
+            'total_pendientes': int(stats.get('pendientes', 0)) if stats and stats.get('pendientes') else 0,
+            'ingresos_por_mes': ingresos_list,
+            'estados': estados_list,
+            'categorias': categorias_list
+        })
+    
+    except Exception as e:
+        print(f"Error al generar informe: {e}")
+        import traceback
+        traceback.print_exc()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/informe-mensual/excel')
+@login_required
+def api_informe_mensual_excel():
+    """Exportar informe mensual a Excel"""
+    try:
+        import io
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+        from flask import send_file
+        
+        anio = request.args.get('anio', type=int)
+        mes = request.args.get('mes', type=int)
+        categoria = request.args.get('categoria', '')
+        
+        if not anio:
+            return jsonify({'error': 'Año requerido'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Obtener datos (reutilizar lógica del endpoint anterior)
+        filtro_fecha = "EXTRACT(YEAR FROM e.fecha_ingreso) = %s"
+        params = [anio]
+        
+        if mes:
+            filtro_fecha += " AND EXTRACT(MONTH FROM e.fecha_ingreso) = %s"
+            params.append(mes)
+        
+        filtro_categoria = ""
+        if categoria:
+            filtro_categoria = " AND s.categoria LIKE %s"
+            params.append(f'%{categoria}%')
+        
+        # Obtener todos los equipos del período
+        cursor.execute(f"""
+            SELECT 
+                e.ost,
+                e.cliente,
+                e.estado,
+                TO_CHAR(e.fecha_ingreso, 'DD/MM/YYYY') as fecha_ingreso,
+                e.tipo_equipo,
+                e.marca,
+                e.modelo,
+                s.categoria,
+                COALESCE(s.comercial_syemed, s.solicitante) as comercial
+            FROM equipos e
+            LEFT JOIN solicitudes s ON e.solicitud_id = s.id
+            WHERE {filtro_fecha} {filtro_categoria}
+            AND e.eliminado = FALSE
+            ORDER BY e.fecha_ingreso DESC
+        """, params)
+        
+        equipos = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        # Crear Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Informe Mensual"
+        
+        # Estilos
+        header_fill = PatternFill(start_color="1E4D7B", end_color="1E4D7B", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF")
+        
+        # Headers
+        headers = ['OST', 'Cliente', 'Estado', 'Fecha Ingreso', 'Tipo Equipo', 
+                  'Marca', 'Modelo', 'Categoría', 'Comercial']
+        
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+        
+        # Datos
+        for row_idx, equipo in enumerate(equipos, 2):
+            ws.cell(row=row_idx, column=1, value=equipo['ost'])
+            ws.cell(row=row_idx, column=2, value=equipo['cliente'])
+            ws.cell(row=row_idx, column=3, value=equipo['estado'])
+            ws.cell(row=row_idx, column=4, value=equipo['fecha_ingreso'])
+            ws.cell(row=row_idx, column=5, value=equipo['tipo_equipo'])
+            ws.cell(row=row_idx, column=6, value=equipo['marca'])
+            ws.cell(row=row_idx, column=7, value=equipo['modelo'])
+            ws.cell(row=row_idx, column=8, value=equipo['categoria'])
+            ws.cell(row=row_idx, column=9, value=equipo['comercial'])
+        
+        # Ajustar anchos
+        ws.column_dimensions['A'].width = 10
+        ws.column_dimensions['B'].width = 30
+        ws.column_dimensions['C'].width = 20
+        ws.column_dimensions['D'].width = 15
+        ws.column_dimensions['E'].width = 25
+        ws.column_dimensions['F'].width = 20
+        ws.column_dimensions['G'].width = 20
+        ws.column_dimensions['H'].width = 15
+        ws.column_dimensions['I'].width = 25
+        
+        # Guardar en memoria
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        filename = f"informe_mensual_{anio}"
+        if mes:
+            filename += f"_{mes:02d}"
+        filename += ".xlsx"
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except ImportError:
+        return jsonify({'error': 'openpyxl no está instalado. Ejecuta: pip install openpyxl'}), 500
+    except Exception as e:
+        print(f"Error al exportar Excel: {e}")
+        return jsonify({'error': str(e)}), 500
 
 # ============================================
 # CONTEXT PROCESSOR PARA TEMPLATES
